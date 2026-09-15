@@ -2,7 +2,8 @@
 
 Use Linux x86-64, an NVIDIA GPU, Docker with NVIDIA Container Toolkit and host
 Python 3. Building uses the pinned NVIDIA Isaac Lab image and its applicable
-license terms. No private repository or cluster account is required. Simulation does
+license terms. Once you have access to this repository, runtime dependencies are
+public and no cluster account is required. Simulation does
 not receive robot devices. See [STATUS.md](STATUS.md) for measured validation.
 
 ## Build

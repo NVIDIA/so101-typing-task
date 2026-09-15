@@ -17,7 +17,7 @@ All new simulation runs use Newton MJWarp; no hardware motion was executed.
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
 | Deployment bundle | Saved nominal geometry, q_reset, normalization, IDs and artifact hashes exported; standard and moved-keyboard/custom-physics dry runs pass | Operator-run physical/model alignment and typing validation |
 | Reference fixture | Published Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Users measure their actual layout; benchmark reproduction requires matching its geometry |
-| Repository | Canonical public repository: [VigneshBhavan/so101-keyboard-task-public](https://github.com/VigneshBhavan/so101-keyboard-task-public) | Code publication does not establish physical qualification |
+| Repository | Organization repository: [NVIDIA-dev/so101-keyboard-typing](https://github.com/NVIDIA-dev/so101-keyboard-typing), private during release preparation | Code publication does not establish physical qualification |
 
 Acceptance: a recipient can install, try a released checkpoint, train with the
 supported physics/task configuration, evaluate, calibrate their own robot using

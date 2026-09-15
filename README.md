@@ -16,7 +16,10 @@ additionally requires `uv`; install it before
 `./so101 setup-hardware` ([uv installation](https://docs.astral.sh/uv/getting-started/installation/)).
 The pinned container supplies Isaac Lab, Newton and RSL-RL.
 The tested GPU is an RTX 5090 with 32 GB; other GPUs and minimum requirements
-remain to be qualified. No private checkout or cluster account is required.
+remain to be qualified. This repository is private while the release is being
+prepared; cloning requires NVIDIA-dev access and NVIDIA SSO authorization. Runtime
+dependencies and benchmark artifacts are publicly available; no cluster account
+is required.
 
 | Budget | Planning guidance |
 | --- | --- |
@@ -30,8 +33,8 @@ ZIP/tarball source downloads are supported: run commands from the extracted fold
 provenance records content hashes with no Git revision when `.git` is absent.
 
 ```bash
-git clone https://github.com/VigneshBhavan/so101-keyboard-task-public.git
-cd so101-keyboard-task-public
+git clone https://github.com/NVIDIA-dev/so101-keyboard-typing.git
+cd so101-keyboard-typing
 ./so101 build
 ```
 
