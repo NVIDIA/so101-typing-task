@@ -41,17 +41,26 @@ cd so101-keyboard-typing
 Choose the nominal keyboard position/orientation relative to the robot in
 simulation. Your physical fixture must match that trained geometry at deployment.
 The task JSON supports nominal XYZ/yaw and optional XY/yaw placement randomization.
-See [task configuration](docs/release/TASK_CONFIGURATION.md) for coordinates and units.
+Start with the [bird’s-eye measurement guide](FIXTURE_SETUP.md) to translate ruler
+measurements into simulation coordinates. See [task configuration](docs/release/TASK_CONFIGURATION.md)
+for the JSON schema and randomization options.
 
 ```bash
-cp configs/tasks/keyboard-pose.json configs/tasks/my-keyboard.json
-# Edit my-keyboard.json for your intended physical layout before training.
-./so101 probe --task-config configs/tasks/my-keyboard.json
+./so101 fixture --out-dir output/reference-fixture
+# Follow FIXTURE_SETUP.md; fill the blank template with your measured Q/P/Z coordinates.
+cp output/reference-fixture/measurement-template.json output/my-measurements.json
+# Edit output/my-measurements.json, then convert it:
+./so101 fixture --measurements output/my-measurements.json --out-dir output/my-fixture
+./so101 probe --task-config output/my-fixture/task.json
 
 # Startup check; this budget is not intended to produce a deployable policy.
 ./so101 train --actuator anchorbench --stage p1a \
-  --task-config configs/tasks/my-keyboard.json --num-envs 64 --iterations 10
+  --task-config output/my-fixture/task.json --num-envs 64 --iterations 10
 ```
+
+For simulation-only exploration, you can use `configs/tasks/keyboard-pose.json`
+directly instead of measuring hardware. Draw it with `./so101 fixture --task-config
+configs/tasks/keyboard-pose.json --out-dir output/example-fixture`.
 
 Continue with the [P1A-to-six-letter training recipe](docs/release/TRAINING.md).
 Choose `anchorbench` or `usd` actuators. Optional `--physics-config`
@@ -85,12 +94,12 @@ its trained fixture geometry**, not placing the keyboard wherever convenient.
 | --- | --- |
 | Keyboard CAD origin relative to robot model base | `(262.565, 12.135, 1.781) mm` |
 | CAD roll, pitch, yaw | `(-5.000, 0.051, -88.606) degrees` |
-| Near case edge beyond robot-base housing | `125.28 mm` |
+| Physical measurement reference | Base datum D and Q/P/Z rim centres in [fixture guide](FIXTURE_SETUP.md) |
 | Keyboard and jaw | Reference Logitech MX geometry; fixed typing jaw, moving jaw closed |
 | Mat under keyboard | `4.44 mm` |
 
 CAD angles are not physical top-down yaw. Follow [FIXTURE_SETUP.md](FIXTURE_SETUP.md)
-for the authoritative quaternion, placement convention and manual alignment checks.
+for the authoritative quaternion, bird’s-eye drawing, signed measurements and height datum.
 The matching environment YAML is the checkpoint's source of truth. If your setup
 cannot match it, use workflow 1 to train for your intended placement.
 

@@ -55,6 +55,11 @@ def main():
     sub.add_parser('build', help='build the public runtime (requires Docker)')
     download = sub.add_parser('download', help='download the optional AnchorBench 19k checkpoint and matching contract')
     download.add_argument('--all', action='store_true', help='include the supported-model benchmark and development-validation artifacts')
+    fixture = sub.add_parser('fixture', help='draw the fixture or fit measured Q/P/Z key centres; no hardware or Docker')
+    fixture.add_argument('--out-dir', type=Path, required=True, help='new output directory')
+    fixture_input = fixture.add_mutually_exclusive_group()
+    fixture_input.add_argument('--measurements', type=Path, help='Q/P/Z [X,Y,Z] millimetres from the guide datum D')
+    fixture_input.add_argument('--task-config', type=Path, help='draw an existing nominal task pose')
     sub.add_parser('setup-hardware', help='install an isolated CPU LeRobot deployment environment')
     prep = sub.add_parser('prepare-deployment', help='export a portable checkpoint/geometry bundle; no hardware access')
     prep.add_argument('--checkpoint', type=Path, required=True)
@@ -94,6 +99,12 @@ def main():
         if operation in ('play', 'video'):
             p.add_argument('--target', help='letters to type; defaults to HE or NVIDIA for the selected stage')
     args = parser.parse_args()
+    if args.command == 'fixture':
+        from scripts.fixture_layout import create
+        try:
+            return create(args.out_dir, args.measurements, args.task_config)
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
     if args.command == 'setup-hardware':
         return subprocess.call([str(ROOT / 'scripts/setup_hardware.sh')])
     if args.command in ('prepare-deployment', 'deploy'):

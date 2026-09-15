@@ -14,6 +14,16 @@ These short runs test setup. Increase the training budget for a learned policy.
 Use `./so101 probe --task-config FILE` to check reset stability, commanded action
 limits, and key-map alignment over several resets before training.
 
+## Physical measurements to nominal pose
+
+Use the [bird’s-eye fixture guide](../../FIXTURE_SETUP.md) to identify the plastic
+base datum and measure Q/P/Z keycap rim centres in millimetres. The host-only
+`./so101 fixture --measurements FILE --out-dir NEW_DIR` command fits the supported
+XYZ/yaw transform and writes `task.json`, a drawing and a measurement report.
+It does not measure the robot, calibrate encoders or validate policy performance.
+`./so101 fixture --task-config FILE --out-dir NEW_DIR` draws an existing nominal
+configuration. Both commands work before the Docker image is built.
+
 ## Nominal pose
 
 `keyboard.position_m` is the keyboard CAD origin's XYZ position in the robot-base

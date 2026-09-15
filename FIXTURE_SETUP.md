@@ -1,76 +1,164 @@
-# Fixed Keyboard Fixture Setup
+# Measure the keyboard fixture
 
-This guide describes the specific `physical-calibrated-20260718` fixture used
-for the released blind SO-101 typing policies. It is a reproduction target for
-the published benchmark. For new training, change the nominal keyboard pose or
-its reset distribution through [task configuration](docs/release/TASK_CONFIGURATION.md).
+Use this guide for the reference Logitech MX Keys geometry and the stock
+`base_so101_v2` plastic SO-101 base. A clamp is fine if the base is rigid and its
+mounting plane stays level. Measure the **plastic base**, not the clamp, table
+edge, servo cover, or cable bracket. A different base, keyboard, typing jaw or
+keyboard tilt needs geometry validation before these measurements are usable.
 
-## Required Hardware
+![Bird’s-eye model drawing with robot axes, base datum and Q/P/Z landmarks](docs/fixtures/reference-birdseye.svg)
 
-- SO-101 mounted to a rigid base
-- The same MX-style keyboard geometry used by this task
-- A `4.44 mm` mat beneath the keyboard
-- The fixed typing jaw and a closed moving jaw
+[Open the full-size drawing](docs/fixtures/reference-birdseye.svg). It is a model
+projection, not a printable alignment template or a reachability map. The grid
+spacing is 50 mm. The arm and clamp are omitted so the base datum is visible.
 
-Do not use these policies after changing the robot, keyboard, mat, jaw, or
-fixture without revalidating the geometry and joint calibration.
+## 1. Establish the robot measurement frame
 
-## Coordinate Reference
+Look down at the base. Its broad plastic outline must match the drawing. The
+controller/cable bracket is behind the base; the straight front face is toward
+the keyboard. If your base does not match, do not substitute the clamp outline.
 
-The authoritative pose is the keyboard asset pose in the SO-101 model's base
-frame, not a hand-measured visual estimate:
+Define **D** as the intersection of three planes: the frontmost flat face of the
+plastic base, its left/right symmetry plane, and its flat underside plane. This
+is a constructed measurement point; no hole or mark at D is required. Use a
+straightedge against the front face, find its midpoint, and extend perpendicular
+lines with a square onto paper/tape. Keep these lines fixed to the base.
 
-| Quantity | Value |
-| --- | --- |
-| Keyboard CAD origin in robot-base frame | `(262.565, 12.135, 1.781) mm` |
-| Keyboard CAD roll, pitch, yaw | `(-5.000, 0.051, -88.606) deg` |
-| Keyboard near case edge beyond robot-base housing | `125.28 mm` |
-| Physical squareness offset | `1.39 deg` from square |
-| Mat thickness | `4.44 mm` |
+| Measurement | Direction from D | How to measure |
+| --- | --- | --- |
+| X | Forward from the base toward the keyboard | Perpendicular distance from the front-face line; not a diagonal ruler distance |
+| Y | Left when standing behind the robot looking toward the keyboard | Signed lateral distance from the base centreline; right is negative |
+| Z | Up from the plastic base underside plane | Keycap rim height minus base-underside height, both measured from the same level reference |
 
-The CAD-origin orientation is not a top-down physical yaw. It follows the
-keyboard asset's coordinate convention. The executable source of truth is:
+The exact CAD offset of D is `(64.635455, 0, -2.400258) mm` in the robot-base
+frame. The converter applies this offset. Do not enter these CAD coordinates
+as your ruler readings. If the plastic underside is flush on the table, that
+table is the height zero. If a clamp plate raises the base, measure and subtract
+that height. Do not assume that clamping implies a particular height.
 
-`source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/physical_calibrated_20260718_env_cfg.py`
+![Side schematic showing the base underside height datum](docs/fixtures/height-datum.svg)
 
-In that file, use `PHYSICAL_CALIBRATED_KEYBOARD_POSITION_B_M` and
-`PHYSICAL_CALIBRATED_KEYBOARD_ROTATION_XYZW`; do not replace them with an
-independently measured yaw convention.
+## 2. Measure Q, P and Z on the released keyboard
 
-## Physical Placement Procedure
+Secure the keyboard in the intended typing position, including the mat and feet
+configuration. Use the fixed typing jaw with the moving jaw closed at deployment.
+Identify the centre of each **keycap outline** on Q, P and Z. For height, use the
+plane of the cap's top rim at that centre, not the recessed bowl or printed letter.
+A straightedge across the rim helps establish this plane. Do not depress the keys.
 
-1. Secure the SO-101 base so it cannot translate or rotate during a run.
-2. Put the `4.44 mm` mat under the keyboard.
-3. Align the keyboard near case edge `125.28 mm` beyond the robot-base housing
-   in the trained forward direction.
-4. Apply the small `1.39 deg` non-square offset used by the calibrated fixture.
-   The sign and exact CAD alignment are encoded by the authoritative quaternion
-   above; use the saved fixture marks or a physical template rather than
-   estimating this from a photo.
-5. Clamp or mark the keyboard so it cannot move relative to the robot base.
-6. Run standard LeRobot calibration for your robot and export the policy's
-   deployment bundle. Select the encoder convention explicitly; the historical
-   benchmark corrections are separate from standard calibration. See
-   [hardware preparation](docs/release/HARDWARE_PREPARATION.md).
+Project each centre vertically onto the measurement plane (a square or plumb
+reference helps) and record its X, Y and Z in millimetres. These are mechanical
+landmarks for placement; they are not the policy's key-body target coordinates.
+Do not use perspective distances from an uncalibrated photograph.
 
-## Validation Gate
+Create the drawing and a blank measurement form; this needs only host Python 3,
+with no Docker build, GPU, calibration or robot connection:
 
-Before a scored policy rollout:
+```bash
+./so101 fixture --out-dir output/reference-fixture
+cp output/reference-fixture/measurement-template.json output/my-measurements.json
+# Replace every null with your measured X, Y and Z in millimetres.
+```
 
-1. Run `./so101 deploy BUNDLE TARGET` without `--execute` to validate the
-   checkpoint, saved environment and generated reset target without hardware.
-2. Confirm the fixture, keyboard, mat, and typing jaw have not moved.
-3. Bring the robot to the fixed reset through the runner's measured reset gate.
-   If it cannot settle within the configured tolerance, do not start PPO.
-4. Begin with a supervised validation appropriate to the checkpoint stage.
-   Stop on a wrong target, visible displacement, or an unexpected key event;
-   inspect the fixture, calibration and policy before attempting a larger corpus.
+The form contains exactly three entries:
 
-## Limits Of This Guide
+```json
+{
+  "Q": [null, null, null],
+  "P": [null, null, null],
+  "Z": [null, null, null]
+}
+```
 
-The numerical transform makes the simulator fixture reproducible. Exact
-physical reproduction still requires a stable mechanical datum for the
-robot-base housing and a robot-specific encoder calibration. A reusable public
-deployment fixture would benefit from a dimensioned drawing or printable template.
-Those physical aids and an automated policy-free A-Z IK parity probe are not
-included in this release; use measured layout and operator alignment checks.
+The reference model predicts the following readings. **These are model values,
+not measurements of your robot**; do not copy them into a measurement record.
+
+| Key | X from D (mm) | Y from D (mm) | Z above D (mm) |
+| --- | ---: | ---: | ---: |
+| Q | 199.110 | 184.581 | 8.131 |
+| P | 203.272 | 13.541 | 7.980 |
+| Z | 161.205 | 169.519 | 7.117 |
+
+The small reference heights are intentional consequences of the saved effective
+model transform. The keyboard sits low relative to the robot base in that
+fixture. The historical `4.44 mm` mat and `125.28 mm` edge gap do **not** specify
+all three-dimensional mounting relationships. That historical gap also has no
+uniquely specified housing datum, so it is not the measurement input used here.
+If your flat-table arrangement produces different heights, record those values
+and train for that geometry; do not force the old checkpoint to fit the hardware.
+
+## 3. Convert measurements into the training pose
+
+```bash
+./so101 fixture --measurements output/my-measurements.json \
+  --out-dir output/my-fixture
+# Open output/my-fixture/birdseye.svg and compare it to the actual layout.
+./so101 probe --task-config output/my-fixture/task.json
+./so101 train --actuator anchorbench --stage p1a \
+  --task-config output/my-fixture/task.json --num-envs 64 --iterations 10
+```
+
+The last command is a startup check. Continue with the
+[P1A-to-six-letter training recipe](docs/release/TRAINING.md), retaining this task
+configuration. The tool fits XYZ translation and yaw while preserving the
+reference keyboard roll/pitch. It rotates about robot Z, converts millimetres to
+metres and writes the existing task JSON schema. No policy is modified.
+
+`measurement-report.json` records the inputs, source geometry hashes, pose and
+per-key fit residuals. A maximum residual above **1 mm** rejects the fit before
+creating output. This is a measurement-consistency check, **not** evidence that
+a policy tolerates 1 mm placement error. Check axis signs, units, landmark
+locations, base shape and keyboard tilt on rejection. Unsupported roll/pitch or
+a different board cannot be fixed by merely translating the CAD origin.
+
+A successful three-point fit still does not prove the other keys, jaw, robot
+calibration or contacts match. Check additional keys across the board against
+the model and inspect the simulation probe before training or physical use.
+
+To draw an existing nominal task pose instead of fitting measurements:
+
+```bash
+./so101 fixture --task-config output/my-fixture/task.json \
+  --out-dir output/my-fixture-review
+```
+
+Drawings and `expected-landmarks.json` show the nominal pose only, not randomized
+reset samples. Output directories must be new, protecting existing measurements.
+
+## 4. Keep the two deployment workflows distinct
+
+- **Train for your fixture:** use the measured pose before training, evaluate the
+  resulting checkpoint and export its matching `params/env.yaml`. Keep the
+  keyboard fixed in the measured position. Re-measure if the base or board moves.
+- **Use the optional ~19k checkpoint:** physically reproduce its saved geometry.
+  Use the reference drawing and expected measurements for comparison. A new
+  measured pose does not reposition that checkpoint's trained map; train a new
+  policy if the reference fixture cannot be reproduced.
+
+In both cases, perform standard LeRobot calibration for **your** SO-101.
+Calibration determines encoder coordinates; it does not register the keyboard
+or compensate for a raised clamp plate. Export with `--encoder-convention lerobot`
+unless deliberately reproducing the historical robot's separate fitted offsets.
+Follow [hardware preparation](docs/release/HARDWARE_PREPARATION.md) for calibration,
+export, the offline deployment dry run and the operator-controlled execution gate.
+Start physical validation under supervision after checking geometry and reset
+alignment. The helper never opens a serial device or commands the robot.
+
+## Geometry provenance and limits
+
+The drawing comes from the pinned robot USD used by the Docker runtime and the
+repository's MX Keys asset. [model_geometry.json](docs/fixtures/model_geometry.json)
+contains their hashes, the reference pose, base outline and keycap rim centres.
+The helper checks the local keyboard/configuration hashes before using it.
+`python3 scripts/build_fixture_geometry.py --output FILE` regenerates the asset
+inside the pinned simulator container (numpy and USD/pxr required there only).
+
+The authoritative reference pose is `(262.5651584, 12.1353200, 1.7813943) mm`,
+with quaternion XYZW `(-0.0309082351, 0.0307819167, -0.6977733512, 0.7149891643)`.
+Its CAD yaw is not a physical squareness reading. The helper applies the same
+robot-Z yaw convention as [task configuration](docs/release/TASK_CONFIGURATION.md).
+
+This is a software measurement aid derived from an effective calibrated model.
+The physical correspondence of these datums and keycap surfaces still needs
+verification on the recipient's hardware. It is not an independently qualified
+physical jig, automated camera registration, or an A-Z contact validation probe.

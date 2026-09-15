@@ -50,6 +50,10 @@ Sparse VBD is not exposed in this qualified interface.
 XY/yaw randomization and robot reset-joint noise. The benchmark physical fixture
 is a reference setup. Sampled pose perturbations are not supplied to the actor.
 
+For physical placement, use the [bird’s-eye measurement guide](../../FIXTURE_SETUP.md)
+and `./so101 fixture` to create the task JSON from Q/P/Z measurements. The helper
+needs only host Python 3 and works before building Docker.
+
 ## Evaluate your training
 
 ```bash

@@ -32,7 +32,7 @@ Changed nominal placement and bounded pose randomization are supported. See
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 97 tests, 2 skipped, and 7 subtests. They cover
+selected results. Host checks passed: 105 tests, 2 skipped, and 7 subtests (2026-09-15). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, and the existing homing contracts.
 The Newton container contract suite passes 37 tests.
@@ -140,3 +140,15 @@ walkthrough does not claim actual user calibration or physical deployment.
 One usability issue was corrected: completed runs now print host paths for the
 saved checkpoint, matching environment, evaluation report and video, so users
 can fill the next README command without interpreting Docker mount paths.
+
+## Fixture measurement aid — 2026-09-15
+
+Added an asset-derived bird’s-eye drawing, a side height schematic and the
+host-only `so101 fixture` command. Q/P/Z rim-centre measurements relative to a
+specified plastic-base datum produce the existing XYZ/yaw task JSON, a drawing
+and a residual/provenance report. Eight fixture tests cover reference recovery,
+parity with the training transform, units/axis/height inconsistency, input and
+output protection, source geometry, drift rejection and operation without Docker.
+The 1 mm fit threshold is a measurement consistency limit, not measured policy
+robustness. Physical identification of these datums and second-robot contact
+validation remain pending. No calibration or robot motion was performed.

@@ -29,7 +29,10 @@ rules; do not run the entire pipeline as root.
 ## Choose the physical layout
 
 [FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the published Logitech MX
-keyboard, closed jaw, fixed typing tip and 4.44 mm mat. It is a reference setup.
+keyboard, closed jaw, fixed typing tip and reference mat. Its bird’s-eye and
+height drawings define physical measurement datums; `./so101 fixture` converts
+Q/P/Z measurements to a nominal task pose without accessing hardware. A clamp
+plate changes the height datum if it raises the plastic base.
 You can change the nominal keyboard position/yaw with a task JSON, retrain, and
 export that policy's geometry. You can also train over bounded XY/yaw placement
 variation and reset-joint noise. See [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md).
