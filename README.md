@@ -16,10 +16,8 @@ additionally requires `uv`; install it before
 `./so101 setup-hardware` ([uv installation](https://docs.astral.sh/uv/getting-started/installation/)).
 The pinned container supplies Isaac Lab, Newton and RSL-RL.
 The tested GPU is an RTX 5090 with 32 GB; other GPUs and minimum requirements
-remain to be qualified. This repository is private while the release is being
-prepared; cloning requires NVIDIA-dev access and NVIDIA SSO authorization. Runtime
-dependencies and benchmark artifacts are publicly available; no cluster account
-is required.
+remain to be qualified. Runtime dependencies and benchmark artifacts are publicly
+available. No additional source checkout or cluster account is required.
 
 | Budget | Planning guidance |
 | --- | --- |
