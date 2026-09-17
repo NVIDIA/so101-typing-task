@@ -792,3 +792,14 @@ must be rebuilt after the current checkout changes. The residual reduction is
 therefore evidence that the combined historical mapping plus effective pose
 explains yesterday's measured trajectories better than either zero offsets or
 the frozen placement alone; it is not yet a policy or physical success result.
+
+After rebuilding the pinned runtime, the held-out `mapping-validation` replay
+was run with both candidates. Direct zero-offset plus pose produced 266 simulated
+key events for 66 physical events, with repeated numeric and letter contacts.
+Historical offsets plus the fitted pose produced 72 simulated events for the same
+66 physical events. It tracked the intended sequence much more closely, but still
+added a `9` contact around the O transition and produced extra U/J activity.
+`key_sequence_matches` therefore remained false. Reports are retained under
+`output/fixture-photos-20260915/trajectory-scene-alignment-20260917/placement-*`.
+The combined candidate is promising diagnostic evidence, not a validated scene,
+policy fix or physical deployment mapping.
