@@ -62,10 +62,16 @@ An operator can instead run a supervised policy experiment with this candidate:
 ```
 
 Omit `--execute` to dry-run the same experimental contract. This explicit mode
-requires a prepared candidate with the robot calibration and trained geometry
-checked. It retains operator confirmation, reset arrival, joint limits, keyboard
-feedback, wrong-key stops and timeouts. Logs identify an unqualified experiment;
+requires a prepared direct-LeRobot or candidate bundle with the robot calibration
+and trained geometry checked. It retains operator confirmation, reset arrival,
+joint limits, keyboard feedback, wrong-key stops and timeouts. Logs identify an
+unqualified experiment;
 the command neither changes calibration nor creates passing alignment evidence.
+
+To compare the policy without any fitted or historical offsets, prepare the
+same checkpoint with ``--encoder-convention lerobot`` and use the same explicit
+``--experimental`` flag. The resulting log is labelled
+``experimental_direct_lerobot``.
 
 If a physical trial reaches a key but drags across neighboring keycaps, the
 candidate launcher can require a larger **experimental** measured-FK clearance

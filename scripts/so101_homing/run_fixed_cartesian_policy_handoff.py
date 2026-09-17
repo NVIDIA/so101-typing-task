@@ -733,7 +733,9 @@ def main() -> int:
         )
         _emit_deployment_contract(out=out, summary=summary, deployment_contract=deployment_contract)
         if args.experimental:
-            print('Supervised policy experiment: candidate mapping is not qualified; motion/contact checks remain enabled.')
+            mode = ('direct LeRobot mapping' if np.allclose(profile.joint_zero_offset_deg, 0.0)
+                    else 'candidate mapping')
+            print(f'Supervised policy experiment: {mode} is not qualified; motion/contact checks remain enabled.')
         if args.dry_run:
             summary["status"] = "dry_run_ready"
             print(f"Software dry run passed ({args.stage.upper()}); no robot command was sent. "

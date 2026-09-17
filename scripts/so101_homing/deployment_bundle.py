@@ -138,10 +138,12 @@ def validate_execution_mode(data, *, experimental=False):
     if not experimental:
         require_qualified_alignment(data)
         return 'qualified_alignment'
+    if data.get('encoder_convention') == 'lerobot' and data.get('lerobot_calibration_sha256'):
+        return 'experimental_direct_lerobot'
     if (data.get('encoder_convention') != 'candidate'
             or not data.get('alignment_candidate_sha256')
             or not data.get('lerobot_calibration_sha256')):
-        raise ValueError('--experimental requires a prepared --alignment-candidate bundle with pinned calibration')
+        raise ValueError('--experimental requires a prepared direct-LeRobot or --alignment-candidate bundle with pinned calibration')
     return 'experimental_unqualified_mapping'
 
 
