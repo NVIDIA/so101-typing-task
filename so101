@@ -83,6 +83,7 @@ def main():
     deploy.add_argument('target')
     deploy.add_argument('--execute', action='store_true')
     deploy.add_argument('--experimental', action='store_true', help='supervised candidate-mapping experiment; retains motion/contact checks')
+    deploy.add_argument('--experimental-clearance-m', type=float, default=None, help='candidate experiment clearance before advancing')
     deploy.add_argument('--port')
     deploy.add_argument('--keyboard-device')
     for operation in ('train', 'evaluate', 'play', 'video', 'probe', 'scene'):
@@ -149,6 +150,7 @@ def main():
             command = [python, '-m', 'scripts.so101_homing.deploy_bundle', str(args.bundle.resolve()), args.target]
             if args.execute: command += ['--execute']
             if args.experimental: command += ['--experimental']
+            if args.experimental_clearance_m is not None: command += ['--experimental-clearance-m', str(args.experimental_clearance_m)]
             if args.port: command += ['--port', args.port]
             if args.keyboard_device: command += ['--keyboard-device', args.keyboard_device]
         return subprocess.call(command, cwd=ROOT)

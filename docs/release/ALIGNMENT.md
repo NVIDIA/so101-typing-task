@@ -67,6 +67,22 @@ checked. It retains operator confirmation, reset arrival, joint limits, keyboard
 feedback, wrong-key stops and timeouts. Logs identify an unqualified experiment;
 the command neither changes calibration nor creates passing alignment evidence.
 
+If a physical trial reaches a key but drags across neighboring keycaps, the
+candidate launcher can require a larger **experimental** measured-FK clearance
+before lateral advance:
+
+```bash
+./so101 deploy output/my-candidate-bundle NEWTON --experimental \
+  --experimental-clearance-m 0.030 --execute \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
+```
+
+This changes only the release/clearance transition gate. It does not alter the
+checkpoint, observations, actions, joint mapping or trained environment, and it
+must remain labelled an unqualified experiment until a separate physical
+alignment qualification succeeds.
+
 ## 3. Replay reserved measured motion in simulation
 
 Replay using the prepared candidate. This uses the same frozen offsets for

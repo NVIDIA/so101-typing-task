@@ -16,6 +16,7 @@ def main():
     p.add_argument('target')
     p.add_argument('--execute',action='store_true')
     p.add_argument('--experimental', action='store_true', help='supervised candidate-mapping experiment; does not qualify alignment')
+    p.add_argument('--experimental-clearance-m', type=float, default=None)
     p.add_argument('--port')
     p.add_argument('--keyboard-device')
     a=p.parse_args()
@@ -46,6 +47,7 @@ def main():
     if a.port:command+=['--port',a.port]
     if a.keyboard_device:command+=['--device',a.keyboard_device]
     if a.experimental:command+=['--experimental']
+    if a.experimental_clearance_m is not None: command += ['--experimental-clearance-m', str(a.experimental_clearance_m)]
     return subprocess.call(command)
 
 

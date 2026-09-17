@@ -603,6 +603,8 @@ def main() -> int:
     parser.add_argument("--enable-robot", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument('--experimental', action='store_true', help='supervised candidate-mapping experiment; no alignment qualification claim')
+    parser.add_argument('--experimental-clearance-m', type=float, default=None,
+                        help='candidate experiment only: require this measured FK clearance before advancing')
     parser.add_argument("--yes", action="store_true", help="Skip only the final operator confirmation.")
     parser.add_argument("--max-duration", type=float, default=None)
     parser.add_argument("--reset-transition-s", type=float, default=DEFAULT_RESET_TRANSITION_S)
@@ -675,6 +677,13 @@ def main() -> int:
             expected_actuator_profile=args.expected_actuator_profile,
             expected_task_contract=args.expected_task_contract,
         )
+        if args.experimental_clearance_m is not None:
+            if not args.experimental:
+                raise PolicyContractError('--experimental-clearance-m requires --experimental')
+            trained_clearance_m = (training_environment["clearance_m"]
+                                   if training_environment is not None else CLEARANCE_M)
+            if not np.isfinite(args.experimental_clearance_m) or args.experimental_clearance_m < trained_clearance_m:
+                raise PolicyContractError('--experimental-clearance-m must be finite and at least the trained clearance')
         if args.max_duration is None:
             if training_environment is None:
                 args.max_duration = STAGE_MAX_DURATION_S[args.stage]
@@ -687,7 +696,8 @@ def main() -> int:
             stage=args.stage,
             now_s=0.0,
             profile=profile,
-            clearance_m=(training_environment["clearance_m"] if training_environment is not None else CLEARANCE_M),
+            clearance_m=(args.experimental_clearance_m if args.experimental_clearance_m is not None else
+                         (training_environment["clearance_m"] if training_environment is not None else CLEARANCE_M)),
             clearance_control_ticks=(
                 training_environment["clearance_control_ticks"]
                 if training_environment is not None
@@ -718,6 +728,7 @@ def main() -> int:
                 "checkpoint_contract": policy.contract.as_dict(),
                 "initial_observation": initial_observation.tolist(),
                 "initial_policy_action": initial_policy["action"].tolist(),
+                "experimental_clearance_m": args.experimental_clearance_m,
             }
         )
         _emit_deployment_contract(out=out, summary=summary, deployment_contract=deployment_contract)
