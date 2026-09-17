@@ -83,12 +83,19 @@ class PublicCliTests(unittest.TestCase):
             self.assertTrue(all(call.args[0][0] == 'docker' for call in metadata.call_args_list))
 
     def test_download_archive_requires_explicit_option(self):
-        for extra in ([], ['--all']):
+        for extra in ([], ['--all'], ['--calibrated']):
             with patch.object(sys, 'argv', ['so101', 'download', *extra]), \
                  patch.object(cli.subprocess, 'call', return_value=0) as execute:
                 self.assertEqual(cli.main(), 0)
                 self.assertEqual(execute.call_args.args[0],
                                  [str(ROOT / 'scripts/download_benchmark_artifacts.sh'), *extra])
+
+    def test_download_rejects_conflicting_selections_before_execution(self):
+        with patch.object(sys, 'argv', ['so101', 'download', '--all', '--calibrated']), \
+             patch.object(cli.subprocess, 'call') as execute, self.assertRaises(SystemExit) as error:
+            cli.main()
+        self.assertEqual(error.exception.code, 2)
+        execute.assert_not_called()
 
     def plan(self, *args):
         with patch.object(sys, 'argv', ['so101', *args]), patch('builtins.print') as out, patch.object(cli.subprocess, 'call') as execute:

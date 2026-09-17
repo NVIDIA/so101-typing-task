@@ -59,6 +59,25 @@ def test_hardware_requires_pass_for_exact_file(artifact):
         runner.verified_plan(path)
 
 
+def test_keyboard_preserves_batched_edges_and_device_times(monkeypatch):
+    import sys
+    from scripts.so101_homing import policy_runtime
+    monkeypatch.setitem(sys.modules, 'evdev', SimpleNamespace(ecodes=SimpleNamespace(EV_KEY=1, KEY={})))
+    monkeypatch.setattr(policy_runtime, '_keycode_to_char', lambda: {16: ('KEY_Q', 'q')})
+    monkeypatch.setattr(policy_runtime, '_key_name_to_code', lambda _: ('KEY_ESC', 1))
+    monkeypatch.setattr(policy_runtime.select, 'select', lambda *args: ([7], [], []))
+    def event(value, timestamp):
+        return SimpleNamespace(type=1, code=16, value=value, timestamp=lambda: timestamp)
+    monitor = policy_runtime.KeyboardMonitor('fake')
+    monitor.device = SimpleNamespace(fd=7, read=lambda: [event(1, 1000.001), event(2, 1000.005),
+                                                         event(0, 1000.021), event(1, 1000.029)])
+    events, stop = monitor.poll()
+    assert not stop
+    assert [e['edge'] for e in events] == ['down', 'up', 'down']
+    assert [e['evdev_timestamp_s'] for e in events] == [1000.001, 1000.021, 1000.029]
+    assert monitor.pressed_codes == {16}
+
+
 @pytest.mark.parametrize("wrong_key", [False, True])
 @pytest.mark.parametrize('offsets', [None, [3., .7, -9.6, .5, 0.]])
 def test_hardware_replays_saved_rows_and_detects_keys(artifact, monkeypatch, wrong_key, offsets):

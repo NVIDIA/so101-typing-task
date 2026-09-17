@@ -91,10 +91,10 @@ seed and input hashes; training saves the resolved environment and agent YAML.
 Each run also saves its console log and exit code. Compare policies with matched
 sample budgets, seeds, configurations and sequence banks.
 
-## Workflow 2: optional ~19k reference policy
+## Workflow 2: optional reference policies
 
 Read [the fixture requirements](../../FIXTURE_SETUP.md) before physical use.
-The pretrained policy assumes its trained keyboard transform and fixed jaw.
+The default ~19k policy assumes its trained keyboard transform and fixed jaw.
 Calibration does not compensate for a different keyboard placement.
 
 ```bash
@@ -108,6 +108,11 @@ Use `evaluate` for headless episodes or `play` for an interactive Newton viewer
 (X11 `DISPLAY`/`XAUTHORITY` required). The optional `--all` download includes the
 supported-model benchmark and development evidence. Verify downloaded files from the
 artifact directory with `sha256sum -c DOWNLOAD_SHA256SUMS`.
+
+The additional [September calibrated-scene example](../../README.md#september-calibrated-scene-example)
+is selected with `./so101 download --calibrated`. It includes `model_2498.pt`, its
+complete `params/` folder and sanitized evidence for one physical NEWTON trial.
+Its robot-specific mapping must not be substituted for your own scene calibration.
 
 ## Both workflows: user calibration and deployment
 

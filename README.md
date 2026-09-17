@@ -27,6 +27,7 @@ NVIDIA's GitHub enterprise. Runtime and artifact downloads are publicly availabl
 | Disk | Built image: about 32.6 GB (30.4 GiB). Budget at least 70 GB free for image/build layers, caches and runs; this is headroom guidance, not a measured peak. |
 | First install | Download/build and first kernel compilation depend on bandwidth, CPU and cache state; allow tens of minutes to hours. This is an estimate, not a measured cold-install time. |
 | Optional ~19k playback | No training required; evaluation follows installation and kernel startup. |
+| September calibrated-scene example, 500 + 2,000 updates | Measured 2 h 38 min 21 s including evaluations/videos on an RTX 5090; completed one physical NEWTON trial. Your scene and seed need their own evaluation. |
 | Example 4,000 + 16,000 updates, 4096 environments | Roughly 20.4 hours of training-loop time on an RTX 5090, extrapolated from 36.72 s / 10 updates. Excludes startup and evaluation; not a measured full run. |
 
 See [training budgets](docs/release/TRAINING.md) for early evaluation and timing logs.
@@ -96,10 +97,10 @@ Keep the full `params/` folder. Resume and evaluation restore saved task/physics
 JSONs; export uses the trained nominal key map and joint reference. Use `p1a` and
 a two-letter target for P1A checkpoints. Runs and videos are saved under `output/`.
 
-## Workflow 2: optionally try the established ~19k checkpoint
+## Workflow 2: optionally try a released checkpoint
 
-This AnchorBench checkpoint was trained for a specific keyboard pose and fixed
-jaw. Simulation playback needs no physical robot. The historical setup used the
+The default download is the established AnchorBench ~19k checkpoint, trained for
+a specific keyboard pose and fixed jaw. Simulation playback needs no physical robot. The historical setup used the
 Logitech MX keyboard, closed moving jaw, fixed typing tip and a 4.44 mm keyboard
 mat. Its 89/100 physical six-letter result was measured on the original benchmark
 robot/fixture; it is not a new-robot success guarantee.
@@ -123,6 +124,25 @@ the policy's frozen map.
 The default download contains only these weights, their environment and evaluation
 report, verified against pinned hashes. `./so101 download --all` explicitly fetches
 the supported-model benchmark/development artifacts. Existing downloaded files are retained.
+
+### September calibrated-scene example
+
+The additional `model_2498.pt` release completed one physical **NEWTON** trial on
+the newly calibrated setup. Download its exact weights, matched scene/environment,
+setup-specific mapping and sanitized evidence without replacing the historical 19k:
+
+```bash
+./so101 download --calibrated
+bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
+./so101 video --actuator anchorbench --stage transit15 \
+  --checkpoint "$bundle/model_2498.pt" \
+  --env-config "$bundle/params/env.yaml" --target NEWTON
+```
+
+Keep the complete `params/` directory: `public_task.json` restores the fitted scene.
+This command produces a simulation video. For another physical setup, use your own
+calibration and scene fitting; the reference mapping is evidence, not a transferable
+robot calibration. See the [physical result and limitations](docs/experiments/physical_typing_success_20260917.md).
 
 ## Both workflows: qualify alignment and deploy
 
@@ -167,6 +187,7 @@ robot's LeRobot calibration and verify physical/model alignment before motion.
 
 ## Documentation and validation
 
+- [September 17 physical NEWTON result and how it was achieved](docs/experiments/physical_typing_success_20260917.md)
 - [Detailed quickstart](docs/release/QUICKSTART.md)
 - [Training](docs/release/TRAINING.md) and [task/physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md), [alignment qualification](docs/release/ALIGNMENT.md) and [reference fixture](FIXTURE_SETUP.md)
@@ -174,6 +195,8 @@ robot's LeRobot calibration and verify physical/model alignment before motion.
 - [Benchmark artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark) and [runtime provenance](runtime/README.md)
 - [Development and release checks](docs/DEVELOPMENT.md); [dated investigation records](docs/experiments/README.md)
 
-Software execution and deployment dry runs have been tested locally. Physical
-reproduction on another user's SO-101 remains unverified. Development-training
-measurements are retained separately in the validation archive.
+Software execution and deployment dry runs have been tested locally. A policy
+trained after recorded-contact scene fitting completed one physical NEWTON trial
+on the new development robot. Repeated reliability and reproduction on another
+user's machine/SO-101 remain unverified. Earlier development-training measurements
+are retained separately in the validation archive.

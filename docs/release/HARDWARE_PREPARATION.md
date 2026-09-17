@@ -91,7 +91,7 @@ For an explicit supervised experiment before qualification, export with
 ```
 
 For the optional 19k policy, substitute its downloaded checkpoint/environment
-paths from the [README](../../README.md#workflow-2-optionally-try-the-established-19k-checkpoint)
+paths from the [README](../../README.md#workflow-2-optionally-try-a-released-checkpoint)
 and qualification for its original scene.
 
 Use a two-letter target such as `HE` for P1A policies; Transit15 policies use six

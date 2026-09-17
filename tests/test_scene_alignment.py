@@ -232,6 +232,33 @@ def test_fit4_requires_separate_reserved_replay(evidence):
         sa.prepare(e.task, 'test_robot', e.root/'bad-candidate', mapping_report=source, mapping_candidate='fit4')
 
 
+def test_experimental_fit_without_reserved_data_cannot_qualify(evidence, monkeypatch):
+    e = evidence; c = e.candidate['contract']
+    report = {'status': 'diagnostic_only_not_approved_for_deployment', 'task_config': c['task_config'],
+              'joint_order': c['joint_order'],
+              'identities': {k: c[k] for k in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256')},
+              'recordings': [{'role': 'fit', 'sha256': sa.digest(e.recording)}],
+              'candidates': {'fit4': {'offset_deg': [0.] * 5}}}
+    source = dump(e.root/'experimental-fit.json', report)
+    with pytest.raises(ValueError, match='reserved validation'):
+        sa.prepare(e.task, 'test_robot', e.root/'rejected', mapping_report=source, mapping_candidate='fit4')
+    out = e.root/'experimental'
+    data = sa.prepare(e.task, 'test_robot', out, mapping_report=source, mapping_candidate='fit4', experimental=True)
+    assert data['contract']['mapping']['reserved_recording_sha256'] == []
+    assert data['status'] == 'unqualified'
+    manifest = export(e, out/'alignment.json', monkeypatch, candidate=True)
+    assert bundle.validate_execution_mode(manifest, experimental=True) == 'experimental_unqualified_mapping'
+    with pytest.raises(ValueError, match='requires a qualified'):
+        bundle.validate_execution_mode(manifest)
+    with pytest.raises(ValueError, match='reserved validation'):
+        sa.qualify(out/'alignment.json', e.recording, e.replay, e.probes, e.root/'cannot-qualify')
+    assert not (e.root/'cannot-qualify').exists()
+    report['recordings'].append({'role': 'validation', 'sha256': sa.digest(e.recording)})
+    dump(source, report)
+    with pytest.raises(ValueError, match='distinct fit'):
+        sa.prepare(e.task, 'test_robot', e.root/'overlap', mapping_report=source, mapping_candidate='fit4', experimental=True)
+
+
 def test_one_candidate_routes_identically_to_measured_pose_replay(evidence, monkeypatch):
     from scripts.so101_homing import scene_check, run_fk_probe
     e = evidence

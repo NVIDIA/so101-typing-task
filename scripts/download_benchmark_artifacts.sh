@@ -5,10 +5,11 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/download_benchmark_artifacts.sh [--all] [OUTPUT_DIR]
+  ./scripts/download_benchmark_artifacts.sh [--all | --calibrated] [OUTPUT_DIR]
 
 Defaults to the optional AnchorBench 19k checkpoint, matched environment and
-evaluation report. --all includes the supported-model benchmark and development artifacts.
+evaluation report. --calibrated selects the September 17 fitted-scene policy and
+its physical NEWTON evidence. --all includes both, plus supported development artifacts.
 Downloads immutable artifacts from:
   https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark
 
@@ -23,17 +24,17 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-include_all=false
-if [[ "${1:-}" == "--all" ]]; then
-  include_all=true
-  shift
-fi
+selection=historical
+case "${1:-}" in
+  --all) selection=all; shift ;;
+  --calibrated) selection=calibrated; shift ;;
+esac
 [[ $# -le 1 && "${1:-}" != --* ]] || { usage >&2; exit 2; }
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 output_dir="${1:-${SO101_ARTIFACT_DIR:-$repo_root/.artifacts/so101-keyboard-typing-benchmark}}"
 output_dir="$(mkdir -p "$output_dir" && realpath "$output_dir")"
-base_url="${SO101_HF_BASE_URL:-https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark/resolve/922066f262db18eda5e7ddbe27e0e206c1d5a7a6}"
+base_url="${SO101_HF_BASE_URL:-https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark/resolve/44d8ad43e2619e0d6e89528fea07f887de93678e}"
 
 command -v sha256sum >/dev/null || { echo "ERROR: sha256sum is required" >&2; exit 1; }
 if command -v curl >/dev/null; then
@@ -91,8 +92,8 @@ download_and_verify() {
 # Sanitized historical benchmark and qualified short-training release.
 # Both the immutable dataset revision above and every payload checksum are pinned.
 artifacts=(
-  'README.md|01905741ea8c199b04546a7991de8b50a26b80cca8d1f258c64a0e1846432b40'
-  'RESULTS.md|130c5557df2bc2577094fc2c65f4c500fc44e6c5677a0af79a59cc5b517cc59a'
+  'README.md|11830a4f6296a84c7ce00d31898e81c4634bd0fbd0dd020a35c3746deda79a68'
+  'RESULTS.md|675bf6d7bf2afa87682da6d8ddc8902abfa3fbe509508d6edec5c7f80c2c2c2a'
   'checkpoints/mjwarp-anchorbench-19k/model_19000.pt|239d93c99cd282e9add019f4ac952407c97fde2879821103a2aa7bd7a307a15f'
   'checkpoints/mjwarp-usd-19k/model_19000.pt|cc7f128e15a282a6f2fcc68e97f67c2e6f81bf6e03347b6a3cbf0b9a02d072a4'
   'checkpoints/public-p1a-seed1307/model_500.pt|f7fdd19b4c4b971c5363391292b4e3e7bbee602a195d7630814fa2a23d71e7a4'
@@ -123,7 +124,7 @@ artifacts=(
   'evaluation/public-transit15-video-NVIDIA.json|d83135a8ecffee5627a80ff4d51df1e74bffec04730fcd467e530b52c82dce73'
   'evaluation/run-provenance.json|d340ed3c0dadca6e4f21f1efcce8cca9d93b4274551485c3cf22f2777dc72da2'
   'evaluation/three_way_mjwarp19k_vbd20k_usd19k_orange2.summary.json|bb474e559394be754fed0d677712c4d2995416f2c5fae3d1a77e2ba4e413f274'
-  'manifest.json|8e1af2d99690d5576fa7d1483dc6ff9981dde4feaa7a8b4007efaf9a85fef3c0'
+  'manifest.json|067a68ed3a3eb170a78f0030d85d0164bd0e7b7f551d86f90d74471543df38f0'
   'training/p1a-iterations.csv|fb666d504182e00e2709fbb22d357e33948961e6f50ec7ce663783f5838d9e9a'
   'training/public-pipeline.json|d5f418789915e521f013884b5cd0b221199ec8f4e7d66319de8137ba3fbd02fa'
   'training/transit15-iterations.csv|adabcd241b39894c855a0a2c50eaded015b1c858abe9efda2b4b49b4896a5e7c'
@@ -131,17 +132,40 @@ artifacts=(
   'videos/public-p1a-HE.mp4|af53c7db46af1b393a57b3117f356bc623b085d694d31d56dc60460834adc712'
   'videos/public-p1a-QZ.mp4|d17a7d1c463dee883f86978c06b6194977c6581ddf1d63c1d5998e8e7abc56b2'
   'videos/public-transit15-NVIDIA.mp4|071e726316af4a2f61aad9c3b46679b8de018e87732354c09d3d4ecb5a51d63a'
+  'releases/calibrated-20260917/README.md|fa00fe7e8231e26ea8b2a136e427f5da25b0dae794ddfc373739fc01228a7450'
+  'releases/calibrated-20260917/SHA256SUMS|ff5816d51e4285912c48fa5f440441bb8f9ed8db1cb337af1e09358035ec8b90'
+  'releases/calibrated-20260917/calibration/contact-result.json|391d17dd1f53dc89f39367dab76ad30f2d517287ace07f2ca62c408f456007ac'
+  'releases/calibrated-20260917/calibration/mapping-report.json|7ff64fa4dfc8f2c1bd02ce9e802b1052e7ddd707a95e2ee50adecd67839ebb9c'
+  'releases/calibrated-20260917/calibration/task.json|3827dd35fa534f903b41d99cf598e74ad8da481baf363ef88ee6c312fef62d7d'
+  'releases/calibrated-20260917/evaluation/actor-parity.json|5fd58267178bfbd7f6ed31de044e9ddcbdf4e019a9c059d46dd4d89e9f109d33'
+  'releases/calibrated-20260917/evaluation/seed2307.json|fe958df7c5a9821f0c7433689759748fbeb1834c5915f61feb3c04a0f3d03d47'
+  'releases/calibrated-20260917/evaluation/seed3307.json|8079e7ac892e1750fda6ededb0ca66418b8426fdcf92d3cea7ec42026af24495'
+  'releases/calibrated-20260917/evaluation/video-NEWTON.json|8e3682142c217fc573c45c312d4dd16ae049a4650e027d416dfd8f58fa005fcd'
+  'releases/calibrated-20260917/evaluation/video-NVIDIA.json|eeb2ea79edb2badab3a1307f251bcc46616fad2e3fff8c6d1164e8efeabced00'
+  'releases/calibrated-20260917/hardware/NEWTON.jsonl|5ce18fffc8b8b36212b5674a7d0f31e9653061101dc28e12e06dc736d09935a9'
+  'releases/calibrated-20260917/hardware/result.json|44f3092ebd0921d32ea55067df637596428c167834791f6d423ffc766fb32682'
+  'releases/calibrated-20260917/manifest.json|c74e96507efaa7a030eaf5369d3acda661310c2c0b721d765186822aaf876b70'
+  'releases/calibrated-20260917/model_2498.pt|6af850866096ec6b6ad6b202c8ac9417681efa0ebe71f4e8e8fdcf57d393f225'
+  'releases/calibrated-20260917/params/agent.yaml|f18ef6bb0cfd19edc795875af5c86e4547aec08e9ac1b25000fd8526b3d6da06'
+  'releases/calibrated-20260917/params/env.yaml|72bb3f80cd41da4930c0fe5de54707ba3dfa1ee772f9745afc128fcd01f8db32'
+  'releases/calibrated-20260917/params/public_task.json|3827dd35fa534f903b41d99cf598e74ad8da481baf363ef88ee6c312fef62d7d'
+  'releases/calibrated-20260917/training/provenance.json|24a2bb92f27fafc7c362ddac57af57e97df12dcedd1664c546f38182d265209d'
+  'releases/calibrated-20260917/training/status.json|9b5062fb1ff6ddf780d13c402f20bf1db63e99d11228be596c55b8c342fe9627'
+  'releases/calibrated-20260917/videos/simulation-NEWTON.mp4|090427894efddc34844a371b0e59e381f3f85ac172698f7e5fe3003a0459d37a'
+  'releases/calibrated-20260917/videos/simulation-NVIDIA.mp4|e12649860759a39e9782f4af4c06708dc20875ee23ac79633add4be1b5f45191'
 )
 
 selected_checksums="$(mktemp "$output_dir/.download-checksums.XXXXXX")"
 trap 'rm -f "$selected_checksums"' EXIT
 for specification in "${artifacts[@]}"; do
   IFS='|' read -r relative_path expected_sha256 <<< "$specification"
-  if [[ "$include_all" == false ]]; then
+  if [[ "$selection" == historical ]]; then
     case "$relative_path" in
       checkpoints/mjwarp-anchorbench-19k/model_19000.pt|configs/mjwarp-anchorbench-19k.env.yaml|evaluation/mjwarp-anchorbench-19k.corpus_100x6_seed1307.json) ;;
       *) continue ;;
     esac
+  elif [[ "$selection" == calibrated && "$relative_path" != releases/calibrated-20260917/* ]]; then
+    continue
   fi
   download_and_verify "$relative_path" "$expected_sha256"
   printf '%s  %s\n' "$expected_sha256" "$relative_path" >> "$selected_checksums"

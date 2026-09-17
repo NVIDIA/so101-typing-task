@@ -12,7 +12,10 @@ scene-validation test. That report lists the selected keyboard pose and joint
 offsets. Both recordings were used for fitting. Continuous replay is an additional
 diagnostic and still fails; it was not part of the original per-key criterion.
 The measured September 15 reference is preserved separately from this effective
-simulation scene. Physical policy performance remains unverified for this fit.
+simulation scene. On September 17 at 14:36 PDT, a fresh policy trained on this
+fit completed [physical NEWTON typing](physical_typing_success_20260917.md) in
+7.10 seconds, including release and clearance. This is one successful sequence;
+broader reliability and the full alignment qualification remain unmeasured.
 
 Earlier fixed-placement results: the historical elbow
 correction (-10.77 degrees) and earlier four-joint fit (-9.61 degrees at the
@@ -29,6 +32,7 @@ requires resuming with the operator; repository checks do not move the robot.
 
 | Record | Contents |
 | --- | --- |
+| [First physical NEWTON success](physical_typing_success_20260917.md) | End-to-end solution, exact policy/scene/mapping, training time and verified physical events |
 | [Advanced scene diagnostics](scene_diagnostics.md) | Lower-level recording/replay, joint/pose fitting alternatives and single-key probes |
 | [Selected September scene fit](scene_calibration_20260917.md) | Recorded-contact optimization, selected pose/offsets and limits of the 93/93 result |
 | [Mapping plan](mapping_plan_20260916.md) | Ordered investigation, reserved-data results and paused automatic-calibration experiment |

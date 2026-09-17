@@ -1,10 +1,39 @@
-# Public pipeline qualification — 2026-09-10
+# Physical and simulation results
 
-The new AnchorBench policy learns six-letter typing after a short continuation.
-It is a simulation-qualified demonstration, with remaining contact failures and
-no new physical validation. Training is stopped.
+## September 17: fitted-scene policy types NEWTON physically
 
-## Learning and timing
+The recorded-contact workflow now has a verified physical result on the new
+development robot. The selected scene passed 93/93 reset-per-key fitting contacts;
+a fresh policy was trained in that scene and deployed with its matching offsets.
+
+| Evidence | Result |
+| --- | --- |
+| Training | 500 P1A + 2,000 Transit15 updates; `model_2498.pt` |
+| Pipeline wall time, including evaluation/video | 2 h 38 min 21 s on RTX 5090, 4,096 environments, AnchorBench/MJWarp/CUDA graphs |
+| Strict six-letter simulation | 2,048/2,048 over seeds 2307 and 3307; zero wrong keys |
+| Physical trial, September 17 at 14:36 PDT | NEWTON in 7.099 s; six down/up pairs and six clearance transitions; exact match |
+
+This was one supervised experimental trial, with original 15 mm clearance and
+native policy timing. The root encoder/model or contact-geometry discrepancy is
+still unresolved; the fitted correction made this workflow usable. Repeated
+reliability, reserved replay, full Q/G/P qualification and independent-user
+reproduction remain pending. The additional background training is separate.
+The [complete case study](../experiments/physical_typing_success_20260917.md) and
+[sanitized evidence summary](../experiments/physical_typing_success_20260917.json)
+pin the exact scene, offsets, checkpoint and log. Download the matching weights,
+scene and sanitized evidence with `./so101 download --calibrated`; see the
+[playback command](../../README.md#september-calibrated-scene-example).
+Raw recordings and the operator's calibration remain local. The historical
+checkpoint remains the default download.
+
+## September 10: earlier public pipeline qualification
+
+This earlier short-budget AnchorBench policy learned six-letter typing after a
+short continuation. It is a separate simulation-qualified demonstration, with
+remaining contact failures and no physical validation for that checkpoint.
+That training run was stopped. Its evidence and published artifacts follow.
+
+### Learning and timing
 
 | Stage | Completed PPO updates | Strict evaluation | Wrong-key failures | Training-loop time |
 | --- | ---: | ---: | ---: | ---: |
@@ -24,7 +53,7 @@ updates. Resume inherits iteration 500 and executes 50 further updates through
 549. Thus `model_549.pt` represents 551 cumulative updates, not 549 or 550.
 The dataset includes per-iteration timing CSVs and runtime/image identities.
 
-## Fixed-policy placement tolerance
+### Fixed-policy placement tolerance
 
 The six-letter checkpoint, nominal actor map, seed 2307 and 1024-sequence bank
 are identical across these tests. Offsets are sampled uniformly at reset.
@@ -41,7 +70,7 @@ with combined XY/yaw variation; it is neither a guarantee for every placement
 nor evidence of physical robustness or robustness to different actuator physics.
 Run these tests with `--perturbation-config`; see [task configuration](TASK_CONFIGURATION.md).
 
-## Rollout and deployment review
+### Rollout and deployment review
 
 P1A HE, AZ and QZ recordings pass strict event judging. The six-letter NVIDIA
 recording passes with six down/up/clearance cycles. Sampled frames near key-down
@@ -71,7 +100,7 @@ matches 261 recorded simulator action vectors with maximum absolute error
 This checks inference parity; calibration, fixture alignment and physical typing
 still require the operator and the actual robot.
 
-## Published evidence
+### Published evidence
 
 The [dataset](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
 contains `checkpoints/public-p1a-seed1307/`,
@@ -97,4 +126,4 @@ A fresh checkout with new Python environments passed public download/audit,
 cached container build, GPU probe, one-update training, 64/64 released-policy
 episodes, hardware setup, export, dry run and CPU parity. The dataset includes
 `evaluation/fresh-checkout-software-validation.json`. Caches and the same GPU
-were reused; independent-machine and physical validation remain pending.
+were reused; independent-machine and recipient hardware validation remain pending.

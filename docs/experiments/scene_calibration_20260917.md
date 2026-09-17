@@ -1,5 +1,10 @@
 # Recorded-contact scene calibration — September 17, 2026
 
+**Update, 14:36 PDT:** training completed and `model_2498.pt` typed physical
+**NEWTON** with exact release/clearance success using the selected pose and
+offsets below. See the [complete result and workflow](physical_typing_success_20260917.md).
+The earlier fitting/replay limitations in this record remain unchanged.
+
 ## Current September 16 replay result — documented September 17
 
 **Passed the original type of scene-validation test: reset between keys, then
@@ -232,10 +237,10 @@ were deleted to obtain a better score. This timing limitation must be retained
 when interpreting full-sequence errors; it does not explain away the manual
 recording's extra keys.
 
-## Training launched — September 17, 2026, 10:45:44 PDT
+## Training launch record — September 17, 2026, 10:45:44 PDT
 
 Exact start: **2026-09-17 10:45:44 PDT / 17:45:44 UTC**. A fresh AnchorBench
-policy is training with Newton MJWarp and CUDA graphs on the RTX 5090, using
+policy began training with Newton MJWarp and CUDA graphs on the RTX 5090, using
 4096 environments and seed 1307. The saved environment was checked against the
 selected `refined/task.json`; its keyboard position and quaternion match exactly.
 The joint offsets are preserved for hardware conversion, not added inside PPO.
@@ -245,13 +250,15 @@ At least 90% success advances automatically to 2000 additional Transit15
 six-letter updates, followed by evaluations with seeds 2307 and 3307 and rollout
 video. A failed evaluation stops the pipeline for inspection.
 
-Status checked **2026-09-17 10:52:28 PDT / 17:52:28 UTC**: P1A is running and
-the log reached iteration 94/500 at about 3.82 seconds per iteration. No policy
-evaluation or physical typing result is available yet.
+Historical check **2026-09-17 10:52:28 PDT / 17:52:28 UTC**: P1A was running and
+the log had reached iteration 94/500 at about 3.82 seconds per iteration. The
+pipeline subsequently finished at **13:24:04 PDT**, with 2,048/2,048 strict
+six-letter evaluation successes. The [physical success record](physical_typing_success_20260917.md)
+documents the later NEWTON trial and separate background continuation.
 
 Local run directory: `output/traj-calibrated-anchorbench-mjwarp-20260917/`.
 It contains `RUN.md`, immutable code/image provenance in `provenance.json`, the
-selected calibration copies, and `run/status.json`. The active training log is
+selected calibration copies, and `run/status.json`. The initial training log is
 `run/01-p1a-train.launcher.log`; the tmux session is
 `so101-traj-calibrated-20260917`. This run uses the documented 93/93 `refined/`
 candidate, not the later lean-workflow or continuous-search candidates.

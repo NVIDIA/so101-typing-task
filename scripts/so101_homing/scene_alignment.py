@@ -52,13 +52,15 @@ def model_identity():
 
 
 def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=None,
-            mapping_candidate=None, joint_fit=None, validation_recordings=()):
+            mapping_candidate=None, joint_fit=None, validation_recordings=(), experimental=False):
     if sum((convention is not None, mapping_report is not None, joint_fit is not None)) != 1:
         raise ValueError('choose exactly one encoder convention, mapping report or joint calibration')
     if bool(mapping_report) != bool(mapping_candidate):
         raise ValueError('--mapping-report and --mapping-candidate are required together')
     if validation_recordings and not mapping_report:
         raise ValueError('--validation-recording requires a mapping report')
+    if experimental and not mapping_report:
+        raise ValueError('--experimental requires a mapping report')
     task = load_config(task_path)
     calibration = require_calibration(robot_id)
     contract = {'robot_id': robot_id, 'calibration_sha256': digest(calibration),
@@ -80,7 +82,7 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
             recording = load_recording(path)
             check_reserved_recording(contract, recording, report.get('reference_task', task))
             reserved.append(digest(path))
-        if not fitting or not reserved or len(set(fitting+reserved)) != len(fitting+reserved):
+        if not fitting or (not reserved and not experimental) or len(set(fitting+reserved)) != len(fitting+reserved):
             raise ValueError('mapping needs distinct fit and reserved validation recordings')
         offsets = validate_mapping_offsets(report['candidates'][mapping_candidate]['offset_deg']).tolist()
         if mapping_candidate != 'joint_scene' and offsets[4] != 0:
@@ -96,6 +98,8 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
         mapping = {'kind': 'recording_'+mapping_candidate, 'source_sha256': digest(mapping_report),
                    'fit_recording_sha256': fitting[0], 'fit_recordings_sha256': fitting,
                    'reserved_recording_sha256': reserved}
+        if experimental:
+            mapping['experimental'] = True
         if mapping_candidate in ('fit3_pose', 'joint_scene'):
             mapping['reference_task'] = report['reference_task']
     elif joint_fit:
@@ -342,6 +346,8 @@ def main():
     p.add_argument('--mapping-candidate', choices=('fit4', 'fit3_pose', 'joint_scene'))
     p.add_argument('--validation-recording', type=Path, action='append', default=[],
                    help='reserve a new completed capture excluded from fitting; repeat for more captures')
+    p.add_argument('--experimental', action='store_true',
+                   help='prepare a recording-fit candidate before reserving validation; cannot qualify without reserved replay')
     p.add_argument('--out-dir', type=Path, required=True)
     p = sub.add_parser('qualify', help='verify and copy reserved replay and physical Q/G/P evidence')
     p.add_argument('--alignment', type=Path, required=True)
@@ -354,7 +360,8 @@ def main():
         if args.mode == 'prepare':
             prepare(args.task_config, args.robot_id, args.out_dir, convention=args.encoder_convention,
                     mapping_report=args.mapping_report, mapping_candidate=args.mapping_candidate,
-                    joint_fit=args.joint_calibration, validation_recordings=args.validation_recording)
+                    joint_fit=args.joint_calibration, validation_recordings=args.validation_recording,
+                    experimental=args.experimental)
             print(f'UNQUALIFIED candidate: {args.out_dir/"alignment.json"}')
         else:
             qualify(args.alignment, args.recording, args.replay_report, args.probe, args.out_dir)

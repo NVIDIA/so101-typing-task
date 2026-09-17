@@ -128,14 +128,15 @@ def execute(plan, path, args, calibration):
                 start = time.monotonic()
                 events, stop = keyboard.poll()
                 for event in events:
-                    append_jsonl(log, {"kind": "key", "phase": phase, **event})
+                    append_jsonl(log, {"kind": "key", "phase": phase, "step": index, **event})
                     char = (event["char"] or "").upper()
                     if char != plan["letter"]:
                         raise RuntimeError(f"unexpected key: {event['key_name']}")
                     edges.append(event["edge"])
                     print(f"PHYSICAL {char} {event['edge'].upper()}", flush=True)
                     if edges != ["down", "up"][:len(edges)] or (event["edge"] == "down" and phase not in ("descend", "press", "lift")):
-                        raise RuntimeError("unexpected physical key sequence")
+                        raise RuntimeError(f"unexpected physical key sequence for {plan['letter']}: {edges} "
+                                           f"during {phase} at step {index}; expected one down then one up")
                 if stop:
                     raise KeyboardInterrupt("Esc")
                 measured_encoder = read_arm_q_deg(robot)

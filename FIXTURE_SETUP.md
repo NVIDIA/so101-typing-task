@@ -51,17 +51,20 @@ run earlier, but do not qualify a physical setup.
 contacts with a reset between keys**, using a jointly refined keyboard pose and
 joint mapping. This matches the original type of scene-validation test. See the
 [selected pose and offsets](docs/experiments/scene_calibration_20260917.md).
+A fresh policy trained in this scene completed one
+[physical NEWTON trial](docs/experiments/physical_typing_success_20260917.md)
+at 14:36 PDT, including release and clearance, with the matching joint conversion.
 Continuous replay is an additional diagnostic; it was not part of that original
 criterion. Physical deployment qualification below is a separate step.
 
 **Earlier limitation, 2026-09-17:** fitting joint offsets with the September
-placement fixed has not achieved reliable physical typing. The historical 89%
+placement fixed did not achieve reliable physical typing. The historical 89%
 benchmark used both an effective keyboard pose and joint offsets; it was not
-proof of literal tabletop reconstruction. The next
-[trajectory-based alignment experiment](docs/experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17)
-compares pose-only, offsets-only and combined fits on separate scene candidates,
-with validation on recordings excluded from fitting. Preserve the measured
-placement as the reference; disclose any effective-model correction separately.
+proof of literal tabletop reconstruction. This motivated the
+[joint-and-scene fit](docs/experiments/scene_calibration_20260917.md) used by the
+successful NEWTON policy. Preserve the measured placement as the reference;
+disclose the effective-model correction separately. Validation on fresh recordings
+excluded from fitting remains outstanding for this selected fit.
 
 The [original recorded-trajectory workflow](docs/fixtures/historical_offset_provenance_20260718.md#original-recorded-trajectory-workflow)
 describes how contact recordings, fixed-jaw FK, joint corrections and a rigid

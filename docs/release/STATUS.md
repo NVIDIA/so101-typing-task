@@ -3,21 +3,22 @@
 The configurable software pipeline is implemented and locally qualified through
 six-letter simulation, placement evaluation, export and CPU inference parity.
 See [measured results](RESULTS.md) and the [recipient record](REPRODUCTION.md).
-Independent installation and complete second-robot typing remain pending.
-All new simulation runs use Newton MJWarp. Operator-run hardware checks on
-2026-09-15 restored reaching/contact after applying the historical joint mapping;
-they did not complete the requested six-letter sequence.
+On September 17, a freshly trained policy completed one physical **NEWTON**
+sequence on the new development robot, including release and clearance. See the
+[verified result and complete workflow](../experiments/physical_typing_success_20260917.md).
+Independent installation, repeated physical reliability and complete alignment
+qualification remain pending. All new simulation runs use Newton MJWarp.
 
 | Requirement | Implemented and measured evidence | Remaining qualification |
 | --- | --- | --- |
 | Public runtime | Public image digest, source ancestor and runtime patch build successfully; GPU reset/action probe passes | Independent recipient installation and GPU/driver coverage |
-| Training | AnchorBench and USD save checkpoints and environment YAML; custom task/physics training and resume smoke tests pass; 64-environment, 10-update reference and DR runs pass | 501 P1A plus 50 Transit15 updates measured; wider seed/GPU coverage remains |
+| Training | Latest fitted-scene AnchorBench run: 500 P1A + 2,000 Transit15 updates, 2,048/2,048 strict six-letter simulation episodes; earlier USD/custom task/physics checks retained | Wider seed/GPU coverage and repeated physical trials |
 | Released policy playback | 1021/1024 strict evaluation episodes passed in the fresh README walkthrough; recorded NVIDIA typing passed | Additional seeds, independent GPU/machine and interactive X11 viewer |
 | Physics choices | JSON solver settings and actuator parameters saved/restored with contract hashes | Sparse VBD is not supported by this interface |
 | Keyboard placement and DR | Nominal XYZ/full orientation updates mesh and map; per-reset XY/yaw and joint noise; 3-reset probe preserved actor nominal map | Fixed-policy XY/yaw tolerance measured; physical and cross-physics robustness pending |
 | Staged recipe | Public P1A-to-Transit15 commands, output conventions and budget caveats documented | Short learned recipe qualified; optional 20,000-update budget not reproduced |
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
-| Deployment bundle | Qualified scene/mapping and copied replay/probe evidence required for physical execution; calibration and trained geometry rechecked; legacy software dry runs preserved | Complete physical/model alignment and typing validation |
+| Deployment bundle | Calibration and trained geometry rechecked; standard execution requires qualified replay/probe evidence; explicit candidate mode completed one physical NEWTON trial | Fresh reserved replay, complete Q/G/P qualification and physical reliability |
 | Reference fixture | Model projections, Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Measured physical layout and contact correspondence; model dimensions alone are not ruler instructions |
 | Repository | [NVIDIA-dev/so101-keyboard-typing-internal](https://github.com/NVIDIA-dev/so101-keyboard-typing-internal) contains both documented workflows and the pinned runtime, with Internal visibility | Code publication does not establish physical qualification |
 
@@ -30,6 +31,45 @@ The benchmark fixture is the default reference, not a restriction on training.
 Changed nominal placement and bounded pose randomization are supported. See
 [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md) and
 [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
+
+## Physical policy milestone — 2026-09-17, 14:36 PDT
+
+`model_2498.pt`, trained on the selected September joint/keyboard fit, completed
+**NEWTON in 7.099 s**: six correct down/up pairs, six clearance transitions,
+`exact_match: true`, no overlapping keys, and zero logged control overruns.
+The successful run kept native 25 Hz timing, 15 mm/two-tick clearance and the
+selected inverse joint mapping. The earlier slow Q checks were policy-free FK,
+not failed learned-policy NEWTON trials.
+
+The fitted scene reproduced 93/93 reset-per-key contacts before training.
+The 500 + 2,000-update training/evaluation pipeline took 2 h 38 min 21 s on an
+RTX 5090. Additional training started separately at 13:55 PDT; it did not replace
+the physical trial's pinned checkpoint. This is one supervised candidate-policy
+result, not a new success-rate benchmark or a completed qualification gate.
+See the [dated case study and evidence hashes](../experiments/physical_typing_success_20260917.md).
+
+## Calibrated-policy release verification — 2026-09-17 PDT
+
+`./so101 download --calibrated` now selects the physically demonstrated
+`model_2498.pt`, unchanged environment/task, reference mapping, simulation reports,
+videos and sanitized hardware evidence. The default download remains historical
+19k. [The artifact revision](artifact_revision.json) pins the published release;
+the release manifest distinguishes original and sanitized-file hashes.
+
+A clean source extraction passed **280 tests, 2 skips and 13 subtests**, privacy
+and local-link checks, and Python compilation. Anonymous downloads verified all
+**61** supported files; a corrupt payload was rejected before installation.
+The rebuilt runtime and downloaded policy passed **64/64** strict simulation
+episodes plus a NEWTON video. Its CPU actor matched eight saved actions within
+`3.5763e-7` at tolerance `1e-5`.
+
+A newly installed hardware Python environment passed recorder/fitter help,
+fixture generation, candidate preparation, export and experimental deployment
+dry run using the original robot's unchanged calibration/mapping. No robot motion
+was performed for this audit. Docker layers, dependency downloads and the GPU
+cache were reused on the development workstation; this is not an independent
+machine or cold-install result. Logs remain local under
+`output/release-newton-20260917/`.
 
 ## Scene-calibration workflow review — 2026-09-17 PDT
 
@@ -64,7 +104,9 @@ joint/keyboard-pose fitting, reset-per-key Newton contact checks and training in
 the saved scene. The September recordings reproduce **93/93 first contacts**;
 all supplied captures were used for fitting, so this is not held-out or physical
 policy evidence. The dated [experiment record](../experiments/scene_calibration_20260917.md)
-identifies the selected scene, offsets and training launch.
+identifies the selected scene, offsets and training launch; the
+[subsequent hardware record](../experiments/physical_typing_success_20260917.md)
+documents the successful NEWTON policy trial.
 
 Deployment preparation can reserve a new capture after fitting using
 `--validation-recording`. It rejects fitting-data reuse and checks the robot,

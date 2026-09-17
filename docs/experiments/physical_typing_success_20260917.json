@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "kind": "so101_physical_policy_result",
+  "recorded_at_utc": "2026-09-17T21:36:50.546590+00:00",
+  "recorded_at_local": "2026-09-17T14:36:50.546590-07:00",
+  "scope": "One operator-supervised NEWTON policy trial on the development setup; not a success-rate benchmark or independent-user reproduction.",
+  "task": "six-letter fixed-map typing",
+  "policy": {
+    "checkpoint_name": "model_2498.pt",
+    "checkpoint_sha256": "6af850866096ec6b6ad6b202c8ac9417681efa0ebe71f4e8e8fdcf57d393f225",
+    "environment_sha256": "72bb3f80cd41da4930c0fe5de54707ba3dfa1ee772f9745afc128fcd01f8db32",
+    "fresh_p1a_updates": 500,
+    "additional_transit15_updates": 2000,
+    "total_updates": 2500,
+    "num_envs": 4096,
+    "seed": 1307,
+    "actuator_profile": "anchorbench",
+    "solver": "newton_mjwarp",
+    "cuda_graphs": true,
+    "pipeline_wall_seconds_including_evaluation": 9500.767908,
+    "stage_wall_seconds": {
+      "01-p1a-train": 1926.71,
+      "04-transit15-train": 7442.2
+    }
+  },
+  "calibration": {
+    "method": "recorded measured motion plus key events; jointly fitted model offsets and effective keyboard pose; reset-per-key contact refinement",
+    "powered_fitting_contacts": 60,
+    "manual_fitting_contacts": 33,
+    "per_key_contact_passes": 93,
+    "held_out_contact_result": null,
+    "joint_order": [
+      "shoulder_pan",
+      "shoulder_lift",
+      "elbow_flex",
+      "wrist_flex",
+      "wrist_roll"
+    ],
+    "joint_zero_offset_deg": [
+      0.0,
+      1.3357291219509193,
+      -10.150392639441748,
+      1.4143882688448561,
+      0.0
+    ],
+    "keyboard": {
+      "position_m": [
+        0.2595676859186883,
+        0.026287385873795737,
+        0.010914637799476334
+      ],
+      "rotation_xyzw": [
+        -0.0030013315867738564,
+        -0.003167092771073995,
+        -0.6878501661003925,
+        0.7258395900801692
+      ]
+    },
+    "task_sha256": "3827dd35fa534f903b41d99cf598e74ad8da481baf363ef88ee6c312fef62d7d",
+    "mapping_report_sha256": "0bc578250393aed99566941ab96cfc733c9f97e8da8506bcd6ab4055154f7c6a",
+    "contact_result_sha256": "391d17dd1f53dc89f39367dab76ad30f2d517287ace07f2ca62c408f456007ac"
+  },
+  "evaluation": [
+    {
+      "seed": 2307,
+      "episodes": 1024,
+      "strict_successes": 1024,
+      "wrong_key_rate": 0.0,
+      "report_sha256": "fe958df7c5a9821f0c7433689759748fbeb1834c5915f61feb3c04a0f3d03d47",
+      "max_target_depression_fraction": 1.349542260169983
+    },
+    {
+      "seed": 3307,
+      "episodes": 1024,
+      "strict_successes": 1024,
+      "wrong_key_rate": 0.0,
+      "report_sha256": "8079e7ac892e1750fda6ededb0ca66418b8426fdcf92d3cea7ec42026af24495",
+      "max_target_depression_fraction": 1.3495718240737915
+    }
+  ],
+  "physical": {
+    "status": "completed",
+    "target": "NEWTON",
+    "physical_key_downs": "NEWTON",
+    "exact_match": true,
+    "keyboard_release_confirmed": true,
+    "down_count": 6,
+    "up_count": 6,
+    "clearance_count": 6,
+    "policy_elapsed_s": 7.099326512077823,
+    "policy_ticks": 177,
+    "execution_mode": "experimental_unqualified_mapping",
+    "alignment_qualified": false,
+    "clearance_m": 0.015,
+    "clearance_control_ticks": 2,
+    "clearance_source": "FK from measured encoders after fitted coordinate conversion; not independently measured camera clearance",
+    "experimental_clearance_override": null,
+    "diagnostic_rate_scale": 1.0,
+    "control_hz": 25,
+    "multiple_key_press": false,
+    "pre_log_overrun_count": 0,
+    "per_letter": [
+      {
+        "letter": "N",
+        "down_step": 33,
+        "up_step": 34,
+        "clearance_step": 37,
+        "physical_hold_ms": 38.081,
+        "clearance_complete_policy_s": 1.48609012295492
+      },
+      {
+        "letter": "E",
+        "down_step": 60,
+        "up_step": 62,
+        "clearance_step": 65,
+        "physical_hold_ms": 44.928,
+        "clearance_complete_policy_s": 2.608579474966973
+      },
+      {
+        "letter": "W",
+        "down_step": 74,
+        "up_step": 75,
+        "clearance_step": 78,
+        "physical_hold_ms": 29.999,
+        "clearance_complete_policy_s": 3.1299037621356547
+      },
+      {
+        "letter": "T",
+        "down_step": 95,
+        "up_step": 97,
+        "clearance_step": 100,
+        "physical_hold_ms": 83.007,
+        "clearance_complete_policy_s": 4.011616870993748
+      },
+      {
+        "letter": "O",
+        "down_step": 138,
+        "up_step": 140,
+        "clearance_step": 143,
+        "physical_hold_ms": 59.996,
+        "clearance_complete_policy_s": 5.735451236134395
+      },
+      {
+        "letter": "N",
+        "down_step": 173,
+        "up_step": 174,
+        "clearance_step": 177,
+        "physical_hold_ms": 44.998,
+        "clearance_complete_policy_s": 7.099027645075694
+      }
+    ]
+  },
+  "provenance": {
+    "hardware_log_basename": "20260917T213637.673785Z_hardware.jsonl",
+    "hardware_log_sha256": "15e6d5daf64f14dea891f420acaed4ac360c7ae5bb34c842bf1b055fd8a66b75",
+    "deployment_manifest_sha256": "61639f719ca7d8c92c2aecea63dd16fceeac669465180c8cc4a493b6a02af4fe",
+    "alignment_candidate_sha256": "e1edb8c088dac67d8394f979d16adb248b4461688ad43f7709bf9d9d3c62527c",
+    "training_image_id": "sha256:aee911731fe541469fc64d689f993ba6108891a153a40d4cb769806b9c2d1f5a",
+    "raw_artifacts_published": false
+  },
+  "limitations": [
+    "Underlying encoder/model or robot/contact geometry discrepancy remains unresolved.",
+    "Selected scene fit used both recordings; 93/93 is fitting reproduction, not held-out validation.",
+    "Continuous measured-motion replay still fails.",
+    "One physical sequence does not establish reliability, full A-Z coverage, placement robustness or other-robot transfer.",
+    "Background PPO continuation is separate and did not replace this checkpoint."
+  ]
+}

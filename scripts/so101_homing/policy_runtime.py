@@ -146,6 +146,9 @@ class KeyboardMonitor:
                     "key_name": key_name,
                     "value": int(event.value),
                     "edge": "down" if event.value == 1 else "up",
+                    # Preserve event spacing even when multiple edges arrive in one poll.
+                    # This evdev clock is separate from our monotonic receipt clock.
+                    "evdev_timestamp_s": event.timestamp(),
                     "received_monotonic_s": time.monotonic(),
                 }
             )

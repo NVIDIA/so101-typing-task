@@ -27,6 +27,15 @@ compiles Warp kernels; the user-owned runtime cache reuses them on later runs.
 
 ## Train for your configured keyboard pose
 
+The September 17 fitted-scene run used **500 P1A + 2,000 Transit15 updates**,
+passed 2,048/2,048 six-letter simulation episodes and completed one physical
+NEWTON trial. Its measured training/evaluation wall time was **2 h 38 min 21 s**
+on an RTX 5090. To try that budget with your own fitted scene, set `--iterations`
+to `500` and `2000` in the two training commands below, or use
+`--p1a-iterations 500 --transit-iterations 2000` with the supervisor. Evaluate your
+own checkpoints before continuing; this result does not guarantee another setup.
+See the [exact checkpoint and evidence](../experiments/physical_typing_success_20260917.md).
+
 After the real-to-sim fit produces `output/my-scene/task.json`, an example two-stage
 budget is 4,000 P1A updates followed by 16,000 six-letter updates. Evaluate early
 and choose the continuation budget from your results:
@@ -146,8 +155,8 @@ Both files are validated before creating the output directory, copied into its
 later does not change the running experiment. `status.json` records the original
 paths, snapshot paths and SHA-256 hashes. Evaluation and video use the matching
 checkpoint's saved `params/` configuration automatically. `--image IMAGE` selects
-the Docker image for every simulation stage. Short-run results
-are retained in [development validation](RESULTS.md), not as recommended policies.
+the Docker image for every simulation stage. [Measured results](RESULTS.md)
+separate the September physical example from earlier software-only runs.
 
 ## Disk, time and ownership
 

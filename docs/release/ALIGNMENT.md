@@ -4,6 +4,9 @@ This workflow records which robot calibration, keyboard placement and joint
 mapping passed measured-motion replay and physical Q/G/P contact checks.
 It does not qualify policy performance or prove every key in the workspace.
 The current development robot's fitted mapping has **not** passed this gate.
+It has completed [one physical NEWTON policy trial](../experiments/physical_typing_success_20260917.md)
+in the explicit experimental mode; that result does not supply the missing
+reserved replay or complete Q/G/P qualification evidence.
 
 All `alignment` commands are offline. FK and policy `--execute` commands move
 hardware. Standard [LeRobot calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
@@ -212,11 +215,30 @@ full-keyboard accuracy, placement tolerance or successful six-letter policy typi
 These are controlled tests of an unqualified mapping, outside the standard
 qualification and deployment sequence above.
 
-To inspect a policy's software contract using this candidate before qualification,
-use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
-checkpoint, matching environment, robot ID and a new output directory. The bundle
-records the selected offsets and supports `deploy` dry runs. Standard physical
-deployment requires the qualification evidence above and a new export with `--alignment`.
+If a fit used every recording, `alignment prepare --experimental` with the
+mapping report and candidate permits a supervised experiment before collecting
+reserved data. The candidate records an empty reserved set and cannot qualify
+from fitting data. For qualification, prepare a new candidate with a fresh
+`--validation-recording` and complete the checks above without refitting.
+
+For a scene produced by `scripts/real2sim.sh fit`, these are the portable commands
+used to prepare the September NEWTON experiment. Supply **your own** fitted scene,
+mapping report, robot ID and evaluated checkpoint/environment:
+
+```bash
+./so101 alignment prepare --task-config output/my-scene/task.json \
+  --mapping-report output/my-scene/mapping-report.json --mapping-candidate joint_scene \
+  --robot-id my_typing_robot --experimental --out-dir output/my-scene/candidate
+./so101 prepare-deployment --checkpoint /absolute/path/to/model_N.pt \
+  --env-config /absolute/path/to/params/env.yaml --robot-id my_typing_robot \
+  --alignment-candidate output/my-scene/candidate/alignment.json \
+  --out-dir output/my-candidate-bundle
+./so101 deploy output/my-candidate-bundle NEWTON --experimental
+```
+
+The last command is a software dry run. Use new output directories; the bundle
+records the selected offsets. Standard physical deployment requires the
+qualification evidence above and a new export with `--alignment`.
 
 An operator can instead run a supervised policy experiment with this candidate:
 

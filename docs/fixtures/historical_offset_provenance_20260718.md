@@ -49,19 +49,19 @@ already contains keyboard geometry and native slope. The historical effective
 pose can absorb model mismatch. Its successful replay does not separately prove
 correct physical placement, correct joint zeros, or correct jaw geometry.
 
-The current experiment instead held the measured September placement fixed and
+An earlier September experiment instead held the measured placement fixed and
 fitted four joint offsets. On September 17 the operator reported that this policy
 could press keys but dragged between keys, subsequently hit the space bar, and
 also failed with zero offsets. **Offsets alone on the current frozen placement
 have not demonstrated reliable physical typing.** These failures do not isolate
 encoder zero, placement, geometry, or tracking as the cause.
 
-The next proposed experiment is to use the recorded real trajectories to compare
-offset-only, pose-only, and combined pose/offset alignment, then validate the
-selected complete scene on separate recordings. Preserve the measured scene as
-the physical reference; any adjusted effective scene must be a separate dated
-candidate with its departures from measured datums disclosed. See the
-[dated experiment plan](../experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17).
+This led to the [joint-and-scene fitting work](../experiments/scene_calibration_20260917.md)
+using the recorded real trajectories, followed by the
+[first physical NEWTON success](../experiments/physical_typing_success_20260917.md).
+Preserve the measured scene as the physical reference; the adjusted effective
+scene is a separate dated candidate with its departures from measured datums
+disclosed. Fresh reserved-data qualification remains outstanding.
 
 ## Original recorded-trajectory workflow
 
@@ -157,6 +157,10 @@ diagnostic and does not pass; it was not required by the original July gate.
 The [selected pose, offsets and evidence](../experiments/scene_calibration_20260917.md)
 identify the passing `refined/` candidate. Both recordings were used for fitting;
 physical deployment is not established by this result.
+Subsequently, at **14:36 PDT on September 17**, a fresh policy trained in the
+selected September scene completed [physical NEWTON typing](../experiments/physical_typing_success_20260917.md)
+with its own fitted mapping. That single-trial result is separate from both
+the 93/93 fitting check and the historical 89/100 benchmark.
 The [cross-fit comparison](../experiments/scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits)
 records the recurring roughly -10-degree elbow correction and smaller positive
 lift/wrist-flex corrections, including the limits on transferring those values.
