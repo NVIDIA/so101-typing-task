@@ -22,6 +22,13 @@ example. Install `uv` before using `./so101 setup-hardware`.
 
 ## Workflow 1: train with your chosen configuration
 
+For physical typing, complete the
+[pre-training scene-validation plan](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene)
+before task training: base/keyboard datums, torque-off measured trajectories,
+fixed-scene joint mapping, separate-recording replay and physical contact checks.
+The recordings validate the scene; they are not policy training demonstrations.
+The short commands below are software checks that can run before hardware is ready.
+
 Copy `configs/tasks/keyboard-pose.json` to `configs/tasks/my-keyboard.json` and
 edit it for your intended physical layout. The first command below uses that
 nominal pose; the other commands illustrate alternative actuator/DR choices.
@@ -50,9 +57,10 @@ Sparse VBD is not exposed in this qualified interface.
 XY/yaw randomization and robot reset-joint noise. The benchmark physical fixture
 is a reference setup. Sampled pose perturbations are not supplied to the actor.
 
-For physical placement, use the [bird’s-eye measurement guide](../../FIXTURE_SETUP.md)
-and `./so101 fixture` to create the task JSON from Q/P/Z measurements. The helper
-needs only host Python 3 and works before building Docker.
+Use the [model layout guide](../../FIXTURE_SETUP.md) and `./so101 fixture` to draw
+the scene or fit a candidate task JSON from Q/P/Z measurements. It needs only host
+Python 3. Its fitted reference geometry is not a verified physical setup template;
+robot joint alignment and physical contacts need independent checks.
 
 ## Evaluate your training
 
@@ -97,8 +105,11 @@ Follow [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md): install the isolated 
 LeRobot environment, run the standard SO-101 follower calibration, export a
 checkpoint/geometry bundle, and run its software dry run before operator-enabled
 hardware execution. The bundle uses the trained nominal map, including changed
-keyboard geometry and custom physics contracts. Standard LeRobot coordinates and
-the benchmark robot's extra offsets are explicit, separate choices.
+keyboard geometry and custom physics contracts. For the released 19k checkpoint,
+export with the default `auto` mapping: the exact checkpoint/environment hashes
+select the original benchmark offsets. For new training, supply a measured joint
+fit or explicitly choose your verified mapping. Keep your robot's own LeRobot
+calibration and check physical/model alignment as described in the hardware guide.
 
 This software path has been tested locally. A new-user physical reproduction on
 a second SO-101 remains pending.

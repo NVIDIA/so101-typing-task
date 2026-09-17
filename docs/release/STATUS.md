@@ -3,8 +3,10 @@
 The configurable software pipeline is implemented and locally qualified through
 six-letter simulation, placement evaluation, export and CPU inference parity.
 See [measured results](RESULTS.md) and the [recipient record](REPRODUCTION.md).
-Independent installation and second-robot hardware reproduction remain pending.
-All new simulation runs use Newton MJWarp; no hardware motion was executed.
+Independent installation and complete second-robot typing remain pending.
+All new simulation runs use Newton MJWarp. Operator-run hardware checks on
+2026-09-15 restored reaching/contact after applying the historical joint mapping;
+they did not complete the requested six-letter sequence.
 
 | Requirement | Implemented and measured evidence | Remaining qualification |
 | --- | --- | --- |
@@ -12,11 +14,11 @@ All new simulation runs use Newton MJWarp; no hardware motion was executed.
 | Training | AnchorBench and USD save checkpoints and environment YAML; custom task/physics training and resume smoke tests pass; 64-environment, 10-update reference and DR runs pass | 501 P1A plus 50 Transit15 updates measured; wider seed/GPU coverage remains |
 | Released policy playback | 1021/1024 strict evaluation episodes passed in the fresh README walkthrough; recorded NVIDIA typing passed | Additional seeds, independent GPU/machine and interactive X11 viewer |
 | Physics choices | JSON solver settings and actuator parameters saved/restored with contract hashes | Sparse VBD is not supported by this interface |
-| Keyboard placement and DR | Nominal XYZ/yaw transform updates mesh and map; per-reset XY/yaw and joint noise; 3-reset probe preserved actor nominal map | Fixed-policy XY/yaw tolerance measured; physical and cross-physics robustness pending |
+| Keyboard placement and DR | Nominal XYZ/full orientation updates mesh and map; per-reset XY/yaw and joint noise; 3-reset probe preserved actor nominal map | Fixed-policy XY/yaw tolerance measured; physical and cross-physics robustness pending |
 | Staged recipe | Public P1A-to-Transit15 commands, output conventions and budget caveats documented | Short learned recipe qualified; optional 20,000-update budget not reproduced |
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
-| Deployment bundle | Saved nominal geometry, q_reset, normalization, IDs and artifact hashes exported; standard and moved-keyboard/custom-physics dry runs pass | Operator-run physical/model alignment and typing validation |
-| Reference fixture | Published Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Users measure their actual layout; benchmark reproduction requires matching its geometry |
+| Deployment bundle | Released 19k pair selects historical mapping automatically; new training requires explicit alignment; new exports pin local calibration | Complete physical/model alignment and typing validation |
+| Reference fixture | Model projections, Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Measured physical layout and contact correspondence; model dimensions alone are not ruler instructions |
 | Repository | [NVIDIA-dev/so101-keyboard-typing](https://github.com/NVIDIA-dev/so101-keyboard-typing) contains both documented workflows and the pinned runtime | Code publication does not establish physical qualification |
 
 Acceptance: a recipient can install, try a released checkpoint, train with the
@@ -29,12 +31,54 @@ Changed nominal placement and bounded pose randomization are supported. See
 [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md) and
 [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
 
+## Physical deployment follow-up
+
+On 2026-09-15, the operator reported that restoring the historical offsets with
+the same 19k policy resolved the new arm's reach/contact difficulty. Two recorded
+attempts completed N/V/I press, release and clearance, then pressed F while
+targeting D. The logs end in `wrong_key`, not success. Placement, remaining joint
+alignment, dynamics and contact differences have not been isolated.
+Local evidence: `output/so101_5B79015117_benchmark/runs/20260915T182653.769109Z_hardware.jsonl`
+and `20260915T190721.809010Z_hardware.jsonl` in the same directory. These used the
+original mat-trained `model_19000.pt`; the local no-mat `model_19996.pt` is separate.
+
+| Remaining release work | Completion evidence |
+| --- | --- |
+| Finish one guided robot/scene alignment workflow for both entry paths | A saved qualification result binds robot calibration, frozen fixture, joint mapping and jaw closure to passing representative physical press/release checks; deployment consumes that result |
+| Verify real/model alignment and fixture instructions | Measured physical poses and contacts across the keyboard, with the robot calibration and joint mapping recorded |
+| Complete the new-robot typing test | Exact press/release/clearance sequences and all attempted results retained |
+| Repeat the documented workflow independently | Another user/machine follows README and records installation, training/export and physical results |
+
+The software cleanup makes mapping selection explicit and reproducible. It does
+not complete these physical checks or establish a universal offset correction.
+
+Release review, 2026-09-16: physical alignment is currently a procedural check,
+not a required passing artifact consumed by deployment. Selecting the historical
+mapping from the released checkpoint/environment hashes establishes artifact
+identity, not compatibility with a new physical robot. The current robot's fitted
+mapping still fails separate recorded-contact replays, even with the keyboard
+frozen. It must remain diagnostic-only; another published offset vector would
+not complete the new-user workflow.
+
+The end-to-end release gate is the new SO-101 completing the documented setup
+procedure and repeated typing with a policy trained for its verified scene,
+followed by an independent recipient walkthrough. The historical ~19k policy
+remains an optional reference experiment with its original evidence. Users should
+receive one guided alignment procedure and a saved result, rather than needing to
+select experimental offsets or debug the model themselves. This qualification
+workflow is remaining work, not a claim that the current commands enforce it.
+
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 105 tests, 2 skipped, and 7 subtests (2026-09-15). They cover
+selected results. Host checks passed: 224 tests, 2 skipped, and 13 subtests (2026-09-16). They cover
 CLI/configuration validation, geometry
-transforms, deployment identity/hash checks, and the existing homing contracts.
+transforms, deployment identity/hash checks, mapping selection, calibration-file
+drift, measured-fit export, and the existing homing contracts. The released 19k
+pair was exported with automatic mapping and passed a CPU deployment dry run;
+the local no-mat pair and an existing public-training checkpoint passed with the
+explicitly selected historical mapping.
+These checks did not connect to hardware.
 The Newton container contract suite passes 37 tests.
 Randomly initialized smoke checkpoints are not expected to type successfully;
 their evaluation checks configuration restoration and execution only.
@@ -48,11 +92,11 @@ CPU-only PyTorch. Bundle dry runs do not open serial devices. The standard LeRob
 encoder convention is implemented; the additional historical benchmark joint
 corrections are not assumed to apply to other robots.
 
-## New policy evidence
+## Archived software-validation policy — 2026-09-11
 
 The new six-letter checkpoint passes 2027/2048 strict episodes, with 3 wrong-key
 and 18 scrape failures. NVIDIA video passes; CPU inference matches 261 recorded
-actions within 1.32e-6. Training is stopped. Metadata cleanup preserves historical
+actions within 1.32e-6. That short validation run was stopped. Metadata cleanup preserves historical
 weights and numerical results, with relative checksums and pinned downloads.
 Independent installation and physical typing remain pending.
 Contact qualification is also incomplete: peak simulated key travel is 1.579
@@ -145,10 +189,41 @@ can fill the next README command without interpreting Docker mount paths.
 
 Added an asset-derived bird’s-eye drawing, a side height schematic and the
 host-only `so101 fixture` command. Q/P/Z rim-centre measurements relative to a
-specified plastic-base datum produce the existing XYZ/yaw task JSON, a drawing
-and a residual/provenance report. Eight fixture tests cover reference recovery,
-parity with the training transform, units/axis/height inconsistency, input and
+specified plastic-base datum produce an XYZ/full-orientation task JSON, a drawing
+and a residual/provenance report. Measured tilt replaces the old scene rotation
+without modifying the keyboard asset. Fixture tests cover reference recovery,
+parity with the training transform, units/axis/dimension inconsistency, input and
 output protection, source geometry, drift rejection and operation without Docker.
 The 1 mm fit threshold is a measurement consistency limit, not measured policy
 robustness. Physical identification of these datums and second-robot contact
 validation remain pending. No calibration or robot motion was performed.
+
+A tabletop candidate using an absolute orientation passed the MJWarp probe:
+three resets, 50 zero-action steps and the bounded-action integration check.
+Maximum simulated mesh-to-target-map error was 0.191 mm. This checks simulator
+geometry consistency, not the accuracy of photo-based physical placement.
+
+## Source consolidation — 2026-09-16 PDT
+
+NVIDIA-dev is the canonical private development repository. The older public
+checkout remains the September 11 snapshot. The shared recorders and hardware
+probe wrappers require explicit robot/device/scene inputs; workstation shortcuts
+are preserved locally and excluded from source and Docker. Dated investigations
+are indexed separately from setup instructions. Their raw recordings are named
+as local evidence, not presented as downloadable repository links.
+
+The release check now scans new untracked files as well as tracked source, and
+checks local Markdown links against the distributed file set. Host regression
+checks pass with 224 tests, 2 skips and 13 subtests. This includes rejection of
+missing device identities and publication checks before staging files.
+Hardware testing remains paused; no new calibration or physical result is claimed.
+
+An extracted source snapshot with no Git metadata, hardware environment, local
+shortcuts or recordings passed the same host suite, Python compilation, source
+hygiene/link checks, fixture drawing and training command planning. The rebuilt
+public image passed a one-environment AnchorBench/Newton MJWarp reset/action
+probe on the frozen September scene, including 50 zero-action simulation steps.
+This is execution evidence, not new policy/contact or physical qualification.
+Logs and the pre-cleanup backup are local artifacts under
+`output/repo-consolidation/20260917T030340Z/`. Docker layers and host dependencies
+were reused; independent installation remains pending.

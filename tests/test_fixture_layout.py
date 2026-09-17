@@ -21,7 +21,9 @@ class FixtureTests(unittest.TestCase):
     def test_exact_reference_measurements_recover_saved_pose(self):
         task, report = fixture.fit(self.geometry, fixture.landmarks(self.geometry, {}))
         np.testing.assert_allclose(task['keyboard']['position_m'], self.geometry['reference_position_m'], atol=1e-14)
-        self.assertAlmostEqual(task['keyboard']['yaw_offset_deg'], 0)
+        for axis in ([1,0,0], [0,1,0], [0,0,1]):
+            np.testing.assert_allclose(rotate_xyzw(task['keyboard']['rotation_xyzw'],axis),
+                                      rotate_xyzw(self.geometry['reference_rotation_xyzw'],axis),atol=1e-14)
         self.assertLess(report['max_residual_mm'], 1e-10)
 
     def test_fit_matches_training_transform_including_height_and_yaw_pivot(self):
@@ -36,15 +38,33 @@ class FixtureTests(unittest.TestCase):
                         for k,p in zip(labels,moved)}
             fitted, _ = fixture.fit(self.geometry,measured)
             np.testing.assert_allclose(fitted['keyboard']['position_m'],target,atol=1e-13)
-            self.assertAlmostEqual(fitted['keyboard']['yaw_offset_deg'],yaw)
+            for key,point in fixture.landmarks(self.geometry,fitted).items():
+                np.testing.assert_allclose(point,measured[key],atol=1e-10)
 
-    def test_reject_units_mirrored_axis_and_inconsistent_height(self):
+    def test_full_orientation_fit_and_drawing_preserve_native_key_geometry(self):
+        # A level case retains the asset's native deck slope, replacing the old fitted tilt.
+        for angle in (-90, 0, 180):
+            task = {'keyboard': {'position_m':[.27,.02,.008],
+                                 'rotation_xyzw':[0,0,float(np.sin(np.radians(angle)/2)),float(np.cos(np.radians(angle)/2))]}}
+            measured = fixture.landmarks(self.geometry,task)
+            fitted,report = fixture.fit(self.geometry,measured)
+            np.testing.assert_allclose(fitted['keyboard']['position_m'],task['keyboard']['position_m'],atol=1e-14)
+            self.assertLess(report['max_residual_mm'],1e-10)
+            self.assertAlmostEqual(measured['Q'][2]-measured['Z'][2],4.332618525,places=6)
+            for key in self.geometry['keys']:
+                for point in key['outline_m']:
+                    np.testing.assert_allclose(fixture.transform(point,self.geometry,fitted),
+                                               fixture.transform(point,self.geometry,task),atol=1e-14)
+            self.assertIn('<svg',fixture.drawing(self.geometry,fitted))
+
+    def test_reject_units_mirrored_axis_and_inconsistent_dimensions(self):
         reference = fixture.landmarks(self.geometry,{})
         cases = [{k:[v/1000 for v in p] for k,p in reference.items()},
                  {k:[p[0],-p[1],p[2]] for k,p in reference.items()},
-                 {k:[p[0],p[1],p[2]+(5 if k=='Z' else 0)] for k,p in reference.items()}]
+                 {k:[p[0]+(5 if k=='Z' else 0),p[1],p[2]] for k,p in reference.items()},
+                 {k:reference['Q'] for k in reference}]
         for measured in cases:
-            with self.assertRaisesRegex(ValueError,'residual'):
+            with self.assertRaisesRegex(ValueError,'residual|mirrored|non-collinear'):
                 fixture.fit(self.geometry,measured)
 
     def test_blank_or_malformed_measurements_do_not_create_output(self):

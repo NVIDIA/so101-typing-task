@@ -13,6 +13,26 @@ from .constants import ARM_JOINT_NAMES
 from .robot import require_calibration
 from .fixed_cartesian_policy import (PHYSICAL_CALIBRATED_20260718_PROFILE, JOINT_RATE_LIMITS_RAD_S,
                                      FixedCartesianPolicy)
+from . import joint_calibration
+
+# Exact released checkpoint/environment pair; names and task labels are not identity.
+REFERENCE_PAIR = (
+    '239d93c99cd282e9add019f4ac952407c97fde2879821103a2aa7bd7a307a15f',
+    'd4766dacb28a4ffc0fc75efe8e5abed162e656b338b110e8d498cc808e31ef8b',
+)
+
+
+def resolve_convention(checkpoint_hash, environment_hash, requested):
+    if requested in ('lerobot', 'benchmark'):
+        return requested
+    if requested != 'auto':
+        raise ValueError('unknown encoder convention')
+    if (checkpoint_hash, environment_hash) == REFERENCE_PAIR:
+        return 'benchmark'
+    raise ValueError('No automatic joint mapping for this checkpoint/environment pair. '
+                     'After checking physical/model alignment, supply --joint-calibration FILE '
+                     'or explicitly select --encoder-convention lerobot or benchmark. '
+                     'Training does not measure your robot alignment.')
 
 
 def sha256(path):
@@ -26,7 +46,7 @@ def floats(value, length):
     return result
 
 
-def profile_from_environment(path, encoder_convention):
+def profile_from_environment(path, encoder_convention, measured_offsets=None):
     env = yaml.load(Path(path).read_text(), Loader=yaml.BaseLoader)
     if not isinstance(env, dict):
         raise ValueError('environment configuration must be a mapping')
@@ -41,9 +61,12 @@ def profile_from_environment(path, encoder_convention):
     q_reset = floats(cfg['q_reset_ref'],5)
     if q_reset != floats(action['q_reset_ref'],5):
         raise ValueError('action and observation reset references differ')
-    if encoder_convention not in ('lerobot', 'benchmark'):
+    if encoder_convention not in ('lerobot', 'benchmark', 'measured'):
         raise ValueError('unknown encoder convention')
-    offsets = (0.,)*5 if encoder_convention == 'lerobot' else PHYSICAL_CALIBRATED_20260718_PROFILE.joint_zero_offset_deg
+    if encoder_convention == 'measured':
+        offsets = floats(measured_offsets, 5)
+    else:
+        offsets = (0.,)*5 if encoder_convention == 'lerobot' else PHYSICAL_CALIBRATED_20260718_PROFILE.joint_zero_offset_deg
     points = tuple(floats(row,3) for row in cfg['letter_xyz_b_m'])
     if len(points) != 26:
         raise ValueError('requires the A-Z Cartesian map')
@@ -70,7 +93,15 @@ def validate_manifest(path, checkpoint, env_config, robot_id):
         raise ValueError('bundle robot_id differs from the selected LeRobot calibration ID')
     if sha256(checkpoint) != data.get('checkpoint_sha256') or sha256(env_config) != data.get('env_sha256'):
         raise ValueError('checkpoint/environment hash differs from prepared deployment bundle')
-    profile, env, stage = profile_from_environment(env_config, data['encoder_convention'])
+    offsets = None
+    if data['encoder_convention'] == 'measured':
+        offsets, digest = joint_calibration.load(Path(path).parent/'joint_calibration.json', robot_id)
+        if digest != data.get('joint_calibration_sha256'):
+            raise ValueError('measured joint calibration differs from prepared bundle')
+    if 'lerobot_calibration_sha256' in data:
+        if sha256(require_calibration(robot_id)) != data['lerobot_calibration_sha256']:
+            raise ValueError('LeRobot calibration changed since export; verify joint alignment and prepare a new bundle')
+    profile, env, stage = profile_from_environment(env_config, data['encoder_convention'], offsets)
     if json.loads(json.dumps(asdict(profile))) != data.get('profile'):
         raise ValueError('bundle geometry differs from the archived training environment')
     if env['task_contract'] != data.get('task_contract') or stage != data.get('stage'):
@@ -78,23 +109,37 @@ def validate_manifest(path, checkpoint, env_config, robot_id):
     return profile, data
 
 
-def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir):
+def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint_calibration_path=None):
     if not robot_id.strip():
         raise ValueError('robot_id must be nonempty and match the LeRobot calibration ID')
-    require_calibration(robot_id)
-    profile, env, stage = profile_from_environment(env_config, encoder_convention)
+    calibration_hash = sha256(require_calibration(robot_id))
+    offsets = calibration_digest = None
+    if joint_calibration_path:
+        if encoder_convention != 'auto':
+            raise ValueError('--joint-calibration and --encoder-convention cannot be combined')
+        offsets, calibration_digest = joint_calibration.load(joint_calibration_path, robot_id)
+        convention = 'measured'
+    else:
+        convention = resolve_convention(sha256(checkpoint), sha256(env_config), encoder_convention)
+    profile, env, stage = profile_from_environment(env_config, convention, offsets)
     policy = FixedCartesianPolicy(checkpoint)  # Validate supported checkpoint schema on CPU.
     out_dir.mkdir(parents=True, exist_ok=False)
     shutil.copy2(checkpoint, out_dir/'checkpoint.pt')
     shutil.copy2(env_config, out_dir/'env.yaml')
+    if joint_calibration_path:
+        shutil.copy2(joint_calibration_path, out_dir/'joint_calibration.json')
     for name in ('public_task.json','public_physics.json'):
         candidate = env_config.parent/name
         if candidate.is_file():shutil.copy2(candidate,out_dir/name)
     manifest = {'schema_version':1,'kind':'so101_typing_deployment_bundle','robot_id':robot_id,
-                'encoder_convention':encoder_convention,'profile':asdict(profile), 'stage':stage,
+                'encoder_convention':convention,'profile':asdict(profile), 'stage':stage,
                 'task_contract':env['task_contract'],'actuator_profile':env['actuator_profile'],
                 'checkpoint_sha256':policy.sha256,'env_sha256':sha256(env_config),
+                'lerobot_calibration_sha256':calibration_hash,
+                'mapping_selection':'measured' if joint_calibration_path else encoder_convention,
                 'hardware_validated':False}
+    if calibration_digest:
+        manifest['joint_calibration_sha256'] = calibration_digest
     (out_dir/'deployment.json').write_text(json.dumps(manifest,indent=2)+'\n')
     rest = {'schema_version':1,'kind':'so101_policy_rest_pose','robot_id':robot_id,
             'arm_joint_names':list(ARM_JOINT_NAMES),'closed_fixed_jaw_required':True,'contact_required':False,
@@ -110,14 +155,19 @@ def main():
     parser.add_argument('--checkpoint',type=Path,required=True)
     parser.add_argument('--env-config',type=Path,required=True)
     parser.add_argument('--robot-id',required=True)
-    parser.add_argument('--encoder-convention',choices=('lerobot','benchmark'),required=True)
+    mapping = parser.add_mutually_exclusive_group()
+    mapping.add_argument('--encoder-convention',choices=('auto','lerobot','benchmark'),default='auto')
+    mapping.add_argument('--joint-calibration',type=Path,help='Measured encoder-to-model fit from joint_calibration')
     parser.add_argument('--out-dir',type=Path,required=True)
     args=parser.parse_args()
     try:
-        prepare(args.checkpoint,args.env_config,args.robot_id,args.encoder_convention,args.out_dir)
+        manifest = prepare(args.checkpoint,args.env_config,args.robot_id,args.encoder_convention,args.out_dir,
+                           args.joint_calibration)
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
         parser.error(str(error))
-    print(args.out_dir.resolve())
+    print(f"Joint mapping: {manifest['encoder_convention']} ({manifest['mapping_selection']})")
+    print(f"Offsets (degrees): {manifest['profile']['joint_zero_offset_deg']}")
+    print(f'Deployment bundle: {args.out_dir.resolve()}')
 
 
 if __name__=='__main__': main()

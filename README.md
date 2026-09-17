@@ -1,9 +1,10 @@
 # SO-101 keyboard typing: train and deploy
 
 Train an SO-101 typing policy in Newton for your keyboard placement, evaluate it,
-and deploy using the geometry saved during training and your robot's LeRobot
-calibration. An established AnchorBench ~19k checkpoint is available as an
-**optional shortcut for the documented reference fixture**.
+and export it for deployment with your robot's calibration and a verified joint
+mapping. An established AnchorBench ~19k checkpoint is available for simulation
+and **physical reference-fixture experiments**. Complete physical reproduction
+on a new user's setup remains to be qualified.
 
 [Watch the typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4)
 in the [Anchor-Lab media collection](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/main/media).
@@ -18,6 +19,8 @@ The pinned container supplies Isaac Lab, Newton and RSL-RL.
 The tested GPU is an RTX 5090 with 32 GB; other GPUs and minimum requirements
 remain to be qualified. Runtime dependencies and benchmark artifacts are publicly
 available. No additional source checkout or cluster account is required.
+The NVIDIA-dev repository is currently private, so cloning it requires repository
+access. The runtime and artifact downloads themselves do not require that access.
 
 | Budget | Planning guidance |
 | --- | --- |
@@ -38,29 +41,41 @@ cd so101-keyboard-typing
 
 ## Workflow 1: train for your setup
 
-Choose the nominal keyboard position/orientation relative to the robot in
-simulation. Your physical fixture must match that trained geometry at deployment.
-The task JSON supports nominal XYZ/yaw and optional XY/yaw placement randomization.
-Start with the [bird’s-eye measurement guide](FIXTURE_SETUP.md) to translate ruler
-measurements into simulation coordinates. See [task configuration](docs/release/TASK_CONFIGURATION.md)
-for the JSON schema and randomization options.
+For physical typing, establish and validate the scene **before task training**:
+measure keyboard placement from datums on the robot base, freeze that placement,
+record torque-off hand-guided key presses, then replay the measured trajectories
+in Newton. These recordings are **scene/mapping validation data, not policy
+training demonstrations**. If needed, fit shoulder-pan/lift/elbow/wrist-flex
+offsets with the keyboard fixed and validate on separate recordings before
+adopting them. Follow the [pre-training plan](FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene),
+including policy-free physical contact checks.
+
+The nominal keyboard position/orientation is relative to the simulated robot.
+Your physical fixture must match that trained geometry at deployment.
+The task JSON supports nominal XYZ/full orientation and optional XY/yaw placement randomization.
+Use [task configuration](docs/release/TASK_CONFIGURATION.md) to choose a simulated
+layout. The [fixture helper](FIXTURE_SETUP.md) draws that model and can fit a
+candidate layout from measurements; it does not establish real-to-sim alignment.
 
 ```bash
-./so101 fixture --out-dir output/reference-fixture
-# Follow FIXTURE_SETUP.md; fill the blank template with your measured Q/P/Z coordinates.
-cp output/reference-fixture/measurement-template.json output/my-measurements.json
-# Edit output/my-measurements.json, then convert it:
-./so101 fixture --measurements output/my-measurements.json --out-dir output/my-fixture
-./so101 probe --task-config output/my-fixture/task.json
+cp configs/tasks/keyboard-pose.json configs/tasks/my-keyboard.json
+# Edit the nominal simulated pose, then draw and inspect it.
+./so101 fixture --task-config configs/tasks/my-keyboard.json --out-dir output/my-fixture
+./so101 probe --task-config configs/tasks/my-keyboard.json
 
 # Startup check; this budget is not intended to produce a deployable policy.
 ./so101 train --actuator anchorbench --stage p1a \
-  --task-config output/my-fixture/task.json --num-envs 64 --iterations 10
+  --task-config configs/tasks/my-keyboard.json --num-envs 64 --iterations 10
 ```
 
-For simulation-only exploration, you can use `configs/tasks/keyboard-pose.json`
-directly instead of measuring hardware. Draw it with `./so101 fixture --task-config
-configs/tasks/keyboard-pose.json --out-dir output/example-fixture`.
+The short startup check above can run before hardware is available; it does not
+qualify the scene for physical typing. Before task training, check the robot's
+joint mapping and keyboard contacts against this scene. Changing the task JSON
+does not measure either on hardware.
+Use the [shared F contact probe](FIXTURE_SETUP.md#shared-f-contact-probe) to generate
+one hover–press–lift trajectory, verify its contact in Newton, and replay the same
+joint commands on your calibrated robot. An FK calculation alone does not prove
+physical alignment; the physical F press and release are the comparison.
 
 Continue with the [P1A-to-six-letter training recipe](docs/release/TRAINING.md).
 Choose `anchorbench` or `usd` actuators. Optional `--physics-config`
@@ -87,21 +102,19 @@ a two-letter target for P1A checkpoints. Runs and videos are saved under `output
 ## Workflow 2: optionally try the established ~19k checkpoint
 
 This AnchorBench checkpoint was trained for a specific keyboard pose and fixed
-jaw. Simulation playback needs no physical robot. **Physical use requires matching
-its trained fixture geometry**, not placing the keyboard wherever convenient.
+jaw. Simulation playback needs no physical robot. The historical setup used the
+Logitech MX keyboard, closed moving jaw, fixed typing tip and a 4.44 mm keyboard
+mat. Its 89/100 physical six-letter result was measured on the original benchmark
+robot/fixture; it is not a new-robot success guarantee.
 
-| Reference-fixture requirement | Trained value |
-| --- | --- |
-| Keyboard CAD origin relative to robot model base | `(262.565, 12.135, 1.781) mm` |
-| CAD roll, pitch, yaw | `(-5.000, 0.051, -88.606) degrees` |
-| Physical measurement reference | Base datum D and Q/P/Z rim centres in [fixture guide](FIXTURE_SETUP.md) |
-| Keyboard and jaw | Reference Logitech MX geometry; fixed typing jaw, moving jaw closed |
-| Mat under keyboard | `4.44 mm` |
-
-CAD angles are not physical top-down yaw. Follow [FIXTURE_SETUP.md](FIXTURE_SETUP.md)
-for the authoritative quaternion, bird’s-eye drawing, signed measurements and height datum.
-The matching environment YAML is the checkpoint's source of truth. If your setup
-cannot match it, use workflow 1 to train for your intended placement.
+The scene's joint mapping and keyboard pose were calibrated from recorded IRL
+contacts and then frozen in the matching environment YAML. The [historical
+provenance record](docs/fixtures/historical_offset_provenance_20260718.md)
+documents the measured contacts, the rejected diagnostic fits, the locked
+contract, and its 78/78 direct replay gate. The [model drawing](FIXTURE_SETUP.md)
+shows that frozen scene; its dimensions are not physical ruler instructions.
+Physical use needs alignment checks, and moving the real keyboard does not update
+the policy's frozen map.
 
 ```bash
 ./so101 download
@@ -119,6 +132,9 @@ the supported-model benchmark/development artifacts. Existing downloaded files a
 **You perform standard LeRobot calibration on your own robot.** Calibration
 establishes encoder coordinates; it does not measure the keyboard pose. Do not
 copy another robot's calibration or assume its additional fitted offsets apply.
+For workflow 1, complete this setup before collecting the scene-validation
+recordings; reuse that calibration for deployment rather than recalibrating
+between validation and export.
 
 ```bash
 ./so101 setup-hardware
@@ -126,22 +142,26 @@ source .venv-hardware/bin/activate
 lerobot-calibrate --robot.type=so101_follower \
   --robot.port=/dev/serial/by-id/YOUR_CONTROLLER --robot.id=my_typing_robot
 
-./so101 prepare-deployment --checkpoint /absolute/path/to/model_N.pt \
-  --env-config /absolute/path/to/matching/env.yaml --robot-id my_typing_robot \
-  --encoder-convention lerobot --out-dir output/my_typing_robot
+# Workflow 2: the exact released checkpoint/environment pair selects its mapping automatically.
+./so101 prepare-deployment \
+  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
+  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
+  --robot-id my_typing_robot --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For workflow 2, supply the downloaded `model_19000.pt` and
-`configs/mjwarp-anchorbench-19k.env.yaml` paths above. For workflow 1, supply your
-own selected checkpoint and its `params/env.yaml`.
+For workflow 1, supply your selected checkpoint and its `params/env.yaml` plus
+the mapping verified for your robot/scene: `--joint-calibration FILE` for a measured
+fit, or an explicit `--encoder-convention lerobot|benchmark`. New training does
+not establish a physical joint mapping, so unknown artifact pairs cannot silently
+export with zero offsets. See [hardware preparation](docs/release/HARDWARE_PREPARATION.md).
 
-Export and the dry run both check that a readable LeRobot calibration file exists
-for your robot ID, without connecting to hardware. The last command is a software dry run. Match the physical fixture to the saved
-simulation geometry and check model/encoder alignment before enabling motion.
+Export and the dry run check your calibration without connecting to hardware;
+new bundles also reject changes to that calibration after export. The last
+command is a software dry run, not a physical alignment test.
 [The hardware guide](docs/release/HARDWARE_PREPARATION.md) provides the explicit
-operator-run execution command. `benchmark` encoder offsets are only for
-reproducing the historical robot's separately fitted convention.
+operator-run execution command and explains the joint offsets. Keep your own
+robot's LeRobot calibration and verify physical/model alignment before motion.
 
 ## Documentation and validation
 
@@ -150,6 +170,7 @@ reproducing the historical robot's separately fitted convention.
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) and [reference fixture](FIXTURE_SETUP.md)
 - [Software validation status](docs/release/STATUS.md) and [independent reproduction record](docs/release/REPRODUCTION.md)
 - [Benchmark artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark) and [runtime provenance](runtime/README.md)
+- [Development and release checks](docs/DEVELOPMENT.md); [dated investigation records](docs/experiments/README.md)
 
 Software execution and deployment dry runs have been tested locally. Physical
 reproduction on another user's SO-101 remains unverified. Development-training

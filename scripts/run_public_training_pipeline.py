@@ -12,11 +12,15 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
 import threading
 import time
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts/reinforcement_learning/rsl_rl'))
+from public_physics import load_config as load_physics_config
+from public_task import load_config as load_task_config
 
 
 def now():
@@ -47,10 +51,27 @@ def passes_gate(report, minimum):
     return 0 <= score <= 1 and score >= minimum
 
 
+def validated_inputs(args):
+    """Read validated inputs before creating a run or spending a training budget."""
+    inputs = {}
+    for kind, loader in (('task', load_task_config), ('physics', load_physics_config)):
+        source = getattr(args, kind + '_config', None)
+        if source is None:
+            continue
+        source = source.expanduser().resolve()
+        payload = source.read_bytes()
+        loader(source)
+        if source.read_bytes() != payload:
+            raise ValueError(f'{kind} configuration changed during validation: {source}')
+        inputs[kind] = (source, payload)
+    return inputs
+
+
 class Pipeline:
     def __init__(self, args):
         self.args = args
         self.root = args.out_dir.expanduser().resolve()
+        inputs = validated_inputs(args)
         revision = None
         if (ROOT / '.git').exists():
             revision = subprocess.check_output(
@@ -63,7 +84,17 @@ class Pipeline:
             'supervisor_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'configuration': {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
             'hardware_motion_enabled': False, 'stages': [],
+            'inputs': {},
         }
+        if inputs:
+            (self.root / 'inputs').mkdir()
+        for kind, (source, payload) in inputs.items():
+            snapshot = self.root / 'inputs' / f'public_{kind}.json'
+            snapshot.write_bytes(payload)
+            self.status['inputs'][kind + '_config'] = {
+                'source_path': str(source), 'snapshot_path': str(snapshot),
+                'sha256': hashlib.sha256(payload).hexdigest(),
+            }
         self.save()
         self.stop = threading.Event()
         self.monitor = threading.Thread(target=self.monitor_gpu, daemon=True)
@@ -90,6 +121,8 @@ class Pipeline:
         command = [str(ROOT / 'so101'), *map(str, arguments)]
         if simulation:
             command += ['--output-dir', str(run)]
+            if getattr(self.args, 'image', None):
+                command += ['--image', self.args.image]
         entry = {'name': name, 'command': command, 'started_at': now(), 'status': 'running'}
         self.status['status'] = 'running'
         self.status['active_stage'] = name
@@ -109,6 +142,10 @@ class Pipeline:
     def train(self, name, stage, iterations, checkpoint=None):
         command = ['train', '--actuator', 'anchorbench', '--stage', stage,
                    '--num-envs', self.args.num_envs, '--iterations', iterations, '--seed', self.args.seed]
+        for kind in ('task', 'physics'):
+            config = self.status['inputs'].get(kind + '_config')
+            if config:
+                command += ['--' + kind + '-config', config['snapshot_path']]
         if checkpoint:
             command += ['--checkpoint', checkpoint]
         return checkpoint_artifacts(self.run(name, command))
@@ -147,9 +184,11 @@ class Pipeline:
             self.video('06-transit15-video', 'transit15', transit, 'NVIDIA')
             if self.args.prepare_deployment and all(gates):
                 bundle = self.root / 'deployment'
+                mapping = (['--joint-calibration', self.args.joint_calibration] if self.args.joint_calibration
+                           else ['--encoder-convention', self.args.encoder_convention])
                 self.run('07-prepare-deployment', ['prepare-deployment', '--checkpoint', transit[0],
                     '--env-config', transit[1], '--robot-id', self.args.robot_id,
-                    '--encoder-convention', 'lerobot', '--out-dir', bundle], simulation=False)
+                    '--out-dir', bundle, *mapping], simulation=False)
                 self.run('08-deployment-dry-run', ['deploy', bundle, 'NVIDIA'], simulation=False)
             self.status['status'] = 'software_quality_gates_passed' if all(gates) else 'transit15_quality_gate_failed'
             self.status['final_checkpoint'] = str(transit[0])
@@ -181,6 +220,9 @@ def positive(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out-dir', type=Path, required=True)
+    parser.add_argument('--task-config', type=Path, help='Keyboard pose/DR JSON; copied into this run before training')
+    parser.add_argument('--physics-config', type=Path, help='Newton MJWarp JSON; copied into this run before training')
+    parser.add_argument('--image', help='Docker image for all simulation stages; defaults to the public CLI image')
     parser.add_argument('--num-envs', type=positive, default=4096)
     parser.add_argument('--eval-envs', type=positive, default=1024)
     parser.add_argument('--p1a-iterations', type=positive, default=4000)
@@ -189,14 +231,19 @@ def main():
     parser.add_argument('--minimum-success', type=float, default=0.90)
     parser.add_argument('--prepare-deployment', action='store_true', help='Requires ./so101 setup-hardware; performs dry run only')
     parser.add_argument('--robot-id', help='Your calibrated robot ID; required with --prepare-deployment')
+    mapping = parser.add_mutually_exclusive_group()
+    mapping.add_argument('--encoder-convention', choices=('lerobot', 'benchmark'), help='Verified mapping for your robot/scene')
+    mapping.add_argument('--joint-calibration', type=Path, help='Measured encoder-to-model fit for your robot')
     args = parser.parse_args()
     if args.prepare_deployment and not args.robot_id:
         parser.error('--prepare-deployment requires --robot-id for your calibrated robot')
+    if args.prepare_deployment and not (args.encoder_convention or args.joint_calibration):
+        parser.error('--prepare-deployment requires --encoder-convention or --joint-calibration for your verified alignment')
     if not 0 < args.minimum_success <= 1:
         parser.error('--minimum-success must be in (0, 1]')
     try:
         return Pipeline(args).execute()
-    except (OSError, subprocess.CalledProcessError, RuntimeError) as error:
+    except (OSError, subprocess.CalledProcessError, RuntimeError, ValueError) as error:
         parser.error(str(error))
 
 

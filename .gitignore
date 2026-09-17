@@ -2,10 +2,12 @@
 .artifacts/
 output/
 logs/
+local/
 
 # Python cache files.
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
 # Isolated deployment Python environment.
 .venv-hardware/

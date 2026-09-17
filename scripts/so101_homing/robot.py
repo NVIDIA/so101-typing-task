@@ -147,6 +147,14 @@ def connect_robot(
     robot.disconnect = disconnect_with_lock
     try:
         robot.bus.connect()
+        # This direct-bus path bypasses SOFollower.connect(), including its
+        # calibration check. Verify stored motor registers before any write so
+        # normalized readings really use the calibration selected for this robot.
+        if not robot.bus.is_calibrated:
+            raise ValueError(
+                f'Motor calibration registers do not match the LeRobot file for {robot_id!r}. '
+                'Read the calibration/register diagnostic before recalibrating; '
+                'no position or torque commands were sent.')
         if enable_torque:
             present = robot.bus.sync_read("Present_Position", list(ARM_JOINT_NAMES), normalize=True, num_retry=3)
             robot.bus.sync_write("Goal_Position", present, num_retry=3)

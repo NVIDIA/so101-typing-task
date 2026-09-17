@@ -4,6 +4,14 @@ The public entry point starts from scratch unless `--checkpoint` is supplied.
 P1A trains two-letter sequences. Transit15 trains six-letter sequences with the
 15 mm transit-clearance contract. Observation/action sizes remain 22/5.
 
+For a policy intended for hardware, first follow the
+[pre-training scene-validation plan](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene):
+measure base/keyboard datums, freeze placement, record torque-off key presses,
+fit any needed four-joint mapping, validate separate recordings and check physical
+FK contacts. Those recordings are calibration/validation evidence, not PPO
+training data. Keep the validated scene fixed throughout training. Short software
+checks below can run earlier and do not establish physical correspondence.
+
 ## Short validation
 
 ```bash
@@ -79,7 +87,7 @@ placeholders. The latest checkpoint still needs evaluation before deployment.
 
 ## Supervise the staged run
 
-For the default reference geometry, the host-side supervisor runs the same public commands sequentially and saves
+The host-side supervisor runs the same public commands sequentially and saves
 stage status, console logs, evaluation reports, videos and GPU samples. Run it
 inside a persistent terminal such as tmux for a long experiment:
 
@@ -98,7 +106,10 @@ stops before Transit15, and marks `status.json` for inspection.
 Transit15 is evaluated on 1024 episodes each with seeds 2307 and 3307. Export is
 skipped if either evaluation fails the quality gate. For the optional deployment
 step, run `./so101 setup-hardware` and calibrate your robot, then add
-`--prepare-deployment --robot-id YOUR_CALIBRATED_ID`. Export and dry-run preflight
+`--prepare-deployment --robot-id YOUR_CALIBRATED_ID` and your verified
+`--encoder-convention lerobot|benchmark` or `--joint-calibration FILE`. The
+supervisor rejects a missing mapping before training starts. Training does not
+measure the physical robot's coordinate alignment. Export and dry-run preflight
 require that calibration file; this step never executes hardware motion. Recorded videos still need visual review; scalar gates
 do not certify contact quality or sim-to-real transfer.
 
@@ -108,8 +119,15 @@ processes. Each stage has its own public CLI request and resolved training input
 For individual commands, `./so101 ... --output-dir NEW_DIRECTORY` selects an explicit
 output directory instead of the default timestamped location.
 
-For custom task/physics JSONs, use the explicit train/resume commands above; the
-supervisor currently exposes the reference configuration only. Short-run results
+To train a configured keyboard pose, add `--task-config configs/tasks/my-keyboard.json`
+to the supervisor command; `--physics-config FILE` optionally supplies MJWarp
+overrides. Without these options it uses the default reference configuration.
+Both files are validated before creating the output directory, copied into its
+`inputs/` directory, and used for both training stages. Editing the original files
+later does not change the running experiment. `status.json` records the original
+paths, snapshot paths and SHA-256 hashes. Evaluation and video use the matching
+checkpoint's saved `params/` configuration automatically. `--image IMAGE` selects
+the Docker image for every simulation stage. Short-run results
 are retained in [development validation](RESULTS.md), not as recommended policies.
 
 ## Disk, time and ownership

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-15",
+  "status": "frozen_physical_reference_candidate",
+  "robot_base": "base_so101_v2 plastic base, clamped flat to tabletop",
+  "keyboard": "Logitech MX Keys reference asset",
+  "placement": {
+    "position_m": [
+      0.2606351862725319,
+      0.0140614168264038,
+      0.0076366833485381
+    ],
+    "rotation_xyzw": [
+      0.0,
+      0.0,
+      -0.7074538725855443,
+      0.7067595193301018
+    ]
+  },
+  "constraints": [
+    "robot base and keyboard share the same tabletop",
+    "keyboard nearest long edge is parallel to the robot base front edge",
+    "robot base short right straight projects through the bottom-right corner of the right Ctrl key"
+  ],
+  "edge_gap_m": 0.1292,
+  "source": "fixture-photos-20260915 ctrl-line landmark review",
+  "mapping_status": "placement is frozen; encoder-to-model correspondence remains a separate validation"
+}

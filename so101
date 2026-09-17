@@ -55,7 +55,7 @@ def main():
     sub.add_parser('build', help='build the public runtime (requires Docker)')
     download = sub.add_parser('download', help='download the optional AnchorBench 19k checkpoint and matching contract')
     download.add_argument('--all', action='store_true', help='include the supported-model benchmark and development-validation artifacts')
-    fixture = sub.add_parser('fixture', help='draw the fixture or fit measured Q/P/Z key centres; no hardware or Docker')
+    fixture = sub.add_parser('fixture', help='draw the model or fit a candidate Q/P/Z layout; no physical alignment validation')
     fixture.add_argument('--out-dir', type=Path, required=True, help='new output directory')
     fixture_input = fixture.add_mutually_exclusive_group()
     fixture_input.add_argument('--measurements', type=Path, help='Q/P/Z [X,Y,Z] millimetres from the guide datum D')
@@ -65,7 +65,10 @@ def main():
     prep.add_argument('--checkpoint', type=Path, required=True)
     prep.add_argument('--env-config', type=Path, required=True)
     prep.add_argument('--robot-id', required=True)
-    prep.add_argument('--encoder-convention', choices=('lerobot', 'benchmark'), required=True)
+    mapping = prep.add_mutually_exclusive_group()
+    mapping.add_argument('--encoder-convention', choices=('auto', 'lerobot', 'benchmark'), default='auto',
+                         help='auto identifies the released 19k pair; explicit choices require verified physical/model alignment')
+    mapping.add_argument('--joint-calibration', type=Path, help='Measured encoder-to-model fit for your robot')
     prep.add_argument('--out-dir', type=Path, required=True)
     deploy = sub.add_parser('deploy', help='dry-run a deployment bundle; operator can opt in to hardware with --execute')
     deploy.add_argument('bundle', type=Path)
@@ -73,18 +76,23 @@ def main():
     deploy.add_argument('--execute', action='store_true')
     deploy.add_argument('--port')
     deploy.add_argument('--keyboard-device')
-    for operation in ('train', 'evaluate', 'play', 'video', 'probe'):
+    for operation in ('train', 'evaluate', 'play', 'video', 'probe', 'scene'):
         p = sub.add_parser(operation)
         p.add_argument('--actuator', choices=PROFILES, default='anchorbench')
         p.add_argument('--task-config', type=Path, help='Keyboard pose/DR JSON; restored from params/public_task.json')
         p.add_argument('--physics-config', type=Path, help='Newton MJWarp JSON; evaluation discovers params/public_physics.json automatically')
         p.add_argument('--solver', choices=['mjwarp'], default='mjwarp')
         p.add_argument('--stage', choices=STAGES, default='transit15')
-        p.add_argument('--num-envs', type=positive, default=1 if operation in ('play', 'video', 'probe') else 64)
+        p.add_argument('--num-envs', type=positive, default=1 if operation in ('play', 'video', 'probe', 'scene') else 64)
         p.add_argument('--seed', type=int, default=1307)
         p.add_argument('--plan', action='store_true', help='print command without executing or writing output')
         p.add_argument('--image', default=IMAGE)
         p.add_argument('--output-dir', type=Path, help='New directory for this run; must not already exist')
+        if operation == 'scene':
+            p.add_argument('--frames', type=int, default=0, help='Scene-only rendering; 0 stays open until the window closes')
+            p.add_argument('--zero-mapping', type=Path, help='Diagnostic four-joint report: compare arm-zero conventions in the viewer only')
+            p.add_argument('--zero-pose', choices=['usd', 'lerobot-direct', 'lerobot-fit'], default='usd',
+                           help='Initial zero-comparison pose; requires --zero-mapping')
         if operation == 'train':
             p.set_defaults(stage='p1a')
             p.add_argument('--checkpoint', type=Path, help='resume weights and optimizer from this checkpoint')
@@ -98,6 +106,11 @@ def main():
                            help='explicit fixed-policy reset robustness experiment; nominal actor map stays frozen')
         if operation in ('play', 'video'):
             p.add_argument('--target', help='letters to type; defaults to HE or NVIDIA for the selected stage')
+        if operation == 'probe':
+            p.add_argument('--physical-contact-target', metavar='LETTER',
+                           help='run the FK-planned simulated hover/press/release probe for one A-Z key')
+            p.add_argument('--contact-press-depth-m', type=float, default=0.005)
+            p.add_argument('--contact-hover-m', type=float, default=0.015)
     args = parser.parse_args()
     if args.command == 'fixture':
         from scripts.fixture_layout import create
@@ -114,7 +127,11 @@ def main():
         if args.command == 'prepare-deployment':
             command = [python, '-m', 'scripts.so101_homing.deployment_bundle', '--checkpoint', str(args.checkpoint.resolve()),
                        '--env-config', str(args.env_config.resolve()), '--robot-id', args.robot_id,
-                       '--encoder-convention', args.encoder_convention, '--out-dir', str(args.out_dir.resolve())]
+                       '--out-dir', str(args.out_dir.resolve())]
+            if args.joint_calibration:
+                command += ['--joint-calibration', str(args.joint_calibration.resolve())]
+            else:
+                command += ['--encoder-convention', args.encoder_convention]
         else:
             command = [python, '-m', 'scripts.so101_homing.deploy_bundle', str(args.bundle.resolve()), args.target]
             if args.execute: command += ['--execute']
@@ -173,18 +190,18 @@ def main():
             load_perturbation(args.perturbation_config)
         except (ValueError, OSError) as error:
             parser.error(str(error))
-    for name in ('checkpoint', 'env_config', 'physics_config', 'task_config', 'perturbation_config'):
+    for name in ('checkpoint', 'env_config', 'physics_config', 'task_config', 'perturbation_config', 'zero_mapping'):
         path = getattr(args, name, None)
         if path is not None:
             path = path.expanduser().resolve()
             if not path.is_file():
                 parser.error(f'{name} is not a file: {path}')
-            destination = '/inputs/' + {'checkpoint': 'checkpoint.pt', 'env_config': 'env.yaml', 'physics_config': 'physics.json', 'task_config': 'task.json', 'perturbation_config': 'perturbation.json'}[name]
+            destination = '/inputs/' + {'checkpoint': 'checkpoint.pt', 'env_config': 'env.yaml', 'physics_config': 'physics.json', 'task_config': 'task.json', 'perturbation_config': 'perturbation.json', 'zero_mapping': 'zero-mapping.json'}[name]
             cmd += ['--mount', f'type=bind,src={path},dst={destination},readonly']
             artifacts[name] = {'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
-    if args.command == 'play':
+    if args.command in ('play', 'scene'):
         if not os.environ.get('DISPLAY'):
-            parser.error('play requires DISPLAY and an accessible X11 display')
+            parser.error(f'{args.command} requires DISPLAY and an accessible X11 display')
         cmd += ['-e', 'DISPLAY=' + os.environ['DISPLAY'], '-e', 'NVIDIA_DRIVER_CAPABILITIES=all',
                 '-v', '/tmp/.X11-unix:/tmp/.X11-unix:ro']
         authority = os.environ.get('XAUTHORITY')
@@ -196,10 +213,31 @@ def main():
                 '--max_iterations', str(args.iterations), '--seed', str(args.seed), '--headless']
         if args.checkpoint:
             cmd += ['--resume', '--checkpoint', '/inputs/checkpoint.pt']
+    elif args.command == 'scene':
+        if args.num_envs != 1 or args.frames < 0:
+            parser.error('scene requires --num-envs 1 and --frames >= 0')
+        if args.zero_pose != 'usd' and not args.zero_mapping:
+            parser.error('--zero-pose requires --zero-mapping')
+        if args.zero_mapping and not args.task_config:
+            parser.error('--zero-mapping requires the matching --task-config')
+        cmd += ['-p', 'scripts/reinforcement_learning/rsl_rl/view_so101_scene.py',
+                '--task', task, '--seed', str(args.seed), '--frames', str(args.frames),
+                '--out', '/results/scene.json', '--visualizer', 'newton']
+        if args.zero_mapping:
+            cmd += ['--zero-mapping', '/inputs/zero-mapping.json', '--zero-pose', args.zero_pose]
     elif args.command == 'probe':
         cmd += ['-p', 'scripts/reinforcement_learning/rsl_rl/probe_so101_fixed_cartesian.py',
                 '--task', task, '--num-envs', str(args.num_envs), '--seed', str(args.seed), '--headless',
-                '--skip-logical-switch-probe', '--skip-physical-contact-probe']
+                '--skip-logical-switch-probe']
+        if args.physical_contact_target:
+            target = args.physical_contact_target.upper()
+            if len(target) != 1 or target not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+                parser.error('--physical-contact-target must be one A-Z letter')
+            cmd += ['--contact-target-label', target]
+            cmd += ['--contact-press-depth-m', str(args.contact_press_depth_m),
+                    '--contact-hover-m', str(args.contact_hover_m)]
+        else:
+            cmd += ['--skip-physical-contact-probe']
     else:
         cmd += ['-p', 'scripts/reinforcement_learning/rsl_rl/evaluate_so101_fixed_cartesian.py',
                 '--task', task, '--checkpoint', '/inputs/checkpoint.pt', '--env-config', '/inputs/env.yaml',

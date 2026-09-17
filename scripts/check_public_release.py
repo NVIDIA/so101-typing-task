@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import zipfile
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 PATTERNS = {
@@ -19,10 +20,12 @@ PATTERNS = {
 
 def source_files():
     if (ROOT / '.git').exists():
-        names = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
-        return [(ROOT / name, name) for name in names if name]
+        names = subprocess.check_output(
+            ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+            cwd=ROOT).decode().split('\0')
+        return [(ROOT / name, name) for name in sorted(set(names)) if name]
     # Source archives must not accidentally query a parent checkout or scan run outputs.
-    ignored = {'.git', '.artifacts', 'output', 'logs', '.venv-hardware', '__pycache__', '.pytest_cache'}
+    ignored = {'.git', '.artifacts', 'output', 'logs', 'local', '.venv-hardware', '__pycache__', '.pytest_cache'}
     files = []
     for directory, subdirectories, names in os.walk(ROOT):
         subdirectories[:] = [name for name in subdirectories if name not in ignored]
@@ -32,18 +35,38 @@ def source_files():
     return files
 
 
+def source_link_failures(files):
+    """Require local Markdown links to work from the distributed source alone."""
+    included = {path.resolve() for path, _ in files if path.is_file()}
+    failures = []
+    for path, relative in files:
+        if path.suffix != '.md' or not path.is_file():
+            continue
+        contents = path.read_text()
+        for match in re.finditer(r'\[[^\]\n]*\]\(([^)\n]+)\)', contents):
+            link = match.group(1).split(' "', 1)[0].strip('<>')
+            url = urlsplit(link)
+            if url.scheme or url.netloc or not url.path:
+                continue
+            target = (path.parent / unquote(url.path)).resolve()
+            if target not in included and not (target.is_dir() and any(p.is_relative_to(target) for p in included)):
+                line = contents.count('\n', 0, match.start()) + 1
+                failures.append(f'{relative}:{line}: local link not included in source')
+    return failures
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifact-dir', type=Path, help='also scan public bundle metadata and checkpoint pickle strings')
     args = parser.parse_args()
     files = source_files()
+    failures = source_link_failures(files)
     if args.artifact_dir:
         if not args.artifact_dir.is_dir():
             parser.error('artifact directory does not exist')
         files += [(path, 'artifacts/' + str(path.relative_to(args.artifact_dir)))
                   for path in args.artifact_dir.rglob('*')
                   if path.is_file() and '.cache' not in path.relative_to(args.artifact_dir).parts]
-    failures = []
     for path, relative in files:
         if not path.is_file():
             continue
@@ -62,7 +85,7 @@ def main():
         # Report locations only; never echo matched credentials or internal URLs.
         print('\n'.join(failures), file=sys.stderr)
         return 1
-    print('Public source check passed: no prohibited infrastructure, workstation paths or credential patterns.')
+    print('Public source check passed: tracked/new files are clean and local Markdown links resolve in the source bundle.')
     return 0
 
 

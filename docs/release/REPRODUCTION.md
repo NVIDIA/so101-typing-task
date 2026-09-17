@@ -14,8 +14,9 @@ the generated request, exit, evaluation and deployment logs with the result.
 4. For your own setup, run the staged recipe in [TRAINING.md](TRAINING.md), evaluate both seeds,
    and record initialization wall time separately from training-loop time.
 5. Install with `./so101 setup-hardware`, complete your robot's standard LeRobot
-   calibration, then export the policy under that same robot ID
-   with `--encoder-convention lerobot`, then dry-run deployment without `--execute`.
+   calibration, then export the policy under that same robot ID. The released
+   19k pair selects benchmark offsets automatically; new training requires a
+   measured fit or an explicit verified mapping. Dry-run without `--execute`.
 6. Compare the exported CPU actor to a recorded simulation trace using the
    parity command in [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
 

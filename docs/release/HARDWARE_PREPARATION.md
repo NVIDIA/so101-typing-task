@@ -3,8 +3,12 @@
 Use the standard [LeRobot SO-101 follower calibration](https://huggingface.co/docs/lerobot/so101).
 The robot ID used for calibration must be the same ID used for deployment.
 Calibration is performed by the user on their own robot. It establishes encoder
-coordinates; it does not locate the keyboard. A separate multi-pose calibration
-fit is not a mandatory setup step.
+coordinates; it does not locate the keyboard or prove agreement with the simulator.
+Physical deployment needs both a joint mapping and a matching keyboard layout.
+For a new physical layout, perform this setup before the
+[pre-training measured-trajectory checks](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene).
+Reuse the validated calibration at deployment; recalibration requires rechecking
+the mapping.
 
 ## Install and calibrate
 
@@ -29,10 +33,11 @@ rules; do not run the entire pipeline as root.
 ## Choose the physical layout
 
 [FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the published Logitech MX
-keyboard, closed jaw, fixed typing tip and reference mat. Its bird’s-eye and
-height drawings define physical measurement datums; `./so101 fixture` converts
-Q/P/Z measurements to a nominal task pose without accessing hardware. A clamp
-plate changes the height datum if it raises the plastic base.
+keyboard, closed jaw, fixed typing tip and reference mat. The bird’s-eye drawing
+projects the fitted simulator scene, whose dimensions are not verified physical
+ruler instructions. The height schematic explains a measurement convention.
+`./so101 fixture` fits a candidate XYZ/full-orientation pose and preserves the
+asset's built-in key geometry; it does not verify real-to-sim contact alignment.
 You can change the nominal keyboard position/yaw with a task JSON, retrain, and
 export that policy's geometry. You can also train over bounded XY/yaw placement
 variation and reset-joint noise. See [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md).
@@ -42,13 +47,21 @@ that physical keyboard does not update their training distribution. For your own
 trained policy, match the physical layout to its nominal task configuration and
 check that any placement variation is within the distribution you evaluated.
 
+For an FK sanity check, compute the fixed typing-tip position with
+`scripts/so101_homing/so101_kinematics.py` and compare it with the selected
+letter's `letter_xyz_b_m` in the matching environment. The two values share the
+robot-base frame when the task configuration, base datum, fixed tip and
+encoder-to-model mapping are the same. Agreement is necessary for a physical
+press but does not certify contact or key release.
+
 ## Export a deployment bundle
 
 ```bash
+# Released 19k reference: hashes identify the historical joint mapping automatically.
 ./so101 prepare-deployment \
-  --checkpoint /absolute/path/to/model_N.pt \
-  --env-config /absolute/path/to/params/env.yaml \
-  --robot-id my_typing_robot --encoder-convention lerobot \
+  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
+  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
+  --robot-id my_typing_robot \
   --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
@@ -60,8 +73,10 @@ The second command is a software dry run and does not open the robot.
 The bundle contains the checkpoint, its environment YAML, optional task/physics
 JSONs, nominal A-Z geometry, normalization, robot ID and a generated reset target.
 Its hashes and geometry are checked before the runner can connect to hardware.
-Calibration is checked again on each deployment, including bundles copied to
-another machine. This checks the saved calibration file, not physical alignment.
+New bundles record the LeRobot calibration hash and reject subsequent changes.
+Recalibration requires checking the mapping and exporting a new bundle. Legacy
+bundles still load under their explicitly recorded mapping; re-export to add this
+check. Calibration-file checks do not establish physical alignment.
 
 To check CPU inference against saved simulator actions, record a rollout with
 `./so101 video ... --trace-policy-actions 400`, then run:
@@ -76,14 +91,57 @@ This verifies the checkpoint hash, observation normalization and deterministic
 Beta actor output against the recorded simulation trace. It does not connect to
 hardware or establish encoder alignment.
 
-`lerobot` means standard calibrated arm degrees converted to simulator radians,
-with no additional fitted offsets. `benchmark` reproduces the additional
-encoder-to-model corrections used for the published robot. Those corrections are
-separate from LeRobot's motor calibration and are not a universal SO-101 property.
-Compare physical/model neutral poses and key alignment before a first rollout;
-if they disagree, correct the convention or setup rather than copying another
-robot's calibration. The offline `joint_calibration` fitter is an optional
-advanced diagnostic, not a prerequisite for this workflow.
+### Joint offsets: matching the simulated scene to IRL
+
+The dated convention and fixed-jaw mapping are recorded in
+[encoder/model mapping (2026-09-15)](../experiments/encoder_model_mapping_20260915.md).
+
+The July 18 scene was calibrated against timestamped powered physical key
+presses: A–Z, three times each. The final joint-angle mapping and keyboard pose
+form one frozen real-to-sim scene contract, validated by direct Newton replay of
+the measured trajectories (78/78 contacts). The archived diagnostic least-squares
+candidates were rejected on held-out geometry; they are not the source of the
+released vector. See the [historical offset provenance](../fixtures/historical_offset_provenance_20260718.md)
+for the full evidence chain. The offsets are separate from LeRobot motor
+calibration. Deployment applies the same mapping in both directions:
+
+```text
+Joint order: shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll
+Offsets (degrees): [0, +1.9336272481, -10.7735791533, +1.3647648917, 0]
+Read:    q_model = q_lerobot + offset
+Command: q_lerobot_target = q_model_target - offset
+```
+
+The default `--encoder-convention auto` recognizes only the exact released 19k
+checkpoint/environment hashes and chooses `benchmark`. `lerobot` adds no offsets;
+it is an explicit choice for a verified direct mapping or a controlled comparison.
+Omitting the fitted offsets changes the benchmark policy's commanded physical poses.
+Keep your robot's own LeRobot calibration and check physical/model alignment;
+these fitted values are not universal SO-101 constants.
+
+### Your trained policy or measured joint mapping
+
+New training does not measure your robot's encoder-to-model correspondence.
+Export rejects an unknown pair in `auto` mode. After checking several physical
+poses against the model, explicitly select `--encoder-convention lerobot` for
+zero offsets or `benchmark` for the historical fit if it matches your setup.
+
+For independently measured offsets, the existing offline fitter accepts your
+robot ID, ordered five-joint encoder/model angles at three or more poses, and a
+measurement reference for each pose:
+
+```bash
+.venv-hardware/bin/python -m scripts.so101_homing.joint_calibration \
+  output/pose-measurements.json --out output/joint-fit.json
+./so101 prepare-deployment --checkpoint /absolute/path/to/model_N.pt \
+  --env-config /absolute/path/to/params/env.yaml --robot-id my_typing_robot \
+  --joint-calibration output/joint-fit.json --out-dir output/my-trained-policy
+```
+
+See [the fitter's input fields](../../scripts/so101_homing/joint_calibration.py).
+This is an advanced measurement path, not automatic physical calibration. Export
+copies and hashes the fit evidence and uses the offsets for both feedback and
+commands, including the reset. It does not change the trained keyboard map.
 
 `rest_pose.json` is a software-derived reset target, not a claimed physical
 measurement. The runner measures actual joint arrival before starting the policy.
@@ -104,5 +162,6 @@ accessible. Begin with controlled validation and stop on unexpected motion or a
 wrong key. The runner enforces measured reset arrival and strict press/release
 judging. Logs are written to the bundle's `runs/` directory.
 
-Software preparation and dry runs have been tested. This new-user workflow has
-not yet been validated on a second physical SO-101.
+Software preparation and dry runs have been tested. [Second-robot evidence and
+remaining release work](STATUS.md#physical-deployment-follow-up) distinguish
+restored reaching/contact from complete typing reproduction.

@@ -13,6 +13,7 @@ import yaml
 from scripts.so101_homing.constants import ARM_JOINT_NAMES
 from scripts.so101_homing.fixed_cartesian_policy import JOINT_RATE_LIMITS_RAD_S
 from scripts.so101_homing.deployment_bundle import profile_from_environment, sha256, validate_manifest
+from scripts.so101_homing import deployment_bundle, joint_calibration
 
 
 class DeploymentBundleTests(unittest.TestCase):
@@ -88,7 +89,7 @@ class DeploymentBundleTests(unittest.TestCase):
                 hardware.assert_not_called()
 
     def environment(self):
-        return {'sim':{'dt':.01},'decimation':4, 'keyboard_profile':'mx_keys_powered_az_20260718',
+        return {'sim':{'dt':.01},'decimation':4, 'keyboard_profile':'mx_keys_powered_az_20260718', 'actuator_profile':'anchorbench',
                 'task_contract':'test_task','target_reference_sha256':'map','target_manifest_sha256':'source',
                 'commands':{'typing':{'q_reset_ref':[0]*5,'letter_xyz_b_m':[[.2+i*.001,.1,.01] for i in range(26)],
                     'target_xyz_mean_b_m':[.2,.1,.01],'target_xyz_std_b_m':[.01,.02,.001],'letter_length':[2,2]}},
@@ -133,3 +134,64 @@ class DeploymentBundleTests(unittest.TestCase):
             data=self.environment();data['sim']['dt']=.02
             path=Path(directory)/'env.yaml';path.write_text(yaml.safe_dump(data))
             with self.assertRaises(ValueError):profile_from_environment(path,'lerobot')
+
+    def test_auto_mapping_requires_exact_checkpoint_and_environment_pair(self):
+        checkpoint, environment = deployment_bundle.REFERENCE_PAIR
+        self.assertEqual(deployment_bundle.resolve_convention(checkpoint, environment, 'auto'), 'benchmark')
+        for pair in [('different', environment), (checkpoint, 'different')]:
+            with self.assertRaisesRegex(ValueError, 'No automatic joint mapping'):
+                deployment_bundle.resolve_convention(*pair, 'auto')
+        # Explicit zero-offset comparisons remain available; existing bundles are not rewritten.
+        self.assertEqual(deployment_bundle.resolve_convention(checkpoint, environment, 'lerobot'), 'lerobot')
+
+    def export_fixture(self, root, convention='lerobot', measured=None):
+        checkpoint = root/'model.pt'; checkpoint.write_bytes(b'test-checkpoint')
+        env = root/'env.yaml'; env.write_text(yaml.safe_dump(self.environment()))
+        calibration = root/'robot.json'; calibration.write_text('test-local-calibration')
+        with patch.object(deployment_bundle, 'require_calibration', return_value=calibration), \
+             patch.object(deployment_bundle, 'FixedCartesianPolicy') as policy:
+            policy.return_value.sha256 = sha256(checkpoint)
+            result = deployment_bundle.prepare(checkpoint, env, 'robot', convention, root/'bundle', measured)
+        return result, calibration
+
+    def test_unknown_auto_export_stops_before_writing_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, 'No automatic joint mapping'):
+                self.export_fixture(root, 'auto')
+            self.assertFalse((root/'bundle').exists())
+
+    def test_changed_motor_calibration_invalidates_new_bundle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data, calibration = self.export_fixture(root)
+            bundle = root/'bundle'
+            with patch.object(deployment_bundle, 'require_calibration', return_value=calibration):
+                validate_manifest(bundle/'deployment.json', bundle/'checkpoint.pt', bundle/'env.yaml', 'robot')
+                calibration.write_text('recalibrated')
+                with self.assertRaisesRegex(ValueError, 'LeRobot calibration changed'):
+                    validate_manifest(bundle/'deployment.json', bundle/'checkpoint.pt', bundle/'env.yaml', 'robot')
+            self.assertFalse(data['hardware_validated'])
+
+    def test_measured_mapping_exports_reset_and_revalidates_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            offsets = [0, 2, -11, 1, 0]
+            fit = joint_calibration.fit({'robot_id':'robot', 'arm_joint_names':list(ARM_JOINT_NAMES),
+                'samples':[{'encoder_deg':[q]*5, 'model_deg':[q+d for d in offsets],
+                            'measurement_reference':f'test-pose-{q}'} for q in (-15, 0, 20)]})
+            source = root/'measured.json'; source.write_text(json.dumps(fit))
+            data, calibration = self.export_fixture(root, 'auto', source)
+            bundle = root/'bundle'
+            self.assertEqual(data['encoder_convention'], 'measured')
+            rest = json.loads((bundle/'rest_pose.json').read_text())
+            self.assertEqual([rest['pose_deg'][j] for j in ARM_JOINT_NAMES], [-d for d in offsets])
+            with patch.object(deployment_bundle, 'require_calibration', return_value=calibration):
+                profile, _ = validate_manifest(bundle/'deployment.json', bundle/'checkpoint.pt', bundle/'env.yaml', 'robot')
+                self.assertEqual(profile.joint_zero_offset_deg, tuple(offsets))
+                # Altered measurement evidence is rejected even if the fitted offsets still agree.
+                copied = bundle/'joint_calibration.json'
+                fit['samples'][0]['measurement_reference'] = 'different-evidence'
+                copied.write_text(json.dumps(fit))
+                with self.assertRaisesRegex(ValueError, 'measured joint calibration differs'):
+                    validate_manifest(bundle/'deployment.json', bundle/'checkpoint.pt', bundle/'env.yaml', 'robot')

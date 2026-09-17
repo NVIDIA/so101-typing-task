@@ -16,14 +16,21 @@ def load_config(path):
     if type(data.get('schema_version')) is not int or data['schema_version'] != 1:
         raise ValueError('task configuration requires schema_version=1')
     keyboard = data.get('keyboard', {})
-    if not isinstance(keyboard, dict) or set(keyboard) - {'position_m', 'yaw_offset_deg'}:
-        raise ValueError('keyboard accepts position_m and yaw_offset_deg')
+    if not isinstance(keyboard, dict) or set(keyboard) - {'position_m', 'yaw_offset_deg', 'rotation_xyzw'}:
+        raise ValueError('keyboard accepts position_m and either yaw_offset_deg or rotation_xyzw')
     if 'position_m' in keyboard:
         position = keyboard['position_m']
         if not isinstance(position, list) or len(position) != 3 or not all(map(finite, position)):
             raise ValueError('position_m must contain three finite robot-base coordinates in metres')
     if not finite(keyboard.get('yaw_offset_deg', 0)):
         raise ValueError('yaw_offset_deg must be finite')
+    if 'rotation_xyzw' in keyboard:
+        rotation = keyboard['rotation_xyzw']
+        if 'yaw_offset_deg' in keyboard:
+            raise ValueError('use either absolute rotation_xyzw or relative yaw_offset_deg, not both')
+        if (not isinstance(rotation, list) or len(rotation) != 4 or not all(map(finite, rotation))
+                or abs(math.hypot(*rotation)-1) > 1e-6):
+            raise ValueError('rotation_xyzw must be a unit quaternion [x, y, z, w]')
     dr = data.get('domain_randomization', {})
     if not isinstance(dr, dict) or set(dr) - {'keyboard_x_m', 'keyboard_y_m', 'keyboard_yaw_deg', 'reset_joint_noise_rad'}:
         raise ValueError('unknown domain randomization field')
@@ -96,6 +103,11 @@ def nominal_geometry(position, rotation, points, keyboard):
     new_rotation = [k*x-h*y, k*y+h*x, k*z+h*w, k*w-h*z]
     local = [rotate_xyzw([-rotation[0],-rotation[1],-rotation[2],rotation[3]],
                          [a-b for a,b in zip(point, position)]) for point in points]
+    if 'rotation_xyzw' in keyboard:
+        new_rotation = keyboard['rotation_xyzw']
+        norm = math.hypot(*new_rotation)
+        new_rotation = [v/norm for v in new_rotation]
+        transformed = [[a+b for a,b in zip(new_position, rotate_xyzw(new_rotation, p))] for p in local]
     return list(new_position), new_rotation, transformed, local
 
 
@@ -108,6 +120,17 @@ def apply_config(env_cfg, data):
     state.pos, state.rot = tuple(position), tuple(rotation)
     plane = env_cfg.scene.plane.init_state
     plane.pos = (plane.pos[0], plane.pos[1], plane.pos[2]+position[2]-old_position[2])
+    if 'rotation_xyzw' in data.get('keyboard', {}):
+        # Absolute tilt changes the case's lowest point as well as its origin.
+        # Keep the horizontal support plane at the transformed case underside.
+        import numpy as np
+        asset_path = (Path(__file__).resolve().parents[3] / 'source/isaaclab_tasks/isaaclab_tasks/core/'
+                      'dexsuite/config/so101/keyboards/data/mx_keys/mx_keys_asset.npz')
+        with np.load(asset_path) as asset:
+            case = asset['case_points_0']
+        x, y, z, w = rotation
+        z_axis = np.array([2*(x*z-y*w), 2*(y*z+x*w), 1-2*(x*x+y*y)])
+        plane.pos = (plane.pos[0], plane.pos[1], position[2]+float((case @ z_axis).min()))
     cfg = env_cfg.commands.typing
     cfg.letter_xyz_b_m = tuple(tuple(p) for p in points)
     # Preserve the original coordinate normalization: changed position remains observable.

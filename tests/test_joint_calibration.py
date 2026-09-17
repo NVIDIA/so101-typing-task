@@ -38,3 +38,15 @@ class JointCalibrationTests(unittest.TestCase):
                 del data['samples'][0]['measurement_reference']
             with self.assertRaises(ValueError):
                 fit(data)
+
+    def test_malformed_measurements_and_artifacts_raise_readable_errors(self):
+        for data in (None, [], {**self.measurements(), 'samples': None},
+                     {**self.measurements(), 'samples': [None]*3}):
+            with self.assertRaises(ValueError):
+                fit(data)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'calibration.json'
+            for data in (None, []):
+                path.write_text(json.dumps(data))
+                with self.assertRaisesRegex(ValueError, 'JSON object'):
+                    load(path, 'test_robot')

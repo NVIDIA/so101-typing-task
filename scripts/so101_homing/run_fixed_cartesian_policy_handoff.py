@@ -102,8 +102,16 @@ def _emit_deployment_contract(
 ) -> None:
     summary["deployment_contract"] = deployment_contract
     append_jsonl(out, {"kind": "deployment_contract", **deployment_contract})
-    print("Deployment contract (all physical-wrapper behavior):")
-    print(json.dumps(deployment_contract, indent=2, sort_keys=True))
+    checkpoint = deployment_contract['checkpoint']
+    environment = checkpoint['training_environment'] or {}
+    adapter = deployment_contract['model_to_hardware']['joint_coordinate_adapter']
+    print(f"Policy: iteration {checkpoint['iteration']} | actuator {environment.get('actuator_profile')} "
+          f"| target {deployment_contract['target']}")
+    print(f"Checkpoint: {checkpoint['path']}")
+    print(f"Training scene: {environment.get('task_contract')}")
+    print(f"Joint offsets (degrees): {adapter['joint_zero_offset_deg']}")
+    print('On execution, operator confirmation precedes the trained reset and typing.')
+    print(f'Full deployment contract recorded in: {out}')
 
 
 def _model_joint_limit_contract() -> dict[str, list[float]]:
@@ -644,6 +652,8 @@ def main() -> int:
                 raise PolicyContractError('actuator profile differs from deployment bundle')
             summary['deployment_bundle_sha256'] = hashlib.sha256(args.deployment_config.read_bytes()).hexdigest()
             summary['encoder_convention'] = bundle['encoder_convention']
+            summary['lerobot_calibration_sha256'] = bundle.get('lerobot_calibration_sha256')
+            summary['joint_calibration_sha256'] = bundle.get('joint_calibration_sha256')
         startup_mode = _resolve_startup_mode(args, profile)
         rest_q_deg = load_rest_pose(args.rest_pose)
         _validate_rest_pose(rest_q_deg, profile)
@@ -704,7 +714,8 @@ def main() -> int:
         _emit_deployment_contract(out=out, summary=summary, deployment_contract=deployment_contract)
         if args.dry_run:
             summary["status"] = "dry_run_ready"
-            print(f"VERIFIED fixed-Cartesian {args.stage.upper()} software contract; no robot command was sent.")
+            print(f"Software dry run passed ({args.stage.upper()}); no robot command was sent. "
+                  "Physical alignment and typing are not tested by this check.")
             return 0
 
         resolved_port = resolve_robot_port(args.port)

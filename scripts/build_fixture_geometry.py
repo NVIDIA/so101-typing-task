@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 from pxr import Usd, UsdGeom
+from scipy.spatial import ConvexHull
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = 'source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/'
@@ -77,14 +78,14 @@ def main():
         corners = (corners @ deck.T + center) @ rot.T + position
         keys.append({'label': label, 'slot': manifest['slot_names'][i],
                      'rim_center_m': (rot @ rim + position).tolist(),
-                     'outline_xy_m': corners[:, :2].tolist()})
+                     'outline_m': corners.tolist()})
     cases = np.concatenate([asset['case_points_0'], asset['case_points_1']]) @ rot.T + position
     data = {'schema_version': 1, 'robot_usd_sha256': hashlib.sha256(args.robot_usd.read_bytes()).hexdigest(),
             'source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                               for p in (cfg, asset_path)},
             'reference_position_m': position.tolist(), 'reference_rotation_xyzw': quat,
             'datum_m': datum, 'base_outline_xy_m': hull(base[:, :2]),
-            'case_outline_xy_m': hull(cases[:, :2]), 'keys': keys}
+            'case_hull_m': cases[ConvexHull(cases).vertices].tolist(), 'keys': keys}
     args.output.write_text(json.dumps(data, separators=(',', ':')) + '\n')
 
 

@@ -2,6 +2,7 @@
 .artifacts
 output
 logs
+local
 __pycache__
 **/__pycache__
 .pytest_cache

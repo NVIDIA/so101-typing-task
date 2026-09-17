@@ -19,6 +19,20 @@ loader.exec_module(cli)
 
 
 class PublicCliTests(unittest.TestCase):
+    def test_export_defaults_to_auto_and_passes_measured_mapping_without_override(self):
+        args = ['so101', 'prepare-deployment', '--checkpoint', 'model.pt', '--env-config', 'env.yaml',
+                '--robot-id', 'robot', '--out-dir', 'bundle']
+        for extra in ([], ['--joint-calibration', 'measured.json']):
+            with patch.object(sys, 'argv', args+extra), patch.object(Path, 'is_file', return_value=True), \
+                 patch.object(cli.subprocess, 'call', return_value=0) as run:
+                self.assertEqual(cli.main(), 0)
+                command = run.call_args.args[0]
+                if extra:
+                    self.assertNotIn('--encoder-convention', command)
+                    self.assertIn(str((Path.cwd()/'measured.json').resolve()), command)
+                else:
+                    self.assertEqual(command[command.index('--encoder-convention')+1], 'auto')
+
     def test_archive_hygiene_scan_checks_source_without_parent_git_or_outputs(self):
         from scripts import check_public_release
         with tempfile.TemporaryDirectory() as directory:

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-120 -270 430 560" width="860" height="1120">
+  <title>SO-101 and MX Keys physical-reference bird's-eye view — 2026-09-15</title>
+  <desc>X points from the robot base toward the keyboard. Positive Y is left when standing behind the robot. Dimensions are millimetres from the front-base datum centreline D.</desc>
+  <style>
+    .axis{stroke:#1976a3;stroke-width:1.5}.dim{stroke:#555;stroke-width:1;fill:none}.outline{stroke:#334e68;stroke-width:2;fill:#d9e2ec}.keyboard{stroke:#7b2cbf;stroke-width:2;fill:#eadcf8}.datum{fill:#d94841;stroke:#7f1d1d;stroke-width:1}.key{fill:#f59e0b;stroke:#92400e;stroke-width:1}.label{font:9px sans-serif;fill:#102a43}.small{font:7px sans-serif;fill:#334e68}.title{font:bold 13px sans-serif;fill:#102a43}
+  </style>
+  <rect x="-120" y="-270" width="430" height="560" fill="white"/>
+  <text x="-110" y="-250" class="title">SO-101 / MX Keys physical reference</text>
+  <text x="-110" y="-236" class="small">2026-09-15 candidate · same tabletop · parallel base and keyboard edges</text>
+
+  <!-- Coordinates are X forward and Y left; SVG Y is drawn as -Y. -->
+  <polygon class="outline" points="-87,41 -50,55 -41,55 0,31 0,-31 -41,-55 -50,-55 -87,-41"/>
+  <circle class="datum" cx="0" cy="0" r="3"/>
+  <text x="5" y="-5" class="label">D: front-base datum / centreline</text>
+
+  <!-- Keyboard case: X=129.0..262.6, Y=-201.1..229.2 from D. -->
+  <rect class="keyboard" x="129" y="-229.2" width="133.6" height="430.3" rx="3"/>
+  <text x="138" y="-214" class="label">MX Keys case</text>
+  <text x="137" y="-202" class="small">current frozen physical-reference candidate</text>
+
+  <!-- Keycap-rim datums, measured from D. -->
+  <circle class="key" cx="201.2" cy="-186.4" r="3"/><text x="206" y="-183" class="label">Q</text>
+  <circle class="key" cx="201.0" cy="-15.3" r="3"/><text x="206" y="-12" class="label">P</text>
+  <circle class="key" cx="163.2" cy="-172.3" r="3"/><text x="168" y="-169" class="label">Z</text>
+
+  <!-- Axes -->
+  <line class="axis" x1="0" y1="0" x2="100" y2="0"/><text x="52" y="-5" class="label">+X forward</text>
+  <line class="axis" x1="0" y1="0" x2="0" y2="-70"/><text x="5" y="-62" class="label">+Y left</text>
+
+  <!-- Front gap: 129.0 mm -->
+  <line class="dim" x1="0" y1="72" x2="129" y2="72"/>
+  <line class="dim" x1="0" y1="67" x2="0" y2="77"/><line class="dim" x1="129" y1="67" x2="129" y2="77"/>
+  <text x="35" y="67" class="label">129.0 mm front gap</text>
+
+  <!-- Lateral gaps from base edges to case ends -->
+  <line class="dim" x1="-104" y1="55.5" x2="-104" y2="229.2"/>
+  <line class="dim" x1="-109" y1="55.5" x2="-99" y2="55.5"/><line class="dim" x1="-109" y1="229.2" x2="-99" y2="229.2"/>
+  <text x="-112" y="145" transform="rotate(-90 -112 145)" class="label">173.7 mm left-side gap</text>
+  <line class="dim" x1="286" y1="-201.1" x2="286" y2="-55.5"/>
+  <line class="dim" x1="281" y1="-201.1" x2="291" y2="-201.1"/><line class="dim" x1="281" y1="-55.5" x2="291" y2="-55.5"/>
+  <text x="294" y="-128" transform="rotate(90 294 -128)" class="label">145.6 mm right-side gap</text>
+
+  <text x="-110" y="265" class="small">Base-to-case gaps: left +Y side 173.7 mm; right -Y side 145.6 mm.</text>
+  <text x="-110" y="277" class="small">This drawing documents placement; it does not validate encoder/model mapping.</text>
+</svg>

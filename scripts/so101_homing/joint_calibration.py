@@ -19,15 +19,19 @@ def vector(value):
 
 
 def fit(data, maximum_residual_deg=0.5):
+    if not isinstance(data, dict):
+        raise ValueError('joint measurements must be a JSON object')
     if not isinstance(data.get('robot_id'), str) or not data['robot_id'].strip():
         raise ValueError('robot_id is required')
     if data.get('arm_joint_names') != list(ARM_JOINT_NAMES):
         raise ValueError('arm joint order must match the deployment contract')
     samples = data.get('samples', [])
-    if len(samples) < 3:
+    if not isinstance(samples, list) or len(samples) < 3:
         raise ValueError('at least three independently measured correspondence poses are required')
     differences = []
     for sample in samples:
+        if not isinstance(sample, dict):
+            raise ValueError('each correspondence pose must be a JSON object')
         if not sample.get('measurement_reference'):
             raise ValueError('each pose needs a measurement_reference identifying the jig/metrology evidence')
         model, encoder = vector(sample['model_deg']), vector(sample['encoder_deg'])
@@ -47,6 +51,8 @@ def fit(data, maximum_residual_deg=0.5):
 def load(path, robot_id):
     raw = Path(path).read_bytes()
     data = json.loads(raw)
+    if not isinstance(data, dict):
+        raise ValueError('joint calibration must be a JSON object')
     if data.get('kind') != 'so101_encoder_to_model_calibration' or data.get('schema_version') != 1:
         raise ValueError('unsupported joint calibration artifact')
     if data.get('robot_id') != robot_id:
@@ -63,11 +69,14 @@ def main():
     parser.add_argument('measurements', type=Path)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
-    result = fit(json.loads(args.measurements.read_text()))
-    # Never replace an existing calibration silently.
-    with args.out.open('x') as output:
-        json.dump(result, output, indent=2)
-        output.write('\n')
+    try:
+        result = fit(json.loads(args.measurements.read_text()))
+        # Never replace an existing calibration silently.
+        with args.out.open('x') as output:
+            json.dump(result, output, indent=2)
+            output.write('\n')
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        parser.error(str(error))
     print(args.out.resolve())
 
 

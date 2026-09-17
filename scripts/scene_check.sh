@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+if [[ "${1:-}" == replay ]]; then
+  authority="/run/user/$(id -u)/gdm/Xauthority"
+  if [[ -z "${XAUTHORITY:-}" && -f "$authority" ]]; then export XAUTHORITY="$authority"; fi
+fi
+exec "${SO101_LEROBOT_PYTHON:-$repo_root/.venv-hardware/bin/python}" \
+  -m scripts.so101_homing.scene_check "$@"

@@ -14,13 +14,16 @@ These short runs test setup. Increase the training budget for a learned policy.
 Use `./so101 probe --task-config FILE` to check reset stability, commanded action
 limits, and key-map alignment over several resets before training.
 
-## Physical measurements to nominal pose
+## Physical measurements to a candidate model pose
 
 Use the [bird’s-eye fixture guide](../../FIXTURE_SETUP.md) to identify the plastic
 base datum and measure Q/P/Z keycap rim centres in millimetres. The host-only
 `./so101 fixture --measurements FILE --out-dir NEW_DIR` command fits the supported
-XYZ/yaw transform and writes `task.json`, a drawing and a measurement report.
-It does not measure the robot, calibrate encoders or validate policy performance.
+XYZ translation and full orientation and writes `task.json`, a drawing and a
+measurement report. Measured tilt replaces the reference scene's fitted tilt;
+the asset's own key geometry stays intact. This produces
+a candidate simulation layout, not a validated physical setup. It does not
+measure the robot, calibrate encoders or validate contact alignment.
 `./so101 fixture --task-config FILE --out-dir NEW_DIR` draws an existing nominal
 configuration. Both commands work before the Docker image is built.
 
@@ -32,11 +35,19 @@ to the benchmark's orientation, about the keyboard CAD origin. It is not an
 absolute CAD yaw. The keyboard mesh and nominal 26-key target map are transformed
 together. A nominal height change also translates the support plane by that height.
 
+For a complete orientation, use `keyboard.rotation_xyzw`: an absolute unit
+quaternion `[x, y, z, w]` in the robot-base frame, mutually exclusive with
+`yaw_offset_deg`. The fixture measurement helper writes this field automatically.
+It replaces the old scene rotation, including its fitted roll/pitch. The native
+MX Keys asset already includes the deck slope; do not add that slope again as
+a scene rotation. With an absolute rotation, the horizontal support plane is
+set to the transformed case's lowest point.
+
 `configs/tasks/keyboard-pose.json` demonstrates a 10 mm X shift and 2 degree yaw
 offset. The policy keeps the existing 22-element observation and five arm actions.
 Its nominal target coordinates change; normalization and the joint reset reference
-stay fixed. Arbitrary nominal roll/pitch and vertical pose randomization are not
-exposed in this first interface.
+stay fixed. Nominal roll/pitch are supported through the absolute quaternion;
+vertical and tilt randomization are not exposed.
 
 ## Domain randomization
 
