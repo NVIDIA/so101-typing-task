@@ -17,6 +17,12 @@ Run `./so101 setup-hardware` and `./so101 build` before the steps below.
 
 ## Why recorded-motion calibration comes before training
 
+This follows the [original calibration and replay workflow](../fixtures/historical_offset_provenance_20260718.md#original-recorded-trajectory-workflow)
+used for the AnchorBench policy that achieved **89/100 physical six-letter trials**
+on the benchmark setup. That workflow selected the keyboard pose and joint offsets
+together, passed **78/78** reset-per-key replay checks, then used the frozen scene
+for training and the matching joint conversion for deployment.
+
 The policy uses a fixed keyboard map without vision, so physical typing depends
 on the real and simulated robot/keyboard relationship agreeing. Matching external
 datums is the starting point; recorded key presses test that correspondence.
