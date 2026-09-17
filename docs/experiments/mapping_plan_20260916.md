@@ -4,6 +4,11 @@
 
 ## Agreed pre-training workflow — 2026-09-16
 
+This section records the earlier offsets-only plan. The
+[September 17 revision](#trajectory-based-scene-alignment--2026-09-17) below
+expands the investigation to separately versioned effective scene candidates;
+the measured placement remains the reference.
+
 Use [the repository workflow](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene)
 as the sequence for physical typing. Our datum measurements and bird's-eye
 cross-checks establish the current placement reference; measured-trajectory
@@ -720,3 +725,70 @@ scene and calibration fixed; use no added offsets. Compare Q/G/P geometry with
 the torque-off recordings before attributing a difference to loading/compliance
 or fitting any correction. The [local procedure](leader_replay_20260916.md) keeps
 leader requests and follower goals separate from measured replay positions.
+
+### Trajectory-based scene alignment — 2026-09-17
+
+The historical benchmark used both an effective keyboard transform and joint
+offsets. It did not establish literal tabletop geometry independently. See the
+[historical/current pose comparison](../fixtures/historical_offset_provenance_20260718.md#effective-scene-versus-physical-placement--clarification-2026-09-17).
+The current offsets-only policy trials produced presses, dragging and a reported
+space-bar contact; the operator also reported failure without offsets. The
+30 mm clearance override is an unvalidated experiment, not a demonstrated fix.
+These observations do not uniquely identify the underlying error.
+
+Next work, not yet completed:
+
+1. Preserve the measured September scene, raw recordings, calibration and model
+   hashes. Keep torque-off and powered recordings identified separately. Replay
+   measured follower angles with their timestamps, not leader goals or commanded
+   positions. These recordings calibrate/validate the scene; they are not PPO or
+   imitation-learning training data.
+2. On fitting sessions, compare the unchanged scene with zero/historical/current
+   offsets, a keyboard-pose-only fit, and a combined rigid keyboard-pose plus
+   four-joint-offset fit. Keep wrist roll, asset scale and jaw geometry fixed for
+   this comparison. Use measured datums and their uncertainty to constrain pose;
+   report parameter bounds, correlated solutions and departures from measurements.
+   A solution needing tilt/height outside those bounds is an effective-model
+   diagnostic, not proof that the real keyboard was there. Do not overwrite the
+   physical-reference task or silently sink the keyboard through its support.
+3. Freeze each candidate and replay complete recordings excluded from fitting.
+   Compare intended down/up sequence, extra contacts including space/non-letter
+   keys, retraction/clearance and per-key residuals. Key events constrain contact;
+   encoder-only recordings do not independently measure the free-space jaw path.
+   Previously inspected validation sessions are regression evidence; reserve a
+   fresh session for final validation after selecting the approach.
+4. Check the chosen scene/mapping with policy-free physical Q/G/P commands and
+   measured tracking. A measured-pose replay pass alone does not prove powered
+   command tracking. Only then train/evaluate against that scene, or explicitly
+   evaluate an existing checkpoint as transfer if its trained scene differs.
+
+Offsets and keyboard pose may compensate for each other; this experiment seeks
+a consistent, validated operational model, not a unique mechanical diagnosis.
+No new scene fit, replay pass, physical qualification or deployment change is
+claimed by this plan.
+
+### First trajectory-fit result — 2026-09-17
+
+The first offline comparison used the mapping-collection recording from
+`20260916T220434.751544Z`. Its first occurrence of each A–Z pair was retained
+in a derived fit input; the raw recording was not modified. The later
+`mapping-validation` recording was kept as the comparison recording. Some of
+those key presses contain only two samples, so this is a relaxed diagnostic,
+not the normal three-sample contact gate.
+
+With the measured September keyboard pose held fixed, XY/yaw fitting after
+direct zero-offset replay produced approximately 19.9 mm fit error, 20.5 mm
+held-out error and 20.4 mm on the later comparison recording. Applying the
+historical joint offsets before the same pose fit produced 3.38 mm fit error,
+3.83 mm held-out error and 5.65 mm on the later comparison recording. The
+resulting historical-plus-pose candidate was approximately
+`[259.1, 26.0, 7.64]` mm asset origin with a `-87.46°` yaw. It is a diagnostic
+effective scene, not a new physical measurement or deployment mapping.
+
+The corresponding reports and task candidates are retained under
+`output/fixture-photos-20260915/trajectory-scene-alignment-20260917/`. Newton
+contact replay was not completed because the local runtime image fingerprint
+must be rebuilt after the current checkout changes. The residual reduction is
+therefore evidence that the combined historical mapping plus effective pose
+explains yesterday's measured trajectories better than either zero offsets or
+the frozen placement alone; it is not yet a policy or physical success result.

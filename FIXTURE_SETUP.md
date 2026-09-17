@@ -41,6 +41,15 @@ before inspecting validation results. The steps above are a documented workflow;
 the training CLI does not enforce them. Simulation-only installation checks can
 run earlier, but do not qualify a physical setup.
 
+**Current limitation, 2026-09-17:** fitting joint offsets with the September
+placement fixed has not achieved reliable physical typing. The historical 89%
+benchmark used both an effective keyboard pose and joint offsets; it was not
+proof of literal tabletop reconstruction. The next
+[trajectory-based alignment experiment](docs/experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17)
+compares pose-only, offsets-only and combined fits on separate scene candidates,
+with validation on recordings excluded from fitting. Preserve the measured
+placement as the reference; disclose any effective-model correction separately.
+
 Use [the alignment qualification workflow](docs/release/ALIGNMENT.md) to freeze
 one mapping, replay reserved measurements, test Q/G/P physically and export the
 passing evidence. Standard physical policy execution requires that evidence; the alignment guide also documents explicit supervised candidate experiments. The current

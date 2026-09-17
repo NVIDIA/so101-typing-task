@@ -278,12 +278,24 @@ qualification and its evidence are unchanged. The requested model_19998/fit4
 NEWTON dry run passed. Host checks pass with 251 tests, 2 skips and 13 subtests.
 No physical motion was performed during preparation.
 
-The first supervised model_19998 trials reached the intended key locally but
-scraped during lateral transit on the physical keyboard. The logs show that the
-trained 15 mm model-derived clearance advanced before the real jaw was clear of
-the neighboring keycaps. This is a transit-clearance issue in the unqualified
-candidate experiment, not new training evidence. The workstation launcher now
-accepts an experimental clearance override (default 30 mm) while preserving the
-trained policy and all wrong-key/timeout stops. Re-test only with the sweep
-clear and operator ready to stop power; do not treat a successful override run
-as alignment qualification.
+The first supervised model_19998 trials reached the intended key locally; the
+operator reported dragging during lateral transit. Logs record model-derived
+clearance advancement and subsequent wrong-key stops, but do not independently
+measure physical jaw clearance or isolate the cause. The workstation launcher
+accepts an experimental clearance override (default 30 mm). This changes phase
+transition timing relative to training, although checkpoint weights are unchanged.
+The operator subsequently reported a space-bar contact and failure in the
+zero-offset comparison. Neither the override nor offsets alone have demonstrated
+reliable physical typing on this layout.
+
+### Historical placement clarification and revised plan — 2026-09-17
+
+The historical 89% benchmark scene combined joint offsets with an effective
+keyboard transform, including -5 degrees roll; it was not an independently
+verified literal tabletop reconstruction. The
+[historical/current comparison](../fixtures/historical_offset_provenance_20260718.md#effective-scene-versus-physical-placement--clarification-2026-09-17)
+records the coordinates and provenance limits. The next
+[alignment experiment](../experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17)
+will compare offsets-only, pose-only and combined alignment using real measured
+trajectories and separate validation recordings. The measured September scene
+remains the reference. No adjusted scene or new hardware success is claimed.

@@ -27,6 +27,42 @@ The same dated contract fixed the keyboard pose at
 mapping are one frozen real-to-sim scene definition; neither is a per-key
 correction.
 
+## Effective scene versus physical placement — clarification 2026-09-17
+
+The historical scene underlying the 89% physical benchmark was an **effective
+contact alignment**, not an independently verified literal reconstruction of the
+tabletop. The original July calibration document explicitly says the effective
+rotation includes an "aggregate physical-to-model frame correction" and does not
+claim that the physical case was tilted by 5 degrees. Keyboard pose and joint
+offsets were selected together during that workflow; offsets alone were not the
+entire correction. The exact final fitter-output provenance remains limited as
+described below.
+
+| Simulator quantity | Historical July scene | September frozen physical-reference candidate |
+| --- | --- | --- |
+| Keyboard asset origin XYZ in robot-base frame, mm | 262.565 / 12.135 / 1.781 | 260.635 / 14.061 / 7.637 |
+| Asset transform roll / pitch / yaw, degrees | -5.000 / +0.051 / -88.606 | 0 / 0 / -90.056 |
+| Near case edge to front of plastic base, mm | 125.28 | 129.17 |
+
+XYZ locates the asset origin, not its underside or keycap surface; the asset
+already contains keyboard geometry and native slope. The historical effective
+pose can absorb model mismatch. Its successful replay does not separately prove
+correct physical placement, correct joint zeros, or correct jaw geometry.
+
+The current experiment instead held the measured September placement fixed and
+fitted four joint offsets. On September 17 the operator reported that this policy
+could press keys but dragged between keys, subsequently hit the space bar, and
+also failed with zero offsets. **Offsets alone on the current frozen placement
+have not demonstrated reliable physical typing.** These failures do not isolate
+encoder zero, placement, geometry, or tracking as the cause.
+
+The next proposed experiment is to use the recorded real trajectories to compare
+offset-only, pose-only, and combined pose/offset alignment, then validate the
+selected complete scene on separate recordings. Preserve the measured scene as
+the physical reference; any adjusted effective scene must be a separate dated
+candidate with its departures from measured datums disclosed. See the
+[dated experiment plan](../experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17).
+
 ## What was measured and tried
 
 1. The original fixed-jaw SO-101 pressed the powered A–Z fixture. Link

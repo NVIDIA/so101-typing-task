@@ -84,10 +84,12 @@ before lateral advance:
   --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
 ```
 
-This changes only the release/clearance transition gate. It does not alter the
-checkpoint, observations, actions, joint mapping or trained environment, and it
-must remain labelled an unqualified experiment until a separate physical
-alignment qualification succeeds.
+This changes the release/clearance transition gate relative to training. The
+checkpoint weights, observation format and joint mapping stay fixed, but phase
+timing changes and can therefore change observations and subsequent actions.
+It does not command a guaranteed vertical lift or guarantee clearance throughout
+lateral travel. The current physical trials have not established this override
+as a fix; it remains an unqualified experiment.
 
 ## 3. Replay reserved measured motion in simulation
 
