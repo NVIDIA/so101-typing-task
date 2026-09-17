@@ -29,7 +29,7 @@ Run these inside a separate development Python environment. Keep the pinned
 hardware environment unchanged.
 
 ```bash
-python3 -m pip install pytest==8.4.2 pytest-subtests==0.14.2 numpy==2.3.1 PyYAML==6.0.2
+python3 -m pip install pytest==8.4.2 pytest-subtests==0.14.2 numpy==2.3.1 scipy==1.17.0 PyYAML==6.0.2
 python3 scripts/check_public_release.py
 python3 -m compileall -q scripts source
 python3 -m pytest -q tests scripts/so101_homing/test

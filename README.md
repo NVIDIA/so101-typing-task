@@ -48,7 +48,7 @@ in Newton. These recordings are **scene/mapping validation data, not policy
 training demonstrations**. If needed, fit shoulder-pan/lift/elbow/wrist-flex
 offsets with the keyboard fixed and validate on separate recordings before
 adopting them. Follow the [pre-training plan](FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene),
-including policy-free physical contact checks.
+including [saved alignment qualification](docs/release/ALIGNMENT.md) and policy-free physical contact checks.
 
 The nominal keyboard position/orientation is relative to the simulated robot.
 Your physical fixture must match that trained geometry at deployment.
@@ -141,24 +141,34 @@ between validation and export.
 source .venv-hardware/bin/activate
 lerobot-calibrate --robot.type=so101_follower \
   --robot.port=/dev/serial/by-id/YOUR_CONTROLLER --robot.id=my_typing_robot
+```
 
-# Workflow 2: the exact released checkpoint/environment pair selects its mapping automatically.
+Complete the [alignment workflow](docs/release/ALIGNMENT.md) for your frozen
+scene. It produces `output/my-fixture/qualified/qualification.json` from reserved
+trajectory replay and physical Q/G/P checks. Then export and dry-run your policy:
+
+```bash
+# Workflow 2: released reference checkpoint, with your qualified physical mapping.
 ./so101 prepare-deployment \
   --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
   --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
-  --robot-id my_typing_robot --out-dir output/my_typing_robot
+  --robot-id my_typing_robot \
+  --alignment output/my-fixture/qualified/qualification.json \
+  --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For workflow 1, supply your selected checkpoint and its `params/env.yaml` plus
-the mapping verified for your robot/scene: `--joint-calibration FILE` for a measured
-fit, or an explicit `--encoder-convention lerobot|benchmark`. New training does
-not establish a physical joint mapping, so unknown artifact pairs cannot silently
-export with zero offsets. See [hardware preparation](docs/release/HARDWARE_PREPARATION.md).
+For workflow 1, replace the checkpoint and environment paths with your selected
+checkpoint and its `params/env.yaml`, retaining qualification for that scene.
+Training does not establish a physical joint mapping. For a software-only dry
+run, you may omit `--alignment`: the released pair selects its historical mapping;
+new training requires an explicit mapping as described in
+[hardware preparation](docs/release/HARDWARE_PREPARATION.md).
 
 Export and the dry run check your calibration without connecting to hardware;
-new bundles also reject changes to that calibration after export. The last
-command is a software dry run, not a physical alignment test.
+new bundles also reject changes to that calibration after export. Physical
+execution requires the qualified alignment. The final command above checks the
+software contract without moving the robot.
 [The hardware guide](docs/release/HARDWARE_PREPARATION.md) provides the explicit
 operator-run execution command and explains the joint offsets. Keep your own
 robot's LeRobot calibration and verify physical/model alignment before motion.
@@ -167,7 +177,7 @@ robot's LeRobot calibration and verify physical/model alignment before motion.
 
 - [Detailed quickstart](docs/release/QUICKSTART.md)
 - [Training](docs/release/TRAINING.md) and [task/physics configuration](docs/release/TASK_CONFIGURATION.md)
-- [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) and [reference fixture](FIXTURE_SETUP.md)
+- [Hardware preparation](docs/release/HARDWARE_PREPARATION.md), [alignment qualification](docs/release/ALIGNMENT.md) and [reference fixture](FIXTURE_SETUP.md)
 - [Software validation status](docs/release/STATUS.md) and [independent reproduction record](docs/release/REPRODUCTION.md)
 - [Benchmark artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark) and [runtime provenance](runtime/README.md)
 - [Development and release checks](docs/DEVELOPMENT.md); [dated investigation records](docs/experiments/README.md)

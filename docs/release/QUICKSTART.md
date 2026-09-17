@@ -102,14 +102,16 @@ artifact directory with `sha256sum -c DOWNLOAD_SHA256SUMS`.
 ## Both workflows: user calibration and deployment
 
 Follow [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md): install the isolated CPU
-LeRobot environment, run the standard SO-101 follower calibration, export a
-checkpoint/geometry bundle, and run its software dry run before operator-enabled
-hardware execution. The bundle uses the trained nominal map, including changed
-keyboard geometry and custom physics contracts. For the released 19k checkpoint,
-export with the default `auto` mapping: the exact checkpoint/environment hashes
-select the original benchmark offsets. For new training, supply a measured joint
-fit or explicitly choose your verified mapping. Keep your robot's own LeRobot
-calibration and check physical/model alignment as described in the hardware guide.
+LeRobot environment, run standard SO-101 follower calibration, and complete the
+[alignment qualification](ALIGNMENT.md) for your frozen scene. Export a bundle
+with `--alignment qualification.json` and run its software dry run before
+operator-enabled hardware execution. The bundle checks the trained nominal map,
+including changed keyboard geometry, against the qualified scene. Keep the same
+robot calibration throughout validation and deployment.
+
+For software-only dry runs, the released checkpoint/environment pair can still
+select its historical mapping automatically; new training requires an explicit
+mapping. Older bundles remain usable for those dry runs.
 
 This software path has been tested locally. A new-user physical reproduction on
 a second SO-101 remains pending.

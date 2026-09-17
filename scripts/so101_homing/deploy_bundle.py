@@ -7,7 +7,7 @@ import subprocess
 import sys
 import yaml
 from .robot import require_calibration
-from .deployment_bundle import validate_manifest
+from .deployment_bundle import validate_manifest, require_qualified_alignment
 
 
 def main():
@@ -30,6 +30,8 @@ def main():
         if not isinstance(data.get('actuator_profile'), str):
             raise ValueError('deployment.json requires an actuator_profile')
         require_calibration(data['robot_id'])
+        if a.execute:
+            require_qualified_alignment(data)
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
         p.error(str(error))
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')

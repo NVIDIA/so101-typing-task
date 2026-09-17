@@ -61,9 +61,9 @@ def profile_from_environment(path, encoder_convention, measured_offsets=None):
     q_reset = floats(cfg['q_reset_ref'],5)
     if q_reset != floats(action['q_reset_ref'],5):
         raise ValueError('action and observation reset references differ')
-    if encoder_convention not in ('lerobot', 'benchmark', 'measured'):
+    if encoder_convention not in ('lerobot', 'benchmark', 'measured', 'aligned'):
         raise ValueError('unknown encoder convention')
-    if encoder_convention == 'measured':
+    if encoder_convention in ('measured', 'aligned'):
         offsets = floats(measured_offsets, 5)
     else:
         offsets = (0.,)*5 if encoder_convention == 'lerobot' else PHYSICAL_CALIBRATED_20260718_PROFILE.joint_zero_offset_deg
@@ -94,6 +94,14 @@ def validate_manifest(path, checkpoint, env_config, robot_id):
     if sha256(checkpoint) != data.get('checkpoint_sha256') or sha256(env_config) != data.get('env_sha256'):
         raise ValueError('checkpoint/environment hash differs from prepared deployment bundle')
     offsets = None
+    alignment = None
+    if data['encoder_convention'] == 'aligned':
+        from .scene_alignment import load_qualified
+        qualification = Path(path).parent/'alignment/qualification.json'
+        if sha256(qualification) != data.get('alignment_sha256'):
+            raise ValueError('alignment qualification differs from prepared bundle')
+        alignment, _, _ = load_qualified(qualification, robot_id)
+        offsets = alignment['joint_zero_offset_deg']
     if data['encoder_convention'] == 'measured':
         offsets, digest = joint_calibration.load(Path(path).parent/'joint_calibration.json', robot_id)
         if digest != data.get('joint_calibration_sha256'):
@@ -106,15 +114,32 @@ def validate_manifest(path, checkpoint, env_config, robot_id):
         raise ValueError('bundle geometry differs from the archived training environment')
     if env['task_contract'] != data.get('task_contract') or stage != data.get('stage'):
         raise ValueError('bundle task or stage differs from training')
+    if alignment:
+        from .scene_alignment import validate_environment
+        validate_environment(alignment, profile, env)
     return profile, data
 
 
-def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint_calibration_path=None):
+def require_qualified_alignment(data):
+    if data.get('encoder_convention') != 'aligned' or not data.get('alignment_sha256'):
+        raise ValueError('Physical execution requires a qualified scene alignment. Complete reserved replay and Q/G/P probes, '
+                         'then re-export with --alignment qualification.json. Software dry runs remain available.')
+
+
+def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint_calibration_path=None, alignment_path=None):
     if not robot_id.strip():
         raise ValueError('robot_id must be nonempty and match the LeRobot calibration ID')
     calibration_hash = sha256(require_calibration(robot_id))
     offsets = calibration_digest = None
-    if joint_calibration_path:
+    alignment_data = evidence = None
+    if alignment_path:
+        if encoder_convention != 'auto' or joint_calibration_path:
+            raise ValueError('--alignment cannot be combined with other mapping selections')
+        from .scene_alignment import load_qualified, validate_environment
+        contract, alignment_data, evidence = load_qualified(alignment_path, robot_id)
+        offsets = contract['joint_zero_offset_deg']
+        convention = 'aligned'
+    elif joint_calibration_path:
         if encoder_convention != 'auto':
             raise ValueError('--joint-calibration and --encoder-convention cannot be combined')
         offsets, calibration_digest = joint_calibration.load(joint_calibration_path, robot_id)
@@ -122,12 +147,21 @@ def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint
     else:
         convention = resolve_convention(sha256(checkpoint), sha256(env_config), encoder_convention)
     profile, env, stage = profile_from_environment(env_config, convention, offsets)
+    if alignment_data:
+        validate_environment(contract, profile, env)
     policy = FixedCartesianPolicy(checkpoint)  # Validate supported checkpoint schema on CPU.
     out_dir.mkdir(parents=True, exist_ok=False)
     shutil.copy2(checkpoint, out_dir/'checkpoint.pt')
     shutil.copy2(env_config, out_dir/'env.yaml')
     if joint_calibration_path:
         shutil.copy2(joint_calibration_path, out_dir/'joint_calibration.json')
+    if alignment_data:
+        (out_dir/'alignment').mkdir()
+        shutil.copy2(alignment_path, out_dir/'alignment/qualification.json')
+        for name, source in evidence.items():
+            destination = out_dir/'alignment'/alignment_data['evidence'][name]['file']
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
     for name in ('public_task.json','public_physics.json'):
         candidate = env_config.parent/name
         if candidate.is_file():shutil.copy2(candidate,out_dir/name)
@@ -136,8 +170,12 @@ def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint
                 'task_contract':env['task_contract'],'actuator_profile':env['actuator_profile'],
                 'checkpoint_sha256':policy.sha256,'env_sha256':sha256(env_config),
                 'lerobot_calibration_sha256':calibration_hash,
-                'mapping_selection':'measured' if joint_calibration_path else encoder_convention,
+                'mapping_selection':'qualified_alignment' if alignment_data else 'measured' if joint_calibration_path else encoder_convention,
                 'hardware_validated':False}
+    if alignment_data:
+        manifest['alignment_sha256'] = sha256(alignment_path)
+        manifest['alignment_qualified'] = True
+        manifest['alignment_scope'] = alignment_data['scope']
     if calibration_digest:
         manifest['joint_calibration_sha256'] = calibration_digest
     (out_dir/'deployment.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -158,11 +196,12 @@ def main():
     mapping = parser.add_mutually_exclusive_group()
     mapping.add_argument('--encoder-convention',choices=('auto','lerobot','benchmark'),default='auto')
     mapping.add_argument('--joint-calibration',type=Path,help='Measured encoder-to-model fit from joint_calibration')
+    mapping.add_argument('--alignment', type=Path, help='qualified alignment with portable Q/G/P and replay evidence')
     parser.add_argument('--out-dir',type=Path,required=True)
     args=parser.parse_args()
     try:
         manifest = prepare(args.checkpoint,args.env_config,args.robot_id,args.encoder_convention,args.out_dir,
-                           args.joint_calibration)
+                           args.joint_calibration, args.alignment)
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
         parser.error(str(error))
     print(f"Joint mapping: {manifest['encoder_convention']} ({manifest['mapping_selection']})")

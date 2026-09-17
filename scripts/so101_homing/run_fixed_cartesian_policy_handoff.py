@@ -639,10 +639,14 @@ def main() -> int:
     rest_q_deg: np.ndarray | None = None
     try:
         _validate_args(args)
+        if not args.dry_run and not args.deployment_config:
+            raise PolicyContractError('Physical policy execution requires a deployment bundle with qualified alignment.')
         profile = deployment_profile(args.task_profile)
         if args.deployment_config:
-            from .deployment_bundle import validate_manifest
+            from .deployment_bundle import validate_manifest, require_qualified_alignment
             profile, bundle = validate_manifest(args.deployment_config, args.checkpoint, args.env_config, args.id)
+            if not args.dry_run:
+                require_qualified_alignment(bundle)
             if args.stage != bundle['stage']:
                 raise PolicyContractError('stage differs from deployment bundle')
             if args.expected_task_contract is not None and args.expected_task_contract != bundle['task_contract']:
@@ -654,6 +658,7 @@ def main() -> int:
             summary['encoder_convention'] = bundle['encoder_convention']
             summary['lerobot_calibration_sha256'] = bundle.get('lerobot_calibration_sha256')
             summary['joint_calibration_sha256'] = bundle.get('joint_calibration_sha256')
+            summary['alignment_sha256'] = bundle.get('alignment_sha256')
         startup_mode = _resolve_startup_mode(args, profile)
         rest_q_deg = load_rest_pose(args.rest_pose)
         _validate_rest_pose(rest_q_deg, profile)

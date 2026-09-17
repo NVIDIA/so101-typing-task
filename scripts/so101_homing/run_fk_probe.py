@@ -79,7 +79,10 @@ def execute(plan, path, args, calibration):
     from .policy_runtime import KeyboardMonitor, append_jsonl
     from .robot import connect_robot, prepare_closed_typing_jaw, read_arm_q_deg, send_typing_q_deg
     benchmark_offsets = bool(getattr(args, "benchmark_offsets", False))
-    if benchmark_offsets:
+    alignment = getattr(args, 'alignment_data', None)
+    if alignment:
+        offsets_deg = np.asarray(alignment['contract']['joint_zero_offset_deg'], dtype=float)
+    elif benchmark_offsets:
         from .fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG
         offsets_deg = np.asarray(PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG, dtype=float)
     else:
@@ -87,15 +90,19 @@ def execute(plan, path, args, calibration):
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     log = path.parent/"hardware"/(stamp+".jsonl")
     print(f"Robot: {args.robot_id}; {args.port}\nReplay: {path}\n"
-          f"{'Historical inverse joint offsets.' if benchmark_offsets else 'No extra joint offsets.'} "
+          f"Joint offsets (model = encoder + offset): {offsets_deg.tolist()} degrees. "
           f"{len(plan['rows'])*DT:.2f}s of saved commands after startup.\n"
           "Clear the sweep and keep motor power ready to stop. Esc or Ctrl-C stops commands; torque stays on.")
     print("Starting the supervised replay because --execute was provided.", flush=True)
     append_jsonl(log, {"kind": "header", "trajectory_sha256": digest(path),
                       "calibration_sha256": digest(calibration), "robot_id": args.robot_id,
                       "port": args.port, "keyboard_device": args.keyboard_device,
+                      "alignment_probe_schema": 1 if alignment else None,
+                      "alignment_contract_sha256": alignment['contract_sha256'] if alignment else None,
                       "joint_zero_offset_deg": offsets_deg.tolist(), "control_dt_s": DT})
     edges = []
+    clearance_ticks = 0
+    clearance_verified = False
     robot = None
     status = "aborted"
     try:
@@ -117,6 +124,7 @@ def execute(plan, path, args, calibration):
             prepare_closed_typing_jaw(robot)
 
             def step(q, phase, index):
+                nonlocal clearance_ticks, clearance_verified
                 start = time.monotonic()
                 events, stop = keyboard.poll()
                 for event in events:
@@ -132,6 +140,19 @@ def execute(plan, path, args, calibration):
                     raise KeyboardInterrupt("Esc")
                 measured_encoder = read_arm_q_deg(robot)
                 measured_model = measured_encoder + offsets_deg
+                gripper_percent = None
+                if alignment:
+                    from .scene_alignment import CLOSED_MAX_PERCENT, CLEARANCE_M, CLEARANCE_TICKS
+                    from .fk_probe_trajectory import tip
+                    gripper_percent = float(robot.bus.sync_read('Present_Position', ['gripper'], normalize=True,
+                                                               num_retry=0)['gripper'])
+                    if not 0 <= gripper_percent <= CLOSED_MAX_PERCENT:
+                        raise RuntimeError('moving jaw is not measured closed; stopping alignment probe')
+                    if edges == ['down', 'up'] and tip(np.deg2rad(measured_model))[2] >= plan['rim_xyz_b_m'][2]+CLEARANCE_M:
+                        clearance_ticks += 1
+                        clearance_verified |= clearance_ticks >= CLEARANCE_TICKS
+                    else:
+                        clearance_ticks = 0
                 if np.max(np.abs(np.rad2deg(q)-measured_model)) > 12:
                     raise RuntimeError("joint tracking error exceeds 12 degrees; stopping commands")
                 command_encoder = np.rad2deg(q) - offsets_deg
@@ -141,6 +162,7 @@ def execute(plan, path, args, calibration):
                                   "q_command_encoder_deg": command_encoder.tolist(),
                                   "q_measured_encoder_deg": measured_encoder.tolist(),
                                   "q_measured_model_deg": measured_model.tolist(),
+                                  "gripper_percent": gripper_percent,
                                   "joint_zero_offset_deg": offsets_deg.tolist()})
                 elapsed = time.monotonic()-start
                 if elapsed > .12:
@@ -172,12 +194,15 @@ def execute(plan, path, args, calibration):
                 raise RuntimeError(
                     f"motion finished, but {plan['letter']} down/up was not verified: {edges}"
                 )
+            if alignment and not clearance_verified:
+                raise RuntimeError('release lacks two measured 15 mm clearance ticks')
             status = "passed"
-            print("Physical F press and release verified; returned to shared start pose.")
+            print(f"Physical {plan['letter']} press and release verified; returned to shared start pose.")
     finally:
         if robot is not None:
             robot.disconnect()
-        append_jsonl(log, {"kind": "result", "status": status, "edges": edges})
+        append_jsonl(log, {"kind": "result", "status": status, "edges": edges,
+                          "clearance_verified": clearance_verified})
         print(f"Log: {log}")
     return 0
 
@@ -191,8 +216,10 @@ def main():
     parser.add_argument("--robot-id")
     parser.add_argument("--port")
     parser.add_argument("--keyboard-device")
-    parser.add_argument("--benchmark-offsets", action="store_true",
+    mapping = parser.add_mutually_exclusive_group()
+    mapping.add_argument("--benchmark-offsets", action="store_true",
                         help="apply the historical model-to-LeRobot inverse conversion")
+    mapping.add_argument('--alignment', type=Path, help='unqualified alignment.json for supervised mapping probes')
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--generate", action="store_true")
     mode.add_argument("--sim", action="store_true", help="replay in Newton viewer")
@@ -218,11 +245,23 @@ def main():
         from .robot import require_calibration, resolve_robot_port
         from .keyboard_events import _open_device
         calibration = require_calibration(args.robot_id)
+        if args.alignment:
+            from . import scene_alignment
+            args.alignment_data = scene_alignment.candidate(args.alignment, args.robot_id)
+            scene_alignment.check_plan(args.alignment_data['contract'], plan)
+            offsets = np.asarray(args.alignment_data['contract']['joint_zero_offset_deg'])
+            goals = np.rad2deg(np.asarray([plan['initial_q_rad']]+[r['q_rad'] for r in plan['rows']]))-offsets
+            limits = json.loads(calibration.read_text())
+            for i, name in enumerate(args.alignment_data['contract']['joint_order']):
+                half_span = (limits[name]['range_max']-limits[name]['range_min'])*180/4095
+                if np.max(np.abs(goals[:, i])) > half_span:
+                    raise ValueError(f'aligned trajectory exceeds calibrated {name} range')
         args.port = resolve_robot_port(args.port)
         device = _open_device(args.keyboard_device)
         device.close()
         if not args.execute:
-            mapping = "historical benchmark offsets" if args.benchmark_offsets else "direct LeRobot/model mapping"
+            mapping = f"unqualified alignment {args.alignment_data['contract_sha256']}" if args.alignment else \
+                "historical benchmark offsets" if args.benchmark_offsets else "direct LeRobot/model mapping"
             print(f"PREFLIGHT PASSED; no robot connection or motion.\nRobot: {args.robot_id}\n"
                   f"Calibration: {calibration}\nVerified trajectory: {path}\n"
                   f"SHA256: {digest(path)}\nMapping: {mapping}. Add --execute for physical replay.")

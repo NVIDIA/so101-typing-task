@@ -54,14 +54,28 @@ robot-base frame when the task configuration, base datum, fixed tip and
 encoder-to-model mapping are the same. Agreement is necessary for a physical
 press but does not certify contact or key release.
 
+## Qualify alignment for physical execution
+
+Follow [the alignment workflow](ALIGNMENT.md) to freeze a direct, historical or
+measured/fitted mapping, pass reserved measured-motion replay, and collect physical
+Q/G/P press, release and clearance evidence. `qualification.json` binds these
+checks to the robot calibration, fixture, model and closed jaw. The qualification
+is representative alignment evidence, not a policy success guarantee.
+
+Export with `--alignment output/my-fixture/qualified/qualification.json` to make
+a physical-capable bundle. The original mapping options below still support
+software export and dry runs; they do not bypass the qualification requirement.
+Existing bundles without this evidence must be re-exported before physical use.
+
 ## Export a deployment bundle
 
 ```bash
-# Released 19k reference: hashes identify the historical joint mapping automatically.
+# Released 19k reference after qualifying your physical alignment.
 ./so101 prepare-deployment \
   --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
   --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
   --robot-id my_typing_robot \
+  --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
@@ -73,6 +87,7 @@ The second command is a software dry run and does not open the robot.
 The bundle contains the checkpoint, its environment YAML, optional task/physics
 JSONs, nominal A-Z geometry, normalization, robot ID and a generated reset target.
 Its hashes and geometry are checked before the runner can connect to hardware.
+Qualified bundles copy and revalidate the replay/probe evidence at deployment.
 New bundles record the LeRobot calibration hash and reject subsequent changes.
 Recalibration requires checking the mapping and exporting a new bundle. Legacy
 bundles still load under their explicitly recorded mapping; re-export to add this
@@ -112,7 +127,8 @@ Read:    q_model = q_lerobot + offset
 Command: q_lerobot_target = q_model_target - offset
 ```
 
-The default `--encoder-convention auto` recognizes only the exact released 19k
+For software-only exports without `--alignment`, the default
+`--encoder-convention auto` recognizes only the exact released 19k
 checkpoint/environment hashes and chooses `benchmark`. `lerobot` adds no offsets;
 it is an explicit choice for a verified direct mapping or a controlled comparison.
 Omitting the fitted offsets changes the benchmark policy's commanded physical poses.
@@ -122,9 +138,10 @@ these fitted values are not universal SO-101 constants.
 ### Your trained policy or measured joint mapping
 
 New training does not measure your robot's encoder-to-model correspondence.
-Export rejects an unknown pair in `auto` mode. After checking several physical
-poses against the model, explicitly select `--encoder-convention lerobot` for
-zero offsets or `benchmark` for the historical fit if it matches your setup.
+For physical use, pass `--alignment` and supply your checkpoint and its matching
+`params/env.yaml`. For software-only export, unknown pairs are rejected in `auto`
+mode; explicitly select `--encoder-convention lerobot`, `benchmark`, or a measured
+joint fit. These choices do not qualify the mapping for hardware.
 
 For independently measured offsets, the existing offline fitter accepts your
 robot ID, ordered five-joint encoder/model angles at three or more poses, and a
@@ -149,6 +166,8 @@ The policy's q_reset reference remains fixed even when training randomizes reset
 arrival. The typing contact is the fixed jaw; the moving jaw must be closed.
 
 ## Operator-run deployment
+
+Use a bundle exported with qualified `--alignment` evidence:
 
 ```bash
 ./so101 deploy output/my_typing_robot NVIDIA --execute \

@@ -103,6 +103,24 @@ def load_recording(path):
     return data
 
 
+def load_alignment_candidate(recording, path, task):
+    """Simulation-side identity check; live calibration is checked on the host."""
+    from .scene_alignment import fingerprint
+    data = json.loads(path.read_text())
+    if data.get('schema_version') != 1 or data.get('kind') != 'so101_alignment_candidate' or data.get('status') != 'unqualified':
+        raise ValueError('expected an unqualified alignment candidate')
+    c = data['contract']
+    if fingerprint(c) != data.get('contract_sha256') or c.get('task_config') != task:
+        raise ValueError('alignment contract or replay scene changed')
+    for field in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256'):
+        if c.get(field) != recording.get(field):
+            raise ValueError(f'alignment differs from recording: {field}')
+    if c.get('joint_order') != list(JOINT_NAMES[:5]):
+        raise ValueError('alignment joint order changed')
+    return validate_mapping_offsets(c['joint_zero_offset_deg']).tolist(), {
+        'alignment_contract_sha256': data['contract_sha256'], 'diagnostic_only': True}
+
+
 def capture(robot, keyboard, *, seconds, hz, stream):
     """The only motor writes are disabling torque. No goal or enable-torque writes."""
     robot.bus.disable_torque(list(JOINT_NAMES), num_retry=3)
@@ -203,10 +221,13 @@ def main():
     parser.add_argument("--mapping-report", type=Path,
                         help="replay only: use an unapproved diagnostic mapping report in simulation")
     parser.add_argument("--mapping-candidate", help="candidate name from --mapping-report")
+    parser.add_argument('--alignment', type=Path, help='replay only: frozen alignment candidate from ./so101 alignment prepare')
     parser.add_argument("--replay-task-config", type=Path,
                         help="replay only: test a different keyboard pose and save separate placement outputs")
     args = parser.parse_args()
     try:
+        if args.alignment and (args.mapping_report or args.mapping_candidate or args.benchmark_offsets):
+            parser.error('--alignment cannot be combined with other mapping selections')
         if bool(args.mapping_report) != bool(args.mapping_candidate):
             parser.error("--mapping-report and --mapping-candidate are required together")
         if args.mapping_report and args.benchmark_offsets:
@@ -218,6 +239,8 @@ def main():
         if not 1 <= args.seconds <= 600 or not 10 <= args.hz <= 100:
             parser.error("--seconds must be 1..600 and --hz must be 10..100")
         if args.mode == "record":
+            if args.alignment:
+                parser.error('--alignment is only for replay; recordings preserve measured angles')
             missing = [name for name in ('robot_id', 'port', 'keyboard_device', 'task_config') if not getattr(args, name)]
             if missing:
                 parser.error('record requires ' + ', '.join('--'+name.replace('_', '-') for name in missing))
@@ -245,7 +268,20 @@ def main():
         simulation_options = {}
         if args.headless:
             simulation_options["headless"] = True
-        if args.replay_task_config:
+        if args.alignment:
+            from .scene_alignment import candidate
+            from scripts.reinforcement_learning.rsl_rl.public_task import load_config
+            candidate(args.alignment, recording['robot_id'])
+            task = load_config(args.replay_task_config) if args.replay_task_config else recording['task_config']
+            _, mapping = load_alignment_candidate(recording, args.alignment, task)
+            folder = f"alignment-{mapping['alignment_contract_sha256'][:12]}"
+            destination = path.parent/folder
+            destination.mkdir(parents=True, exist_ok=False)
+            (destination/'task.json').write_text(json.dumps(task, indent=2)+'\n')
+            extra_args += ['--alignment', '/alignment.json', '--task-config', f'/results/{folder}/task.json']
+            simulation_options['read_only_mounts'] = [(args.alignment.resolve(), '/alignment.json')]
+            report_name = f'{folder}/scene-report.json'
+        elif args.replay_task_config:
             from scripts.reinforcement_learning.rsl_rl.public_task import load_config
             task = load_config(args.replay_task_config)
             if args.mapping_report:

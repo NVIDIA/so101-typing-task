@@ -32,7 +32,7 @@ contacts is a reason to resolve the model/mapping before task training.
 | 1. Measure and freeze placement | Match base-to-keyboard datums, parallel edges, lateral alignment and support plane using the guide below. Keep the keyboard, base and fixed jaw fixed. | Dated measurements, bird's-eye drawing and the exact task JSON; ruler agreement alone does not verify arm FK. |
 | 2. Record real motion | Calibrate this robot with LeRobot, then use the Python recorder with torque off. Hand-guide the fixed jaw through complete presses/releases across A–Z. Collect a separate repeat reserved for validation. | Measured follower angles, timestamps and USB key edges; robot/calibration/model identities. No policy or commanded trajectory is used. |
 | 3. Check and fit the mapping | Replay direct angles first. If a correction is needed, jointly fit constant offsets for shoulder pan, shoulder lift, elbow flex and wrist flex on the fit recording only. Hold wrist roll, jaw geometry and keyboard placement fixed. | Zero/historical baselines, four-joint candidate, per-key residuals and sensitivity to samples. Do not move the keyboard to absorb a joint discrepancy. |
-| 4. Validate without refitting | Replay the reserved recording with the candidate frozen. Inspect the jaw path, intended key down/up, missed/extra keys and worst-case residuals. | Correct contacts across the reserved coverage, with any mismatch explained; an average FK error or attractive viewer alone is insufficient. A retuned candidate needs new withheld data. |
+| 4. Validate without refitting | Replay the reserved recording with the candidate frozen. Inspect the jaw path, intended key down/up, missed/extra keys and worst-case residuals. | An exact press/release sequence across the reserved coverage; an average FK error or attractive viewer alone is insufficient. A retuned candidate needs new withheld data. |
 | 5. Verify physical commands | Test policy-free hover/press/release at separated keys such as Q/G/P, one at a time, with the same mapping inverted on hardware writes. | Physical key down/up, no unintended contacts and measured tracking/clearance logs. This checks the commanded-motion direction separately from measured-pose replay. |
 | 6. Train and deploy | Train in the validated model scene, evaluate early, then export its matching environment and verified mapping. | Saved scene/model/calibration/mapping identities plus the separate policy evaluation and hardware evidence. |
 
@@ -41,13 +41,11 @@ before inspecting validation results. The steps above are a documented workflow;
 the training CLI does not enforce them. Simulation-only installation checks can
 run earlier, but do not qualify a physical setup.
 
-**Current limit:** recording, simulation replay and diagnostic fitting are
-implemented. Promoting a contact-fitted candidate into the physical probe and
-requiring a saved passing alignment result at deployment remain unfinished.
-The latest reserved replay improved to 32/33 intended contacts but still had an
-extra contact and a miss. See [the investigation status](docs/experiments/README.md).
-These tools support diagnosis; they do not yet constitute a qualified automatic
-alignment procedure for a new robot.
+Use [the alignment qualification workflow](docs/release/ALIGNMENT.md) to freeze
+one mapping, replay reserved measurements, test Q/G/P physically and export the
+passing evidence. Physical policy execution requires that evidence. The current
+development robot's reserved replay still has an extra contact and a miss, so
+its fitted mapping remains unqualified. See [the investigation status](docs/experiments/README.md).
 
 ![Simulator projection with CAD base datum and model Q/P/Z landmarks](docs/fixtures/reference-birdseye.svg)
 
@@ -281,11 +279,12 @@ Use a new output directory for each analysis. This fitter averages FK over each
 down/up interval and assumes centre contact at full 1.8 mm travel; it does not
 implement the later stable-window selection used for the September powered-data
 fit. Preserve the method with each report rather than comparing coefficients
-without their sampling assumptions. The report is diagnostic and cannot be used
-as a deployment calibration. The shared physical probe below currently accepts
-direct or historical conversion only; support for a newly validated four-joint
-candidate remains a workflow integration step. Do not substitute historical
-offsets when testing that new candidate.
+without their sampling assumptions. The fit report remains diagnostic. Use
+`./so101 alignment prepare --mapping-report ... --mapping-candidate fit4` to freeze
+it as an unqualified candidate. Replay reserved motion and run the physical
+probes with the same `--alignment` file. Only passing evidence packaged by
+`./so101 alignment qualify` can authorize physical policy deployment; see
+[the full commands](docs/release/ALIGNMENT.md).
 
 ### Earlier placement-fitting diagnostic
 
@@ -339,8 +338,10 @@ hardware preflight requires its passing report and matching trajectory hash.
 Omit `--execute` for preflight without a motor connection. The default probe uses your
 robot's own LeRobot calibration with **no additional joint angle offsets**.
 `--benchmark-offsets` explicitly selects the historical inverse conversion for a
-supervised comparison; it does not qualify that mapping for your robot. Newly
-fitted contact mappings are not yet supported by this physical probe.
+supervised comparison; it does not qualify that mapping for your robot. For a
+new fit, use `--alignment output/my-fixture/alignment/alignment.json` so the
+probe records its exact identity, closed-jaw measurements and sustained release
+clearance. Those logs can enter the qualification workflow.
 
 The robot first moves to the trajectory's shared start pose, then replays at
 25 Hz: approach, hover 15 mm above F's released rim, descend 2 mm below that rim,

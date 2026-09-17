@@ -2,6 +2,7 @@
 
 These are dated engineering records. For setup instructions start with
 [fixture measurement and scene validation](../../FIXTURE_SETUP.md), then
+[alignment qualification](../release/ALIGNMENT.md) and
 [hardware preparation](../release/HARDWARE_PREPARATION.md).
 
 The September 15 keyboard/base placement stays frozen. The historical elbow

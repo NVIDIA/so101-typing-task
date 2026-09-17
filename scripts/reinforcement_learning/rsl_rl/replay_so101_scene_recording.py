@@ -19,7 +19,7 @@ from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from scripts.so101_homing.scene_check import load_mapping_candidate, load_recording, replay_joint_positions
+from scripts.so101_homing.scene_check import load_alignment_candidate, load_mapping_candidate, load_recording, replay_joint_positions
 from scripts.so101_homing.fk_probe_trajectory import TASK, digest
 from scripts.so101_homing.so101_kinematics import JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, site_position
 from public_task import apply_config, load_config
@@ -33,9 +33,12 @@ parser.add_argument("--step-sleep", type=float, default=0)
 parser.add_argument("--benchmark-offsets", action="store_true")
 parser.add_argument("--mapping-report", type=Path)
 parser.add_argument("--mapping-candidate")
+parser.add_argument('--alignment', type=Path)
 parser.add_argument("--task-config", type=Path)
 add_launcher_args(parser)
 args, remaining = setup_preset_cli(parser)
+if args.alignment and (args.mapping_report or args.mapping_candidate or args.benchmark_offsets):
+    parser.error('--alignment cannot be combined with other mappings')
 if bool(args.mapping_report) != bool(args.mapping_candidate):
     parser.error("--mapping-report and --mapping-candidate are required together")
 if args.mapping_report and args.benchmark_offsets:
@@ -54,9 +57,12 @@ def main(env_cfg, agent_cfg):
         raise ValueError("robot USD differs from recorded model")
     task = load_config(args.task_config) if args.task_config else recording["task_config"]
     mapping_offsets, diagnostic_mapping = None, None
+    if args.alignment:
+        mapping_offsets, diagnostic_mapping = load_alignment_candidate(recording, args.alignment, task)
     if args.mapping_report:
         mapping_offsets, diagnostic_mapping = load_mapping_candidate(
             recording, args.mapping_report, args.mapping_candidate, task)
+    if args.mapping_report or args.alignment:
         if any(p.exists() for p in (args.out, args.out.parent/"scene-trace.jsonl", args.out.parent/"scene-replay.mp4")):
             raise ValueError("refusing to overwrite diagnostic mapping replay artifacts")
     apply_config(env_cfg, task)

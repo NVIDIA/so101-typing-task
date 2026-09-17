@@ -17,7 +17,7 @@ they did not complete the requested six-letter sequence.
 | Keyboard placement and DR | Nominal XYZ/full orientation updates mesh and map; per-reset XY/yaw and joint noise; 3-reset probe preserved actor nominal map | Fixed-policy XY/yaw tolerance measured; physical and cross-physics robustness pending |
 | Staged recipe | Public P1A-to-Transit15 commands, output conventions and budget caveats documented | Short learned recipe qualified; optional 20,000-update budget not reproduced |
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
-| Deployment bundle | Released 19k pair selects historical mapping automatically; new training requires explicit alignment; new exports pin local calibration | Complete physical/model alignment and typing validation |
+| Deployment bundle | Qualified scene/mapping and copied replay/probe evidence required for physical execution; calibration and trained geometry rechecked; legacy software dry runs preserved | Complete physical/model alignment and typing validation |
 | Reference fixture | Model projections, Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Measured physical layout and contact correspondence; model dimensions alone are not ruler instructions |
 | Repository | [NVIDIA-dev/so101-keyboard-typing](https://github.com/NVIDIA-dev/so101-keyboard-typing) contains both documented workflows and the pinned runtime | Code publication does not establish physical qualification |
 
@@ -44,7 +44,7 @@ original mat-trained `model_19000.pt`; the local no-mat `model_19996.pt` is sepa
 
 | Remaining release work | Completion evidence |
 | --- | --- |
-| Finish one guided robot/scene alignment workflow for both entry paths | A saved qualification result binds robot calibration, frozen fixture, joint mapping and jaw closure to passing representative physical press/release checks; deployment consumes that result |
+| Run the implemented alignment workflow on hardware | Candidate preparation, reserved replay, Q/G/P qualification and deployment checks are implemented; current physical evidence has not passed |
 | Verify real/model alignment and fixture instructions | Measured physical poses and contacts across the keyboard, with the robot calibration and joint mapping recorded |
 | Complete the new-robot typing test | Exact press/release/clearance sequences and all attempted results retained |
 | Repeat the documented workflow independently | Another user/machine follows README and records installation, training/export and physical results |
@@ -52,26 +52,26 @@ original mat-trained `model_19000.pt`; the local no-mat `model_19996.pt` is sepa
 The software cleanup makes mapping selection explicit and reproducible. It does
 not complete these physical checks or establish a universal offset correction.
 
-Release review, 2026-09-16: physical alignment is currently a procedural check,
-not a required passing artifact consumed by deployment. Selecting the historical
-mapping from the released checkpoint/environment hashes establishes artifact
-identity, not compatibility with a new physical robot. The current robot's fitted
-mapping still fails separate recorded-contact replays, even with the keyboard
-frozen. It must remain diagnostic-only; another published offset vector would
-not complete the new-user workflow.
+The [alignment workflow](ALIGNMENT.md) now freezes a candidate, checks reserved
+measured-motion replay, verifies physical Q/G/P logs and packages hashed evidence.
+Export compares the qualified scene with the trained key map, keyboard pose and
+reset. Physical policy execution requires the qualification and rechecks the
+current calibration/model and copied evidence before motor access. Software dry
+runs remain available for older bundles. The same candidate offsets are used in
+simulation replay, physical probe reads/writes, policy reset and deployment.
 
-The end-to-end release gate is the new SO-101 completing the documented setup
-procedure and repeated typing with a policy trained for its verified scene,
-followed by an independent recipient walkthrough. The historical ~19k policy
-remains an optional reference experiment with its original evidence. Users should
-receive one guided alignment procedure and a saved result, rather than needing to
-select experimental offsets or debug the model themselves. This qualification
-workflow is remaining work, not a claim that the current commands enforce it.
+The current robot's fitted mapping still fails reserved contact replay, so it
+remains unqualified. The automatic calibration experiment is paused. Passing
+synthetic software tests does not create physical evidence. The remaining release
+gate is the new SO-101 passing the documented alignment procedure and repeated
+policy typing, followed by an independent recipient walkthrough. A physical
+fixture move or jaw replacement still requires operator detection and renewed
+qualification; file hashes cannot sense those changes.
 
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 224 tests, 2 skipped, and 13 subtests (2026-09-16). They cover
+selected results. Host checks passed: 246 tests, 2 skipped, and 13 subtests (2026-09-16). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k
@@ -227,3 +227,32 @@ This is execution evidence, not new policy/contact or physical qualification.
 Logs and the pre-cleanup backup are local artifacts under
 `output/repo-consolidation/20260917T030340Z/`. Docker layers and host dependencies
 were reused; independent installation remains pending.
+
+### Alignment integration — 2026-09-16 22:00 PDT
+
+`./so101 alignment prepare` now freezes a candidate for measured-motion replay
+and supervised physical probes. `alignment qualify` verifies reserved replay
+and Q/G/P press/release/clearance evidence, then copies it into a portable
+qualification. Export and physical policy execution revalidate that evidence,
+the current calibration/model and the trained nominal geometry. Older bundles
+retain software dry runs but require re-export with qualification for motion.
+
+The checkout and an extracted source copy in a fresh development environment
+each passed **246 tests, 2 skips and 13 subtests**. Tests exercise nonzero forward
+and inverse mapping, evidence packaging, and rejection of calibration/scene
+drift, incomplete or changed logs, wrong contacts and unqualified execution.
+The clean-environment run exposed a missing SciPy test dependency; the documented
+development install and CI now pin it. Source hygiene, links and compilation pass.
+The released 19k checkpoint also exported and passed the CPU software dry run
+with its historical mapping; that unqualified bundle cannot execute physically.
+
+The rebuilt AnchorBench/Newton MJWarp runtime passed the frozen-scene Q/G/P
+command probes, each with exactly one simulated down/up. Peak contact forces
+were 2.41/1.92/1.88 N; maximum FK/model disagreement was below 0.003 mm. These
+are simulation results. The candidate-based direct replay also ran successfully
+as software but failed contact correspondence: 66 physical edges versus 180
+simulated edges. The existing four-joint fitted replay was rejected by the new
+check because of its extra non-letter contact. No physical qualification was
+created, and no hardware was accessed. Calibration and fixture hashes are
+unchanged. Local reports are under
+`output/alignment-integration/20260917T045600Z/`.
