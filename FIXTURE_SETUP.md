@@ -30,6 +30,9 @@ real arm trajectories describe the same motion and contacts in that fixed scene.
 **Hand-guided recordings are for scene and encoder/model validation, not policy
 training or imitation learning.** An unexplained failure to reproduce those
 contacts is a reason to resolve the model/mapping before task training.
+The [calibration rationale](docs/release/REAL2SIM.md#why-recorded-motion-calibration-comes-before-training)
+explains the remaining discrepancy and why the effective keyboard pose and
+joint offsets are fitted together while the physical fixture stays fixed.
 
 | Step | Work | Evidence before proceeding |
 | --- | --- | --- |

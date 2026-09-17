@@ -4,10 +4,42 @@ Use real key presses to fit the keyboard pose and encoder-to-model joint offsets
 The recordings calibrate the simulation; they are **not PPO demonstrations**.
 Keep the physical base, keyboard and fixed typing jaw unchanged during this process.
 
+For this tabletop workflow, place the plastic robot base and keyboard directly
+on the same flat table, with the letter keys within the fixed jaw's reach. Secure
+the base and keyboard. Use the documented base edges and vertices as datums to
+measure the keyboard's relative position and orientation and build the starting
+simulation scene. Preserve those measurements throughout calibration.
+
 First complete [LeRobot setup/calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
 for your robot and [measure the starting layout](../../FIXTURE_SETUP.md), saving
 `output/my-fixture/task.json`. Use the supported keyboard and fixed-jaw geometry.
 Run `./so101 setup-hardware` and `./so101 build` before the steps below.
+
+## Why recorded-motion calibration comes before training
+
+The policy uses a fixed keyboard map without vision, so physical typing depends
+on the real and simulated robot/keyboard relationship agreeing. Matching external
+datums is the starting point; recorded key presses test that correspondence.
+
+As of **September 17, 2026**, measured placement and checked asset dimensions
+appeared consistent, but replaying measured real joint trajectories still produced
+different contacts in simulation. For example, a real Q press replaying as F
+would demonstrate a correspondence error. It would not identify the cause by
+itself: the encoder-to-model angle convention, robot/jaw geometry or keyboard
+model could contribute. The underlying cause remains unresolved.
+
+The practical correction is to fit joint-angle offsets and an effective simulated
+keyboard pose together from the recordings, then check actual simulated contacts.
+Keep the physical fixture fixed and save this fitted scene separately from the
+measured reference. These parameters reproduce observed contacts; they do not
+prove a particular mechanical or calibration fault.
+
+Before training for physical use, require every recorded key approach to reach
+the intended first key in simulation, with a reset between keys and no simultaneous
+extra key actuation. Save the passing scene, offsets and evidence, then train in that
+scene. This is the pre-training criterion used here; it does not establish clean
+continuous replay or successful physical policy deployment. The September fit
+passed **93/93** such checks on its fitting recordings.
 
 ## 1. Collect two or three hand-guided recordings
 
