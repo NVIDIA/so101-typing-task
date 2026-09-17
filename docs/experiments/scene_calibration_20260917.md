@@ -94,7 +94,7 @@ and contact refinement; the historical constants were not optimization inputs.
 Offline fitting and Newton MJWarp replay on September 17, approximately
 09:50–10:00 PDT. No robot motion or LeRobot calibration change. This implements
 the hardware-to-simulation calibration stage described in
-[fixture setup](../../FIXTURE_SETUP.md#fit-joint-offsets-and-an-effective-keyboard-pose).
+[advanced scene diagnostics](scene_diagnostics.md#fit-joint-offsets-and-an-effective-keyboard-pose).
 It does **not** yet produce a qualified calibration for physical typing.
 
 ## Inputs and method

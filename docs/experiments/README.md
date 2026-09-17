@@ -1,7 +1,8 @@
 # Scene and encoder-mapping investigation
 
-These are dated engineering records. For setup instructions start with
-[fixture measurement and scene validation](../../FIXTURE_SETUP.md), then
+These are dated engineering records and advanced diagnostics. For normal setup use
+the [short real-to-sim workflow](../release/REAL2SIM.md), with
+[fixture measurements](../../FIXTURE_SETUP.md), then
 [alignment qualification](../release/ALIGNMENT.md) and
 [hardware preparation](../release/HARDWARE_PREPARATION.md).
 
@@ -28,6 +29,8 @@ requires resuming with the operator; repository checks do not move the robot.
 
 | Record | Contents |
 | --- | --- |
+| [Advanced scene diagnostics](scene_diagnostics.md) | Lower-level recording/replay, joint/pose fitting alternatives and single-key probes |
+| [Selected September scene fit](scene_calibration_20260917.md) | Recorded-contact optimization, selected pose/offsets and limits of the 93/93 result |
 | [Mapping plan](mapping_plan_20260916.md) | Ordered investigation, reserved-data results and paused automatic-calibration experiment |
 | [Encoder/model correspondence](encoder_model_mapping_20260915.md) | Direct, historical and current mapping comparisons and zero-convention hypothesis |
 | [Initial diagnostic](encoder_model_mapping_diagnostic_20260915.md) | Earlier recording and geometry audit |

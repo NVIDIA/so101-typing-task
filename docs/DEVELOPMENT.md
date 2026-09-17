@@ -9,14 +9,24 @@ publishing externally is a separate step.
 
 ## Where things belong
 
+The normal user entry points are `./so101` for simulation/deployment and
+`./scripts/real2sim.sh record|fit` for measured-motion scene calibration. Other
+scripts implement these commands or support explicitly labelled diagnostics.
+
 | Location | Purpose |
 | --- | --- |
 | `README.md` | Install, train/evaluate, optional reference checkpoint, export/deploy |
-| [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | Measure placement, record/replay real motion, test physical correspondence |
+| `so101` | Main simulation, artifact, alignment and deployment CLI |
+| [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | Physical datums, measurements, drawings and a starting scene |
+| [scripts/real2sim.sh](../scripts/real2sim.sh) | `record`: torque-off encoder/key-event capture; `fit`: optimize scene/offsets and check per-key Newton contacts |
+| `configs/` | Task, physics and evaluation examples |
+| `source/` | Isaac Lab task implementation and robot/keyboard assets |
 | `docs/release/` | Supported commands, requirements, results and remaining qualification |
 | `docs/fixtures/` | Geometry, drawings, dated fixture and historical checkpoint provenance |
-| [docs/experiments/](experiments/README.md) | Dated investigations; not required setup instructions |
+| [docs/experiments/](experiments/README.md) | Dated investigations and advanced diagnostics; not required setup instructions |
 | `scripts/` | Portable tools with explicit hardware/scene inputs |
+| `tests/` | Host checks; historical helper tests also live under `scripts/so101_homing/test/` |
+| `docker/`, `runtime/` | Pinned simulator build, dependency locks and runtime patch |
 | `output/`, `.artifacts/`, `local/` | Ignored runs, downloaded weights and workstation shortcuts; excluded from Docker |
 
 Raw recordings, camera captures and fit reports remain local. Investigation

@@ -52,6 +52,13 @@ installed Python dependencies were reused. Logs are local under
 was performed; this is workflow/software evidence, not independent installation
 or physical typing qualification.
 
+Structure follow-up: the main fixture guide keeps measurements and scene selection;
+lower-level fitting/replay comparisons are preserved in
+[advanced diagnostics](../experiments/scene_diagnostics.md). The directory map
+identifies `so101` and `scripts/real2sim.sh record|fit` as the normal entry points.
+Both recording/fitting help commands, source checks and all 37 Markdown heading
+anchors pass. This reorganization changes documentation only.
+
 The [short real-to-sim guide](REAL2SIM.md) now connects hand-guided recording,
 joint/keyboard-pose fitting, reset-per-key Newton contact checks and training in
 the saved scene. The September recordings reproduce **93/93 first contacts**;
