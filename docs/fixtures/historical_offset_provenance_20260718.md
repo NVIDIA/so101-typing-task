@@ -63,7 +63,40 @@ the physical reference; any adjusted effective scene must be a separate dated
 candidate with its departures from measured datums disclosed. See the
 [dated experiment plan](../experiments/mapping_plan_20260916.md#trajectory-based-scene-alignment--2026-09-17).
 
-## What was measured and tried
+## Original recorded-trajectory workflow
+
+Recovered from the July collection/fitting/replay scripts and saved reports;
+reviewed 2026-09-17. Real contact recordings calibrated the simulator before PPO.
+
+1. **Collect measured motion and key events.** The final collection contained
+   three powered repetitions per A-Z key. Associate the actual encoder reading
+   with the monotonic key-down timestamp; preserve approach traces for replay.
+2. **Compute the fixed typing jaw's contact point.** Apply candidate joint
+   corrections before FK, using the unchanged `gripper_link` site
+   `[-0.0106769064, -0.0005212274, -0.1041385575]` m. The gripper origin is not
+   the typing point. Link dimensions, jaw geometry and keyboard scale stay fixed.
+3. **Fit a shared mapping and rigid keyboard placement.** The diagnostic fitter
+   fixes pan and wrist-roll offsets at zero, estimates lift/elbow/wrist-flex
+   offsets, and solves keyboard XYZ/yaw against the contact points. It starts
+   offsets at zero and uses a fit/held-out key split. Fixing pan removes the
+   ambiguity between rotating the arm and rotating/translating the keyboard.
+4. **Check candidates using actual Newton contacts.** Prescribe measured arm
+   poses, let the simulated keyboard respond, and compare the first actuated
+   key. The saved sequence was 19/26 for the flat diagnostic candidate, then
+   23/26 for revised tilt/offsets. Translating that revised keyboard by
+   +2 mm X, +1 mm Y and +1.5 mm Z gave 26/26 in each of three repetitions.
+   These are separate saved candidates; the missing final optimizer provenance
+   below prevents claiming one preserved fitting command generated all of them.
+5. **Freeze the replay-validated scene before training.** Save its joint
+   conversion, effective keyboard pose, reset and A-Z target coordinates as one
+   model definition. Training uses that scene; deployment adds the same offsets
+   on reads and subtracts them on writes.
+
+The historical first-contact gate and its limitations are detailed below. A new
+setup also needs complete press/release/transit replay and physical command
+checks; a first-contact pass does not establish those results.
+
+## Historical measurements and evidence
 
 1. The original fixed-jaw SO-101 pressed the powered A–Z fixture. Link
    dimensions, keyboard scale and pitch, key centres, and the fixed jaw contact
@@ -114,6 +147,34 @@ The historical source trail is preserved by commits `989e9ec50`, `aa042a76b`,
 `97d3cd009`, `8c5d1e96e`, and `b76a2d4ec`. The original detailed record is
 `docs/so101_physical_calibration_20260718.md`; the diagnostic implementation is
 `scripts/so101_homing/fit_powered_contact_calibration.py`.
+
+## September 16 recordings: application status as of 2026-09-17
+
+**The September 16 recordings now pass 93/93 reset-per-key first-contact probes
+after fresh joint/keyboard contact refinement.** This reproduces the original
+type of scene-validation criterion. Continuous replay is a later additional
+diagnostic and does not pass; it was not required by the original July gate.
+The [selected pose, offsets and evidence](../experiments/scene_calibration_20260917.md)
+identify the passing `refined/` candidate. Both recordings were used for fitting;
+physical deployment is not established by this result.
+
+Earlier experiments include offsets-only fits, pose fits with historical offsets,
+and new joint-plus-pose fits followed by continuous Newton replay. The new
+four-joint/XY-yaw candidate produced 70 simulated edges for 66 physical edges;
+it did not pass. It also freed pan and yaw together and averaged angles across
+presses, differing from the original fitting procedure. The full-pose diagnostic
+was an offline fit, not a passing contact replay.
+
+The [initial calibration script](../../scripts/calibrate_scene.sh) fitted fresh
+lift/elbow/wrist-flex offsets and XYZ/yaw with pan and roll fixed, using every
+key-down's nearest encoder sample. No historical values are used. Its separate
+manual replay reproduces all 33 intended presses in order but adds `9` and `U`;
+this initial numerical fit was not a pass. The later contact refinement above
+established the reset-per-key result.
+The current recordings' timestamps and capture modes must remain explicit;
+they cannot be relabelled as the original powered, kernel-edge-synchronised data.
+See the [current investigation](../experiments/mapping_plan_20260916.md#original-workflow-recovered-from-archived-source--2026-09-17).
+Exact inputs and results are in the [September calibration report](../experiments/scene_calibration_20260917.md).
 
 ## Fresh reproduction — 2026-09-16 UTC
 

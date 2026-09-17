@@ -5,11 +5,11 @@ P1A trains two-letter sequences. Transit15 trains six-letter sequences with the
 15 mm transit-clearance contract. Observation/action sizes remain 22/5.
 
 For a policy intended for hardware, first follow the
-[pre-training scene-validation plan](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene):
-measure base/keyboard datums, freeze placement, record torque-off key presses,
-fit any needed four-joint mapping, validate separate recordings and check physical
-FK contacts. Those recordings are calibration/validation evidence, not PPO
-training data. Keep the validated scene fixed throughout training. Short software
+[three-step real-to-sim guide](REAL2SIM.md): collect torque-off key presses, fit
+joint offsets and keyboard pose, and pass the reset-per-key contact check.
+Train using its `output/my-scene/task.json`. The recordings calibrate the scene;
+they are not PPO training data. Keep the scene fixed throughout training and
+keep its mapping report for separate physical deployment checks. Short software
 checks below can run earlier and do not establish physical correspondence.
 
 ## Short validation
@@ -33,7 +33,7 @@ and choose the continuation budget from your results:
 
 ```bash
 ./so101 train --actuator anchorbench --stage p1a \
-  --task-config configs/tasks/my-keyboard.json \
+  --task-config output/my-scene/task.json \
   --num-envs 4096 --iterations 4000 --seed 1307
 
 # Select the final model from that run, and use the same profile/configuration.

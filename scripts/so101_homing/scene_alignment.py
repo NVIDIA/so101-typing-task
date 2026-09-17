@@ -52,11 +52,13 @@ def model_identity():
 
 
 def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=None,
-            mapping_candidate=None, joint_fit=None):
+            mapping_candidate=None, joint_fit=None, validation_recordings=()):
     if sum((convention is not None, mapping_report is not None, joint_fit is not None)) != 1:
         raise ValueError('choose exactly one encoder convention, mapping report or joint calibration')
     if bool(mapping_report) != bool(mapping_candidate):
         raise ValueError('--mapping-report and --mapping-candidate are required together')
+    if validation_recordings and not mapping_report:
+        raise ValueError('--validation-recording requires a mapping report')
     task = load_config(task_path)
     calibration = require_calibration(robot_id)
     contract = {'robot_id': robot_id, 'calibration_sha256': digest(calibration),
@@ -64,8 +66,8 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
                 'joint_order': list(ARM_JOINT_NAMES), **model_identity()}
     if mapping_report:
         report = read_json(mapping_report)
-        if mapping_candidate != 'fit4' or report.get('status') != 'diagnostic_only_not_approved_for_deployment':
-            raise ValueError('recording-based alignment supports the diagnostic fit4 candidate only')
+        if mapping_candidate not in ('fit4', 'fit3_pose', 'joint_scene') or report.get('status') != 'diagnostic_only_not_approved_for_deployment':
+            raise ValueError('recording-based alignment requires diagnostic fit4, fit3_pose or joint_scene')
         for field in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256'):
             if report.get('identities', {}).get(field) != contract[field]:
                 raise ValueError(f'mapping report identity differs: {field}')
@@ -74,13 +76,28 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
         rows = report.get('recordings', [])
         fitting = [r['sha256'] for r in rows if r.get('role') == 'fit']
         reserved = [r['sha256'] for r in rows if r.get('role') == 'validation']
-        if len(fitting) != 1 or not reserved or len(set(fitting+reserved)) != len(fitting+reserved):
+        for path in validation_recordings:
+            recording = load_recording(path)
+            check_reserved_recording(contract, recording, report.get('reference_task', task))
+            reserved.append(digest(path))
+        if not fitting or not reserved or len(set(fitting+reserved)) != len(fitting+reserved):
             raise ValueError('mapping needs distinct fit and reserved validation recordings')
         offsets = validate_mapping_offsets(report['candidates'][mapping_candidate]['offset_deg']).tolist()
-        if offsets[4] != 0:
-            raise ValueError('fit4 must leave wrist roll at zero')
-        mapping = {'kind': 'recording_fit4', 'source_sha256': digest(mapping_report),
-                   'fit_recording_sha256': fitting[0], 'reserved_recording_sha256': reserved}
+        if mapping_candidate != 'joint_scene' and offsets[4] != 0:
+            raise ValueError('recording fit must leave wrist roll at zero')
+        if mapping_candidate == 'fit3_pose':
+            if (offsets[0] != 0 or report.get('method') != 'event_associated_joint_and_rigid_scene_fit'
+                    or not isinstance(report.get('reference_task'), dict)):
+                raise ValueError('fit3_pose requires fixed pan and measured reference task provenance')
+        if mapping_candidate == 'joint_scene' and (report.get('method') not in
+                ('event_associated_joint_and_rigid_scene_fit', 'contact_refined_joint_and_rigid_scene_fit')
+                or not isinstance(report.get('reference_task'), dict)):
+            raise ValueError('joint_scene requires joint/scene method and reference task provenance')
+        mapping = {'kind': 'recording_'+mapping_candidate, 'source_sha256': digest(mapping_report),
+                   'fit_recording_sha256': fitting[0], 'fit_recordings_sha256': fitting,
+                   'reserved_recording_sha256': reserved}
+        if mapping_candidate in ('fit3_pose', 'joint_scene'):
+            mapping['reference_task'] = report['reference_task']
     elif joint_fit:
         offsets, source_hash = joint_calibration.load(joint_fit, robot_id)
         mapping = {'kind': 'measured_joint_fit', 'source_sha256': source_hash}
@@ -98,6 +115,8 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
     out_dir.mkdir(parents=True, exist_ok=False)
     if mapping_report:
         shutil.copy2(mapping_report, out_dir/'mapping-report.json')
+    for index, path in enumerate(validation_recordings, 1):
+        shutil.copy2(path, out_dir/f'validation-{index}.json')
     if joint_fit:
         shutil.copy2(joint_fit, out_dir/'joint-calibration.json')
     (out_dir/'alignment.json').write_text(json.dumps(result, indent=2)+'\n')
@@ -149,27 +168,33 @@ def key_sequence(events, *, physical):
     return sequence
 
 
-def check_replay(contract, recording_path, report_path):
-    recording, report = load_recording(recording_path), read_json(report_path)
+def check_reserved_recording(contract, recording, reference_task):
     if recording.get('status') != 'recorded':
         raise ValueError('reserved recording did not complete')
-    for field in ('robot_id', 'calibration_sha256', 'source_sha256', 'robot_usd_sha256', 'task_config'):
+    for field in ('robot_id', 'calibration_sha256', 'source_sha256', 'robot_usd_sha256'):
         if recording.get(field) != contract[field]:
             raise ValueError(f'reserved recording differs from alignment: {field}')
-    record_hash = digest(recording_path)
+    if recording.get('task_config') != reference_task:
+        raise ValueError('reserved recording differs from alignment: task_config')
+    if any(not 0 <= s['lerobot_position'][5] <= CLOSED_MAX_PERCENT for s in recording['samples']):
+        raise ValueError('reserved recording does not verify the closed moving jaw')
+    return key_sequence(recording['events'], physical=True)
+
+
+def check_replay(contract, recording_path, report_path):
+    recording, report = load_recording(recording_path), read_json(report_path)
     mapping = contract['mapping']
-    if mapping['kind'] == 'recording_fit4' and record_hash not in mapping['reserved_recording_sha256']:
+    expected = check_reserved_recording(contract, recording, mapping.get('reference_task', contract['task_config']))
+    record_hash = digest(recording_path)
+    if mapping['kind'] in ('recording_fit4', 'recording_fit3_pose', 'recording_joint_scene') and record_hash not in mapping['reserved_recording_sha256']:
         raise ValueError('replay is not from the reserved validation recordings')
     if (report.get('status') != 'replayed' or report.get('recording_sha256') != record_hash
             or report.get('task_config') != contract['task_config']
             or report.get('joint_zero_offset_deg') != contract['joint_zero_offset_deg']):
         raise ValueError('replay status, recording, scene or mapping differs from alignment')
-    expected = key_sequence(recording['events'], physical=True)
     actual = key_sequence(report['simulation_events'], physical=False)
     if expected != actual or report.get('key_sequence_matches') is not True:
         raise ValueError('reserved replay has missed, extra or wrong contacts')
-    if any(not 0 <= s['lerobot_position'][5] <= CLOSED_MAX_PERCENT for s in recording['samples']):
-        raise ValueError('reserved recording does not verify the closed moving jaw')
     return {'recording_sha256': record_hash, 'presses': len(expected)//2}
 
 
@@ -314,7 +339,9 @@ def main():
     m.add_argument('--encoder-convention', choices=('lerobot', 'benchmark'))
     m.add_argument('--joint-calibration', type=Path)
     m.add_argument('--mapping-report', type=Path)
-    p.add_argument('--mapping-candidate', choices=('fit4',))
+    p.add_argument('--mapping-candidate', choices=('fit4', 'fit3_pose', 'joint_scene'))
+    p.add_argument('--validation-recording', type=Path, action='append', default=[],
+                   help='reserve a new completed capture excluded from fitting; repeat for more captures')
     p.add_argument('--out-dir', type=Path, required=True)
     p = sub.add_parser('qualify', help='verify and copy reserved replay and physical Q/G/P evidence')
     p.add_argument('--alignment', type=Path, required=True)
@@ -326,7 +353,8 @@ def main():
     try:
         if args.mode == 'prepare':
             prepare(args.task_config, args.robot_id, args.out_dir, convention=args.encoder_convention,
-                    mapping_report=args.mapping_report, mapping_candidate=args.mapping_candidate, joint_fit=args.joint_calibration)
+                    mapping_report=args.mapping_report, mapping_candidate=args.mapping_candidate,
+                    joint_fit=args.joint_calibration, validation_recordings=args.validation_recording)
             print(f'UNQUALIFIED candidate: {args.out_dir/"alignment.json"}')
         else:
             qualify(args.alignment, args.recording, args.replay_report, args.probe, args.out_dir)

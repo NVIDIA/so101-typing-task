@@ -22,11 +22,12 @@ example. Install `uv` before using `./so101 setup-hardware`.
 
 ## Workflow 1: train with your chosen configuration
 
-For physical typing, complete the
-[pre-training scene-validation plan](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene)
-before task training: base/keyboard datums, torque-off measured trajectories,
-fixed-scene joint mapping, separate-recording replay and physical contact checks.
-The recordings validate the scene; they are not policy training demonstrations.
+For physical typing, follow the [real-to-sim calibration guide](REAL2SIM.md):
+measure the starting placement, record torque-off hand-guided key presses, fit
+the keyboard pose and joint offsets, and check first contacts with resets between
+keys. Train using its saved `output/my-scene/task.json`. The recordings calibrate
+the scene; they are not policy training demonstrations. Separate reserved replay
+and physical contact checks qualify the mapping for deployment afterward.
 The short commands below are software checks that can run before hardware is ready.
 
 Copy `configs/tasks/keyboard-pose.json` to `configs/tasks/my-keyboard.json` and

@@ -17,25 +17,52 @@ the plastic robot base, save `output/my-fixture/task.json`, and record measured
 key presses with the moving jaw closed. Use a separate capture for validation.
 Cover A–Z where possible; qualification requires at least Q, G and P, complete
 down/up pairs, and an exact simulated key sequence with no extra contacts.
-Do not adjust placement while fitting joint offsets.
+Preserve the measured placement in each recording. The joint-and-scene fitter
+saves any effective pose correction in a separate task JSON. After the
+[real-to-sim fit](REAL2SIM.md), collect a fresh capture in a separate directory;
+do not include it in another fit:
+
+```bash
+./scripts/real2sim.sh record \
+  --robot-id my_typing_robot --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd \
+  --task-config output/my-fixture/task.json \
+  --seconds 120 --output-root output/my-fixture/validation
+```
+
+Support the arm: this disables torque and leaves it off. Keep the jaw closed and
+record at least Q, G and P, including release and clearance between presses.
+Use the printed recording path below. Keep the fitted task and mapping unchanged.
 
 For the released 19k checkpoint, `configs/tasks/reference-fixture.json` selects
 its original nominal simulation scene. Use that file consistently in place of
-`output/my-fixture/task.json` below when testing that fixture. It does not assert
+both task paths (`output/my-fixture/task.json` and `output/my-scene/task.json`)
+below when testing that fixture. It does not assert
 that your physical setup already matches the historical model.
 
 ## 2. Prepare an unqualified mapping
 
-After fitting with the [recording-based diagnostic](../../FIXTURE_SETUP.md#fit-four-joint-offsets-with-the-keyboard-frozen):
+Use the fitted scene and offsets from `real2sim.sh fit`, with the new reserved
+capture. Preparation checks its robot/calibration/model identity, original
+measured scene, closed jaw and complete Q/G/P presses, and rejects fitting data:
 
 ```bash
 ./so101 alignment prepare --robot-id my_typing_robot \
-  --task-config output/my-fixture/task.json \
-  --mapping-report output/my-fixture/mapping-audit/mapping-report.json \
-  --mapping-candidate fit4 --out-dir output/my-fixture/alignment
+  --task-config output/my-scene/task.json \
+  --mapping-report output/my-scene/mapping-report.json \
+  --mapping-candidate joint_scene \
+  --validation-recording /absolute/path/to/validation/recording.json \
+  --out-dir output/my-fixture/alignment
 ```
 
-Alternatively replace the two mapping-report arguments with exactly one of:
+Preparation copies the new reserved capture and freezes its hash without changing
+the fit report or refitting. Qualification later checks its actual replay.
+Advanced `fit4` and `fit3_pose` reports can instead use their matching task and
+candidate name; omit `--validation-recording` if the report already reserves
+the capture. Never reuse a capture that influenced the final fit as validation.
+
+Alternatively replace the mapping-report, mapping-candidate and
+validation-recording arguments with exactly one of:
 
 - `--encoder-convention lerobot` for the direct encoder/model comparison.
 - `--encoder-convention benchmark` for an explicit historical-offset comparison.
@@ -43,9 +70,11 @@ Alternatively replace the two mapping-report arguments with exactly one of:
 
 The output `alignment.json` is **unqualified**. Preparing it freezes offsets and
 identities; it does not approve physical deployment. The recording-based path
-accepts the standard diagnostic `fit4` report and requires distinct fitting and
+accepts diagnostic `fit4`, `fit3_pose` or `joint_scene` reports and requires distinct fitting and
 reserved recording hashes. Ad-hoc legacy reports need their provenance preserved;
 do not relabel them as standard fit reports.
+Contact searches that used every supplied recording need the fresh reserved
+capture above. Reserving it is not a passing replay or physical result.
 
 To inspect a policy's software contract using this candidate before qualification,
 use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
@@ -98,13 +127,17 @@ direct, historical, independently measured and recording-fitted mappings:
 
 ```bash
 ./scripts/scene_check.sh replay --recording /absolute/path/to/validation/recording.json \
-  --alignment output/my-fixture/alignment/alignment.json
+  --alignment output/my-fixture/alignment/alignment.json \
+  --replay-task-config output/my-scene/task.json
 ```
+
+Use the same fitted task for replay, FK generation and policy training.
 
 Retain the printed `scene-report.json` path. A completed replay is not necessarily
 a pass: qualification recomputes the physical/simulated event comparison. A
-missed, extra, wrong or unreleased key fails the gate. For `fit4`, this recording
-must belong to the report's reserved validation set, never its fitting set.
+missed, extra, wrong or unreleased key fails the gate. For recording-fitted
+mappings, this capture must belong to the candidate's reserved validation set,
+never its fitting set.
 
 ## 4. Simulate and physically test Q, G and P separately
 
@@ -113,7 +146,7 @@ Example for Q; repeat with G and P and separate `fk-G`/`fk-P` output folders:
 
 ```bash
 ./scripts/run_fk_probe_f.sh --generate --letter Q \
-  --task-config output/my-fixture/task.json \
+  --task-config output/my-scene/task.json \
   --trajectory output/my-fixture/fk-Q/trajectory.json
 ./scripts/run_fk_probe_f.sh --trajectory output/my-fixture/fk-Q/trajectory.json --sim
 ```
@@ -161,7 +194,7 @@ Qualification recomputes the checks from the evidence; setting a `passed` flag
 alone cannot satisfy it. These are provenance checks, not signed proof of
 physical truth. Keep unsuccessful attempts alongside the originals for review.
 
-## 6. Train/export for that scene
+## 6. Export the policy trained for that scene
 
 Train and evaluate with the same nominal task configuration. Export using:
 

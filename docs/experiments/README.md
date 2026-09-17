@@ -5,8 +5,16 @@ These are dated engineering records. For setup instructions start with
 [alignment qualification](../release/ALIGNMENT.md) and
 [hardware preparation](../release/HARDWARE_PREPARATION.md).
 
-The September 15 keyboard/base placement stays frozen. The historical elbow
-correction (-10.77 degrees) and current four-joint fit (-9.61 degrees at the
+The [current September 16 recording fit](scene_calibration_20260917.md) passes
+**93/93 first-key contacts with a reset between keys**, the original type of
+scene-validation test. That report lists the selected keyboard pose and joint
+offsets. Both recordings were used for fitting. Continuous replay is an additional
+diagnostic and still fails; it was not part of the original per-key criterion.
+The measured September 15 reference is preserved separately from this effective
+simulation scene. Physical policy performance remains unverified for this fit.
+
+Earlier fixed-placement results: the historical elbow
+correction (-10.77 degrees) and earlier four-joint fit (-9.61 degrees at the
 elbow) both improve correspondence, but useful fitted offsets do not uniquely
 identify a mechanical cause or transfer automatically between robots.
 The reserved torque-off recording matched 32/33 intended simulated contacts

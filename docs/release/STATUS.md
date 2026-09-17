@@ -31,6 +31,31 @@ Changed nominal placement and bounded pose randomization are supported. See
 [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md) and
 [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
 
+## Scene-calibration workflow review — 2026-09-17 PDT
+
+The [short real-to-sim guide](REAL2SIM.md) now connects hand-guided recording,
+joint/keyboard-pose fitting, reset-per-key Newton contact checks and training in
+the saved scene. The September recordings reproduce **93/93 first contacts**;
+all supplied captures were used for fitting, so this is not held-out or physical
+policy evidence. The dated [experiment record](../experiments/scene_calibration_20260917.md)
+identifies the selected scene, offsets and training launch.
+
+Deployment preparation can reserve a new capture after fitting using
+`--validation-recording`. It rejects fitting-data reuse and checks the robot,
+calibration, model, measured reference, closed jaw and Q/G/P press/release pairs.
+It preserves the original fit and records an **unqualified** candidate; actual
+replay and physical probes remain required for qualification.
+
+The working checkout and a source-only snapshot each passed **274 tests,
+2 skips and 13 subtests**. The snapshot had no Git metadata, recordings,
+downloaded policies, local helpers or hardware environment. Source/artifact
+hygiene, local links, Python compilation, shell syntax, fixture drawing, training
+command planning and calibration/alignment CLI help also passed. Host development
+dependencies were reused; this was not a cold installation or an independent
+machine test. Audit logs are local under `output/release-audit/20260917T180433Z/`.
+No hardware motion or new GPU simulation was run for this cleanup. Active training
+continues from its separate frozen source/image snapshot.
+
 ## Physical deployment follow-up
 
 On 2026-09-15, the operator reported that restoring the historical offsets with
@@ -60,8 +85,10 @@ current calibration/model and copied evidence before motor access. Software dry
 runs remain available for older bundles. The same candidate offsets are used in
 simulation replay, physical probe reads/writes, policy reset and deployment.
 
-The current robot's fitted mapping still fails reserved contact replay, so it
-remains unqualified. The automatic calibration experiment is paused. Passing
+The selected September scene passes the reset-per-key fitting criterion, but
+full continuous replay still has extra/mismatched contacts. No new reserved
+capture and physical Q/G/P evidence has qualified it for deployment.
+The automatic calibration experiment is paused. Passing
 synthetic software tests does not create physical evidence. The remaining release
 gate is the new SO-101 passing the documented alignment procedure and repeated
 policy typing, followed by an independent recipient walkthrough. A physical
@@ -71,7 +98,7 @@ qualification; file hashes cannot sense those changes.
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 251 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
+selected results. Host checks passed: 274 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k

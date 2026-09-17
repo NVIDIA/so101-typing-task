@@ -41,17 +41,19 @@ cd so101-keyboard-typing
 
 ## Workflow 1: train for your setup
 
-For physical typing, establish and validate the scene **before task training**:
-measure keyboard placement from datums on the robot base, freeze that placement,
-record torque-off hand-guided key presses, then replay the measured trajectories
-in Newton. These recordings are **scene/mapping validation data, not policy
-training demonstrations**. If needed, fit shoulder-pan/lift/elbow/wrist-flex
-offsets with the keyboard fixed and validate on separate recordings before
-adopting them. Follow the [pre-training plan](FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene),
-including [saved alignment qualification](docs/release/ALIGNMENT.md) and policy-free physical contact checks.
+For physical typing, follow the short [real-to-sim calibration guide](docs/release/REAL2SIM.md):
+**hand-guide key presses with torque off → fit and check the simulation scene →
+train using the saved scene**. `./scripts/real2sim.sh record` captures measured
+motion; `./scripts/real2sim.sh fit` fits joint offsets and keyboard pose and checks
+first-key contacts with a reset between keys. The recordings calibrate geometry;
+they are not policy-training demonstrations. Keep the resulting `task.json` for
+training and `mapping-report.json` for the later physical deployment checks.
 
 The nominal keyboard position/orientation is relative to the simulated robot.
-Your physical fixture must match that trained geometry at deployment.
+Keep the physical fixture fixed after calibration; train and deploy with its saved
+scene and joint mapping.
+For a calibrated physical setup, use `output/my-scene/task.json` from the guide.
+The commands below also support simulation-only setup and installation checks.
 The task JSON supports nominal XYZ/full orientation and optional XY/yaw placement randomization.
 Use [task configuration](docs/release/TASK_CONFIGURATION.md) to choose a simulated
 layout. The [fixture helper](FIXTURE_SETUP.md) draws that model and can fit a
@@ -68,14 +70,10 @@ cp configs/tasks/keyboard-pose.json configs/tasks/my-keyboard.json
   --task-config configs/tasks/my-keyboard.json --num-envs 64 --iterations 10
 ```
 
-The short startup check above can run before hardware is available; it does not
-qualify the scene for physical typing. Before task training, check the robot's
-joint mapping and keyboard contacts against this scene. Changing the task JSON
-does not measure either on hardware.
-Use the [shared F contact probe](FIXTURE_SETUP.md#shared-f-contact-probe) to generate
-one hover–press–lift trajectory, verify its contact in Newton, and replay the same
-joint commands on your calibrated robot. An FK calculation alone does not prove
-physical alignment; the physical F press and release are the comparison.
+The startup check can run before hardware is available. For physical typing,
+use the scene produced by the real-to-sim guide above; editing a task JSON alone
+does not validate contact alignment. Physical contact checks follow in the
+deployment workflow below.
 
 Continue with the [P1A-to-six-letter training recipe](docs/release/TRAINING.md).
 Choose `anchorbench` or `usd` actuators. Optional `--physics-config`

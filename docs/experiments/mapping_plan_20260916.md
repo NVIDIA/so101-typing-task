@@ -812,14 +812,57 @@ jointly optimized four arm offsets plus keyboard XY/yaw, with wrist roll held at
 zero. The result was offsets
 `[+15.00, +0.40, -8.70, +0.43, 0]` degrees and a keyboard origin near
 `[257.2, -32.7, 7.64]` mm. The pan parameter reached its bound and the lateral
-pose moved about 33 mm from the measured reference. Its Newton replay produced
+pose moved about 46.8 mm in Y from the measured reference (+14.1 to -32.7 mm).
+Its Newton replay produced
 70 events versus 66 physical events and still added a `9` contact.
 
 A fully free rigid-pose diagnostic drove wrist roll and keyboard yaw to their
 bounds and worsened held-out residuals. Both results are rejected: they are
 correlated fits to contact data, not evidence that the robot or keyboard was
-physically positioned at those values. They show that yesterday's recordings do
-not identify a stable new offset-and-pose contract by themselves. The next fit
-must constrain pose to measured datum uncertainty and use independent pose or
-tip evidence, then validate on a reserved recording before any policy or hardware
-test.
+physically positioned at those values. These failed fits do not establish that
+yesterday's recordings are insufficient. The historical-method audit below
+identifies differences in the recent fitting procedure that must be corrected
+before drawing that conclusion.
+
+### Original workflow recovered from archived source — 2026-09-17
+
+The archived `fit_powered_contact_calibration.py` fixes shoulder pan and wrist
+roll at zero, fits lift/elbow/wrist-flex offsets, and solves keyboard XYZ/yaw
+against the fixed-jaw contact site. It uses measured joint states associated with
+key-down edges, not average joint angles over the entire down/up interval. The
+original collection contains three powered repetitions per A-Z key; the current
+recordings have different collection/timestamp semantics that must be retained.
+
+The recent fit freed both pan and keyboard yaw. These share a coordinate
+ambiguity: rotating the arm about shoulder pan and transforming the keyboard
+with it preserves relative tip/contact geometry. A read-only numerical check
+on yesterday's sampled poses absorbed a 15-degree pan change with one rigid
+transform to below 1e-9 mm residual. Therefore pan hitting a bound does not
+itself diagnose bad data or require independent camera measurements. Fixing one
+coordinate reference removes this redundant degree of freedom.
+
+Original Newton reports recover the contact-validation progression:
+
+| Archived candidate | First-key replay result |
+| --- | --- |
+| Flat keyboard with diagnostic fitted offsets | 19/26 |
+| Revised effective tilt and offsets | 23/26 |
+| Same revised offsets/orientation, keyboard translated +2 mm X, +1 mm Y, +1.5 mm Z | 26/26 in each of three repetitions |
+
+The final translation is directly recoverable from the archived reports; the
+exact optimizer output producing the final tilt/offset combination is still not
+preserved in the known diagnostic fit reports. The gate resets per key and stops
+at first actuation. It does not establish clean full-trajectory release/transit.
+
+Next use yesterday's measurements to estimate new values with the original
+coordinate ambiguity removed, correct fixed-jaw FK and explicit key-event
+sampling. Refine a separate effective rigid keyboard pose against actual
+simulated contacts. Evaluate both the original first-contact test and complete
+press/release replays, including extra keys. Freeze that verified scene and its
+target map before training for physical transfer. The historical method is the
+reference; historical parameter values are not inputs to the new fit.
+
+**Update, September 17 at 10:00 PDT:** that fresh event-associated fit and
+continuous Newton replay are now implemented in `scripts/calibrate_scene.sh`.
+The separate manual run includes all 33 intended presses but adds `9` and `U`,
+so calibration remains unqualified. See the [dated result and remaining work](scene_calibration_20260917.md).

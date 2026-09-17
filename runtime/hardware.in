@@ -5,3 +5,5 @@ torch @ https://download.pytorch.org/whl/cpu/torch-2.11.0%2Bcpu-cp312-cp312-many
 torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.26.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=cf547dc0975eb40bc3249be4ccbeb736597d2c3ece305b1c4e5b7a5dd7363567
 evdev>=1.9,<2
 PyYAML==6.0.3
+# Offline encoder-to-model and keyboard scene calibration.
+scipy==1.17.0

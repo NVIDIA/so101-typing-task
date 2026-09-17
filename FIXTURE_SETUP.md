@@ -1,5 +1,9 @@
 # Physical measurements and simulator layout reference
 
+For the normal collect → calibrate → train workflow, use the
+[short real-to-sim guide](docs/release/REAL2SIM.md) and `scripts/real2sim.sh`.
+This page provides the measurement details and advanced diagnostics.
+
 Start with your own base-to-keyboard measurements. The
 [September 15 reference](docs/fixtures/physical_reference_20260915.md) is a dated
 example for the ongoing mapping investigation, not the required layout for a
@@ -30,18 +34,25 @@ contacts is a reason to resolve the model/mapping before task training.
 | Step | Work | Evidence before proceeding |
 | --- | --- | --- |
 | 1. Measure and freeze placement | Match base-to-keyboard datums, parallel edges, lateral alignment and support plane using the guide below. Keep the keyboard, base and fixed jaw fixed. | Dated measurements, bird's-eye drawing and the exact task JSON; ruler agreement alone does not verify arm FK. |
-| 2. Record real motion | Calibrate this robot with LeRobot, then use the Python recorder with torque off. Hand-guide the fixed jaw through complete presses/releases across A–Z. Collect a separate repeat reserved for validation. | Measured follower angles, timestamps and USB key edges; robot/calibration/model identities. No policy or commanded trajectory is used. |
-| 3. Check and fit the mapping | Replay direct angles first. If a correction is needed, jointly fit constant offsets for shoulder pan, shoulder lift, elbow flex and wrist flex on the fit recording only. Hold wrist roll, jaw geometry and keyboard placement fixed. | Zero/historical baselines, four-joint candidate, per-key residuals and sensitivity to samples. Do not move the keyboard to absorb a joint discrepancy. |
-| 4. Validate without refitting | Replay the reserved recording with the candidate frozen. Inspect the jaw path, intended key down/up, missed/extra keys and worst-case residuals. | An exact press/release sequence across the reserved coverage; an average FK error or attractive viewer alone is insufficient. A retuned candidate needs new withheld data. |
-| 5. Verify physical commands | Test policy-free hover/press/release at separated keys such as Q/G/P, one at a time, with the same mapping inverted on hardware writes. | Physical key down/up, no unintended contacts and measured tracking/clearance logs. This checks the commanded-motion direction separately from measured-pose replay. |
-| 6. Train and deploy | Train in the validated model scene, evaluate early, then export its matching environment and verified mapping. | Saved scene/model/calibration/mapping identities plus the separate policy evaluation and hardware evidence. |
+| 2. Record real motion | Calibrate this robot with LeRobot, then hand-guide the fixed jaw with torque off through A–Z presses/releases. Collect two or three recordings with the fixture fixed. | Measured follower angles, timestamps and USB key edges; robot/calibration/model identities. No policy or commanded trajectory is used. |
+| 3. Check and fit the scene | Replay direct angles first. Fit fresh joint offsets and an effective keyboard pose from recorded contacts; refine against Newton contacts. All five arm offsets are supported. Keep jaw geometry fixed and preserve the measured layout separately. | Per-key residuals, parameter bounds and a separate effective task JSON. Simultaneous pan/yaw estimates are not unique mechanical-zero measurements. |
+| 4. Check recorded approaches | Reset between keys and replay each measured approach with the fitted scene and offsets. Require the intended first contact without simultaneous extra keys. | All recorded per-key checks pass. This is the original calibration criterion; continuous replay is a separate optional diagnostic. |
+| 5. Train | Use the passing fit's task JSON and evaluate early. Keep the fitted mapping for deployment. | Saved training scene and policy evaluation. The recordings are calibration evidence, not PPO demonstrations. |
+| 6. Verify and deploy physically | Check new recordings and policy-free Q/G/P hover/press/release commands using the same inverse mapping, then follow deployment qualification. | Independent contact/tracking/clearance evidence and the matching scene, policy and mapping. Simulation contact fitting alone does not prove physical policy performance. |
 
 Choose contact/position tolerances from key geometry and measurement uncertainty
 before inspecting validation results. The steps above are a documented workflow;
 the training CLI does not enforce them. Simulation-only installation checks can
 run earlier, but do not qualify a physical setup.
 
-**Current limitation, 2026-09-17:** fitting joint offsets with the September
+**Current result, 2026-09-17:** the September 16 recordings pass **93/93 first-key
+contacts with a reset between keys**, using a jointly refined keyboard pose and
+joint mapping. This matches the original type of scene-validation test. See the
+[selected pose and offsets](docs/experiments/scene_calibration_20260917.md).
+Continuous replay is an additional diagnostic; it was not part of that original
+criterion. Physical deployment qualification below is a separate step.
+
+**Earlier limitation, 2026-09-17:** fitting joint offsets with the September
 placement fixed has not achieved reliable physical typing. The historical 89%
 benchmark used both an effective keyboard pose and joint offsets; it was not
 proof of literal tabletop reconstruction. The next
@@ -50,11 +61,18 @@ compares pose-only, offsets-only and combined fits on separate scene candidates,
 with validation on recordings excluded from fitting. Preserve the measured
 placement as the reference; disclose any effective-model correction separately.
 
+The [original recorded-trajectory workflow](docs/fixtures/historical_offset_provenance_20260718.md#original-recorded-trajectory-workflow)
+describes how contact recordings, fixed-jaw FK, joint corrections and a rigid
+keyboard pose were used before training. Its faithful application to the
+September 16 recordings is implemented in the [short workflow](docs/release/REAL2SIM.md)
+and passes the original 93/93 per-key criterion.
+
 Use [the alignment qualification workflow](docs/release/ALIGNMENT.md) to freeze
 one mapping, replay reserved measurements, test Q/G/P physically and export the
-passing evidence. Standard physical policy execution requires that evidence; the alignment guide also documents explicit supervised candidate experiments. The current
-development robot's reserved replay still has an extra contact and a miss, so
-its fitted mapping remains unqualified. See [the investigation status](docs/experiments/README.md).
+passing evidence. Standard physical policy execution requires that evidence; the
+alignment guide also documents explicit supervised candidate experiments. The
+September scene's per-key calibration passed; its separate physical deployment
+qualification remains outstanding. See [the investigation status](docs/experiments/README.md).
 
 ![Simulator projection with CAD base datum and model Q/P/Z landmarks](docs/fixtures/reference-birdseye.svg)
 
@@ -260,7 +278,77 @@ arm angles. The source recording and keyboard pose stay unchanged; comparison
 reports, traces and optional video go under `benchmark-offsets/` beside the
 recording. This explicit diagnostic does not establish a universal calibration.
 
+### Fit joint offsets and an effective keyboard pose
+
+This is the recorded-contact real-to-sim calibration stage, before PPO. Run
+`./so101 setup-hardware` to install its pinned NumPy/SciPy dependencies and
+`./so101 build` for Newton replay. After collecting separate A–Z fit and validation
+recordings as above:
+
+```bash
+./scripts/calibrate_scene.sh \
+  --task-config output/my-fixture/task.json \
+  --fit-recording /absolute/path/to/fit/recording.json \
+  --validation-recording /absolute/path/to/validation/recording.json \
+  --out-dir output/my-fixture/scene-calibration --replay
+```
+
+The script uses measured follower angles nearest each key-down, including repeated
+presses. It fits lift/elbow/wrist-flex offsets plus keyboard XYZ/yaw, holding pan
+and wrist roll at zero. Freeing pan together with scene yaw/translation would let
+one rigid rotation compensate for the other. No historical offset values are
+used. `--fit-tilt` additionally fits effective roll/pitch; any disagreement with
+the measured support plane is reported, not treated as a new physical measurement.
+
+Outputs are `task.json`, `mapping-report.json`, byte-identical input recordings,
+Newton reports/traces and `replay-summary.json`. The source measurements and
+LeRobot calibration are unchanged. The report records the fixed jaw tip, input
+hashes, bounds, all samples selected and separate validation errors. Key-down is
+assumed to occur at half of the 1.8 mm travel; September recordings have USB
+receipt timestamps, which adds timing uncertainty. Contact centres are another
+assumption, so a low fit error alone is insufficient.
+
+To also fit shoulder pan and wrist roll, add `--fit-shoulder-pan --fit-wrist-roll`.
+Pan fitting normally holds the keyboard yaw correction fixed. Add
+`--free-keyboard-yaw` to optimize both together: the weak offset prior selects
+among equivalent coordinate choices, so neither fitted value is a unique
+physical measurement. `--fit-tilt` also frees keyboard roll/pitch. These options
+produce a `joint_scene` candidate rather than `fit3_pose`.
+
+`--replay` checks the entire down/up sequence, including unintended contacts,
+and exits unsuccessfully on mismatch. Passing it still requires the physical
+Q/G/P checks in [alignment qualification](docs/release/ALIGNMENT.md). These
+recordings calibrate the simulation; they are not policy-training data.
+
+### Refine using actual simulated contacts
+
+The original workflow adjusted the effective scene using Newton contacts after
+the numerical fit. This offline command reproduces that step with all five arm
+offsets and the keyboard's six pose parameters adjustable:
+
+```bash
+./scripts/refine_scene_contacts.sh \
+  --seed-report output/my-fixture/scene-calibration/mapping-report.json \
+  --recording /absolute/path/to/fit/recording.json \
+  --recording /absolute/path/to/second-fit/recording.json \
+  --out-dir output/my-fixture/contact-refinement
+```
+
+The default runs reset-per-press, first-contact probes. Add `--continuous` to
+search using the complete recorded down/up sequences, including extra keys and
+transit contacts. Both modes optimize on **every supplied recording**; those
+recordings no longer count as reserved validation. Multiple `--seed-report`
+arguments compare fresh fit candidates. Outputs include each trial's score,
+the selected effective `task.json`, and `mapping-report.json` with candidate
+`joint_scene`. Neither mode installs calibration or declares physical readiness.
+Run the ordinary `scene_check.sh replay` with these two output files and
+`--mapping-candidate joint_scene` to independently check the resulting complete
+trajectory. Reserve a new recording for subsequent qualification.
+
 ### Fit four joint offsets with the keyboard frozen
+
+This alternative answers a narrower question: can offsets alone align the
+measured scene? It is retained for comparison with the joint-and-scene fitter.
 
 The existing diagnostic tool fits one recording and scores separate recordings.
 Use the `fit4` candidate (pan/lift/elbow/wrist flex); it also reports zero,
