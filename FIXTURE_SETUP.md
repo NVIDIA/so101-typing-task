@@ -82,8 +82,11 @@ qualification remains outstanding. See [the investigation status](docs/experimen
 | Bird's-eye view | What it represents |
 | --- | --- |
 | [September 15 physical reference](docs/fixtures/physical-reference-birdseye-20260915.svg) | The unchanged datum-based starting layout; use its [measurement record](docs/fixtures/physical_reference_20260915.md) for physical cross-checks. |
-| [September 17 fitted training scene](docs/fixtures/replay-calibrated-birdseye-20260917.svg) | The effective scene selected after 93/93 per-key replay checks and used by the current training run. Its [task JSON](configs/tasks/replay-calibrated-20260917.json) preserves that example, not a universal user layout. |
+| [September 17 fitted training scene](docs/fixtures/replay-calibrated-birdseye-20260917.svg) | The latest effective scene, selected after 93/93 per-key replay checks and used by `model_2498.pt` for the successful physical NEWTON trial. Its [task JSON](configs/tasks/replay-calibrated-20260917.json) preserves that example, not a universal user layout. |
 | [Historical benchmark scene](docs/fixtures/reference-birdseye.svg) | The July scene used by the optional 19k policy. This is also the default `./so101 fixture` view and the Q/P/Z numerical example below. |
+
+The [latest fitted pose table](README.md#september-calibrated-scene-example) gives
+the September 17 XYZ and orientation in the simulated robot-base frame.
 
 **Unresolved discrepancy, September 17, 2026:** physical datums and checked asset
 dimensions appeared consistent, but direct replay of measured real joint angles
@@ -253,8 +256,9 @@ The helper checks the local keyboard/configuration hashes before using it.
 `python3 scripts/build_fixture_geometry.py --output FILE` regenerates the asset
 inside the pinned simulator container (numpy, scipy and USD/pxr required there only).
 
-The saved model reference pose is `(262.5651584, 12.1353200, 1.7813943) mm`,
+The historical 19k/default reference pose is `(262.5651584, 12.1353200, 1.7813943) mm`,
 with quaternion XYZW `(-0.0309082351, 0.0307819167, -0.6977733512, 0.7149891643)`.
+This is separate from the September 17 fitted pose linked above.
 Its CAD yaw is not a physical squareness reading. Measured fits replace this
 orientation; legacy relative-yaw task files retain it. See
 [task configuration](docs/release/TASK_CONFIGURATION.md).
