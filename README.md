@@ -127,7 +127,7 @@ the supported-model benchmark/development artifacts. Existing downloaded files a
 
 ### September calibrated-scene example
 
-**Latest fitted keyboard pose — September 17, 2026**, used by `model_2498.pt`:
+**Latest fitted simulation keyboard pose — September 17, 2026**, used by `model_2498.pt`:
 
 | Quantity | Value |
 | --- | --- |
@@ -137,8 +137,10 @@ the supported-model benchmark/development artifacts. Existing downloaded files a
 The [task JSON](configs/tasks/replay-calibrated-20260917.json) stores the full-precision
 position and XYZW quaternion; the [fitted bird's-eye view](docs/fixtures/replay-calibrated-birdseye-20260917.svg)
 shows this scene. These are effective model coordinates, not ruler distances to
-keyboard edges or the physical keyboard's yaw. The real fixture stayed fixed while
-this pose and the joint mapping were fitted together; keep that pair together.
+keyboard edges or the physical keyboard's yaw. **The real robot base and keyboard
+remained frozen at their measured placement.** We fitted the simulated keyboard
+pose and encoder-to-model joint mapping to reproduce the key contacts in the
+recorded real motions; keep that fitted pose/mapping pair together.
 
 The additional `model_2498.pt` release completed one physical **NEWTON** trial on
 the newly calibrated setup. Download its exact weights, matched scene/environment,
