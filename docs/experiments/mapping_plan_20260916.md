@@ -803,3 +803,23 @@ added a `9` contact around the O transition and produced extra U/J activity.
 `output/fixture-photos-20260915/trajectory-scene-alignment-20260917/placement-*`.
 The combined candidate is promising diagnostic evidence, not a validated scene,
 policy fix or physical deployment mapping.
+
+### Yesterday-only joint-plus-pose fit — rejected diagnostic — 2026-09-17
+
+To answer the requested comparison directly, a second fit used only the
+September 16 mapping collection and no historical offset or pose constants. It
+jointly optimized four arm offsets plus keyboard XY/yaw, with wrist roll held at
+zero. The result was offsets
+`[+15.00, +0.40, -8.70, +0.43, 0]` degrees and a keyboard origin near
+`[257.2, -32.7, 7.64]` mm. The pan parameter reached its bound and the lateral
+pose moved about 33 mm from the measured reference. Its Newton replay produced
+70 events versus 66 physical events and still added a `9` contact.
+
+A fully free rigid-pose diagnostic drove wrist roll and keyboard yaw to their
+bounds and worsened held-out residuals. Both results are rejected: they are
+correlated fits to contact data, not evidence that the robot or keyboard was
+physically positioned at those values. They show that yesterday's recordings do
+not identify a stable new offset-and-pose contract by themselves. The next fit
+must constrain pose to measured datum uncertainty and use independent pose or
+tip evidence, then validate on a reserved recording before any policy or hardware
+test.
