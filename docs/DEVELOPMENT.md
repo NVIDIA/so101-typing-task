@@ -1,9 +1,11 @@
 # Development and release checks
 
-`NVIDIA-dev/so101-keyboard-typing` is the canonical development repository and
-remains private. The older `VigneshBhavan/so101-keyboard-task-public` repository
-is the September 11 released snapshot; do not maintain divergent workflow fixes
-in both checkouts. Publishing changes or changing visibility is a separate step.
+`NVIDIA-dev/so101-keyboard-typing-internal` is the canonical development repository,
+with Internal visibility for NVIDIA's GitHub enterprise. The previous
+`NVIDIA-dev/so101-keyboard-typing` repository remains private and is retained
+unchanged. The older `VigneshBhavan/so101-keyboard-task-public` repository is the
+September 11 public snapshot. Maintain workflow fixes in the internal repository;
+publishing externally is a separate step.
 
 ## Where things belong
 

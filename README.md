@@ -19,8 +19,8 @@ The pinned container supplies Isaac Lab, Newton and RSL-RL.
 The tested GPU is an RTX 5090 with 32 GB; other GPUs and minimum requirements
 remain to be qualified. Runtime dependencies and benchmark artifacts are publicly
 available. No additional source checkout or cluster account is required.
-The NVIDIA-dev repository is currently private, so cloning it requires repository
-access. The runtime and artifact downloads themselves do not require that access.
+This NVIDIA-dev repository has Internal visibility: cloning requires access through
+NVIDIA's GitHub enterprise. Runtime and artifact downloads are publicly available.
 
 | Budget | Planning guidance |
 | --- | --- |
@@ -34,8 +34,8 @@ ZIP/tarball source downloads are supported: run commands from the extracted fold
 provenance records content hashes with no Git revision when `.git` is absent.
 
 ```bash
-git clone https://github.com/NVIDIA-dev/so101-keyboard-typing.git
-cd so101-keyboard-typing
+git clone https://github.com/NVIDIA-dev/so101-keyboard-typing-internal.git
+cd so101-keyboard-typing-internal
 ./so101 build
 ```
 

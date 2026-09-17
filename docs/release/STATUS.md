@@ -19,7 +19,7 @@ they did not complete the requested six-letter sequence.
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
 | Deployment bundle | Qualified scene/mapping and copied replay/probe evidence required for physical execution; calibration and trained geometry rechecked; legacy software dry runs preserved | Complete physical/model alignment and typing validation |
 | Reference fixture | Model projections, Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Measured physical layout and contact correspondence; model dimensions alone are not ruler instructions |
-| Repository | [NVIDIA-dev/so101-keyboard-typing](https://github.com/NVIDIA-dev/so101-keyboard-typing) contains both documented workflows and the pinned runtime | Code publication does not establish physical qualification |
+| Repository | [NVIDIA-dev/so101-keyboard-typing-internal](https://github.com/NVIDIA-dev/so101-keyboard-typing-internal) contains both documented workflows and the pinned runtime, with Internal visibility | Code publication does not establish physical qualification |
 
 Acceptance: a recipient can install, try a released checkpoint, train with the
 supported physics/task configuration, evaluate, calibrate their own robot using
