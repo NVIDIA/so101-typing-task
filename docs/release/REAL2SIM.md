@@ -47,6 +47,27 @@ scene. This is the pre-training criterion used here; it does not establish clean
 continuous replay or successful physical policy deployment. The September fit
 passed **93/93** such checks on its fitting recordings.
 
+### Recurring joint-offset trend — September 17, 2026
+
+The original benchmark and the September fits share a **large negative elbow
+correction, approximately -10 degrees**, with smaller positive shoulder-lift and
+wrist-flex corrections:
+
+| Mapping | Shoulder lift | Elbow flex | Wrist flex |
+| --- | ---: | ---: | ---: |
+| Historical scene used for the 89/100 result | +1.934° | -10.774° | +1.365° |
+| Earlier September four-joint fit, keyboard pose fixed | +0.749° | -9.613° | +0.540° |
+| Selected September joint-and-keyboard fit, 93/93 replay | +1.336° | -10.150° | +1.414° |
+
+These use `q_model = q_LeRobot + offset`; hardware goals use the inverse
+subtraction. Earlier elbow-only checks reduced much of the vertical contact
+error. The recurring sign and scale support investigating a systematic
+encoder/model correspondence difference, but do not identify its mechanical
+cause or establish a universal correction. The earlier fixed-keyboard fit also
+needed a pan offset; the selected joint-and-keyboard fit retained zero pan and
+wrist-roll offsets. Fit and validate the complete scene/mapping for each setup.
+See the [comparison and measured limits](../experiments/scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits).
+
 ## 1. Collect two or three hand-guided recordings
 
 Support the arm before running this command: it disables torque. Motor power

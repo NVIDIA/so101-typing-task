@@ -56,6 +56,39 @@ per-key result. Use this candidate when referring to the September 16 replay
 success. The later `continuous-refinement/` candidate has a different wrist-flex
 offset and is not the candidate that established 93/93.
 
+### Recurring trend across historical and September fits
+
+Comparison documented **September 17, 2026**. Values are additive degrees in
+`q_model = q_LeRobot + offset`; the inverse subtraction is used for hardware goals.
+
+| Mapping and evidence | Pan | Lift | Elbow | Wrist flex | Wrist roll |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Historical locked scene: 78/78 per-key replay, later 89/100 physical policy trials | 0 | +1.933627 | -10.773579 | +1.364765 | 0 |
+| September fixed-keyboard four-joint diagnostic | +3.126509 | +0.748687 | -9.612755 | +0.540195 | 0 (fixed) |
+| Selected September joint-and-keyboard fit: 93/93 per-key replay | 0 | +1.335729 | -10.150393 | +1.414388 | 0 |
+
+The common trend is a negative elbow correction near -10 degrees, accompanied
+by smaller positive lift and wrist-flex corrections. In the earlier powered-data
+analysis, applying the historical elbow correction alone reduced mean absolute
+Z error from **20.01 to 7.94 mm** on 22 presses excluded from that fit. This is
+measured-pose FK evidence of a substantial vertical contribution, not physical
+policy success. Full historical offsets reduced that subset's Z error further,
+but left substantial horizontal error.
+
+The numerical agreement motivates investigating a shared encoder/model
+correspondence issue; contact fitting can also absorb geometry error, so the
+mechanical cause remains unresolved. Pan, keyboard pose and the other joint
+corrections can compensate for one another. The earlier four-joint diagnostic
+failed the original July replay at **0/78** when transferred unchanged, despite
+its similar elbow correction. Keep the fitted pose and offsets together and
+validate each robot/calibration/fixture combination.
+
+Sources: [historical locked contract](../fixtures/historical_offset_provenance_20260718.md#locked-contract),
+[September four-joint fit and transfer](encoder_model_mapping_20260915.md#fully-new-four-joint-fit-and-transfer--2026-09-16),
+and the selected local `refined/mapping-report.json` and `contact-result.json`
+identified above. The selected September fit used fresh recording-based estimates
+and contact refinement; the historical constants were not optimization inputs.
+
 ## Earlier numerical fits and additional diagnostics
 
 Offline fitting and Newton MJWarp replay on September 17, approximately

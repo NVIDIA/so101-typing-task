@@ -157,6 +157,9 @@ diagnostic and does not pass; it was not required by the original July gate.
 The [selected pose, offsets and evidence](../experiments/scene_calibration_20260917.md)
 identify the passing `refined/` candidate. Both recordings were used for fitting;
 physical deployment is not established by this result.
+The [cross-fit comparison](../experiments/scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits)
+records the recurring roughly -10-degree elbow correction and smaller positive
+lift/wrist-flex corrections, including the limits on transferring those values.
 
 Earlier experiments include offsets-only fits, pose fits with historical offsets,
 and new joint-plus-pose fits followed by continuous Newton replay. The new
