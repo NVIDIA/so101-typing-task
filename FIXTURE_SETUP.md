@@ -82,6 +82,14 @@ qualification remains outstanding. See [the investigation status](docs/experimen
 | [September 17 fitted training scene](docs/fixtures/replay-calibrated-birdseye-20260917.svg) | The effective scene selected after 93/93 per-key replay checks and used by the current training run. Its [task JSON](configs/tasks/replay-calibrated-20260917.json) preserves that example, not a universal user layout. |
 | [Historical benchmark scene](docs/fixtures/reference-birdseye.svg) | The July scene used by the optional 19k policy. This is also the default `./so101 fixture` view and the Q/P/Z numerical example below. |
 
+**Unresolved discrepancy, September 17, 2026:** physical datums and checked asset
+dimensions appeared consistent, but direct replay of measured real joint angles
+still produced different key contacts in simulation. We suspect the
+**encoder-to-model mapping or simulated robot/contact geometry; the exact cause
+has not been isolated**. Fitting offsets and keyboard pose compensates for this
+discrepancy; it does not prove the fitted scene is geometrically identical to the
+real setup. See the [calibration rationale](docs/release/REAL2SIM.md#why-recorded-motion-calibration-comes-before-training).
+
 ![September 17 fitted simulation scene; not physical ruler targets](docs/fixtures/replay-calibrated-birdseye-20260917.svg)
 
 Joint offsets change the encoder-to-model arm pose. These drawings omit the arm,

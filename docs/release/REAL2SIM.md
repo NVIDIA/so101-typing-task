@@ -29,16 +29,18 @@ datums is the starting point; recorded key presses test that correspondence.
 
 As of **September 17, 2026**, measured placement and checked asset dimensions
 appeared consistent, but replaying measured real joint trajectories still produced
-different contacts in simulation. For example, a real Q press replaying as F
-would demonstrate a correspondence error. It would not identify the cause by
-itself: the encoder-to-model angle convention, robot/jaw geometry or keyboard
-model could contribute. The underlying cause remains unresolved.
+different contacts in simulation. **We suspect a discrepancy in the encoder-to-model
+mapping or simulated robot/contact geometry, but have not isolated its exact cause.**
+Matching external datums and dimensions does not by itself validate the joint-angle
+conventions, fixed-jaw pose or contact geometry.
 
 The practical correction is to fit joint-angle offsets and an effective simulated
 keyboard pose together from the recordings, then check actual simulated contacts.
 Keep the physical fixture fixed and save this fitted scene separately from the
 measured reference. These parameters reproduce observed contacts; they do not
-prove a particular mechanical or calibration fault.
+prove a particular mechanical or calibration fault, establish that the physical
+keyboard was misplaced, or show that the fitted scene is geometrically identical
+to the real setup.
 
 Before training for physical use, require every recorded key approach to reach
 the intended first key in simulation, with a reset between keys and no simultaneous
