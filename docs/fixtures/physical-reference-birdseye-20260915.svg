@@ -11,12 +11,12 @@
   <!-- Coordinates are X forward and Y left; SVG Y is drawn as -Y. -->
   <polygon class="outline" points="-87,41 -50,55 -41,55 0,31 0,-31 -41,-55 -50,-55 -87,-41"/>
   <circle class="datum" cx="0" cy="0" r="3"/>
-  <text x="5" y="-5" class="label">D: front-base datum / centreline</text>
+  <text x="5" y="14" class="small">D: front-base datum / centreline</text>
 
   <!-- Keyboard case: X=129.0..262.6, Y=-201.1..229.2 from D. -->
   <rect class="keyboard" x="129" y="-229.2" width="133.6" height="430.3" rx="3"/>
   <text x="138" y="-214" class="label">MX Keys case</text>
-  <text x="137" y="-202" class="small">current frozen physical-reference candidate</text>
+  <text x="137" y="-202" class="small">datum-based reference before contact fitting</text>
 
   <!-- Keycap-rim datums, measured from D. -->
   <circle class="key" cx="201.2" cy="-186.4" r="3"/><text x="206" y="-183" class="label">Q</text>
@@ -33,12 +33,12 @@
   <text x="35" y="67" class="label">129.0 mm front gap</text>
 
   <!-- Lateral gaps from base edges to case ends -->
-  <line class="dim" x1="-104" y1="55.5" x2="-104" y2="229.2"/>
-  <line class="dim" x1="-109" y1="55.5" x2="-99" y2="55.5"/><line class="dim" x1="-109" y1="229.2" x2="-99" y2="229.2"/>
-  <text x="-112" y="145" transform="rotate(-90 -112 145)" class="label">173.7 mm left-side gap</text>
-  <line class="dim" x1="286" y1="-201.1" x2="286" y2="-55.5"/>
-  <line class="dim" x1="281" y1="-201.1" x2="291" y2="-201.1"/><line class="dim" x1="281" y1="-55.5" x2="291" y2="-55.5"/>
-  <text x="294" y="-128" transform="rotate(90 294 -128)" class="label">145.6 mm right-side gap</text>
+  <line class="dim" x1="-104" y1="-229.2" x2="-104" y2="-55.5"/>
+  <line class="dim" x1="-109" y1="-229.2" x2="-99" y2="-229.2"/><line class="dim" x1="-109" y1="-55.5" x2="-99" y2="-55.5"/>
+  <text x="-112" y="-82" transform="rotate(-90 -112 -82)" class="label">173.7 mm left-side gap</text>
+  <line class="dim" x1="286" y1="55.5" x2="286" y2="201.1"/>
+  <line class="dim" x1="281" y1="55.5" x2="291" y2="55.5"/><line class="dim" x1="281" y1="201.1" x2="291" y2="201.1"/>
+  <text x="294" y="75" transform="rotate(90 294 75)" class="label">145.6 mm right-side gap</text>
 
   <text x="-110" y="265" class="small">Base-to-case gaps: left +Y side 173.7 mm; right -Y side 145.6 mm.</text>
   <text x="-110" y="277" class="small">This drawing documents placement; it does not validate encoder/model mapping.</text>

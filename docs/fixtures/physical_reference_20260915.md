@@ -1,13 +1,13 @@
 # Frozen physical-reference placement — 2026-09-15
 
-This is the placement reference for the current clamped SO-101 and Logitech MX
-Keys setup. Keep the robot base and keyboard on the same tabletop and keep this
-simulator placement fixed while validating the joint convention. Do not move the
-keyboard to improve a replay score; a new physical setup requires a new dated
-measurement and review.
+This preserves the datum-based starting placement for the clamped SO-101 and
+Logitech MX Keys setup. Keep the physical base and keyboard on the same tabletop
+and keep this reference record unchanged. The September 17 contact fit saved a
+separate effective simulation pose; it did not move the real keyboard or replace
+these measurements. A physical setup change requires a new dated measurement.
 
 The tracked pose record is [`physical_reference_20260915.json`](physical_reference_20260915.json).
-The portable training configuration is
+The portable physical-reference configuration is
 [`configs/tasks/physical-reference-20260915.json`](../../configs/tasks/physical-reference-20260915.json).
 Pass it explicitly with `--task-config`; the earlier photo `candidate-task.json`
 uses a different position and is not this frozen reference.
@@ -32,7 +32,35 @@ The placement is independent of the optional historical joint convention. The
 same task must be used for direct (zero-added-offset) and benchmark-offset
 diagnostics so that placement and encoder mapping are not changed together.
 
-Updated bird's-eye drawing: [physical-reference-birdseye-20260915.svg](physical-reference-birdseye-20260915.svg).
+Physical-reference drawing: [physical-reference-birdseye-20260915.svg](physical-reference-birdseye-20260915.svg).
+Its rounded dimensions describe this starting reference, not the later fitted scene.
+
+## Physical reference versus fitted training scene
+
+Comparison documented **September 17, 2026**. The current training scene uses
+[`replay-calibrated-20260917.json`](../../configs/tasks/replay-calibrated-20260917.json),
+matching the selected `refined/task.json` in the [calibration record](../experiments/scene_calibration_20260917.md).
+Its [bird's-eye drawing](replay-calibrated-birdseye-20260917.svg) is generated from
+that task and the same asset geometry.
+
+| Keyboard asset pose in robot-base coordinates | Physical-reference model | Fitted training scene |
+| --- | ---: | ---: |
+| Origin X, mm | 260.635 | 259.568 |
+| Origin Y, mm | 14.061 | 26.287 |
+| Origin Z, mm | 7.637 | 10.915 |
+| Roll / pitch / yaw, degrees | 0 / 0 / -90.056 | 0 / -0.500 / -86.921 |
+
+The model-origin change is **-1.068 mm X, +12.226 mm Y, +3.278 mm Z**, with
+**+3.135 degrees yaw** and **-0.500 degrees pitch**. These are effective model
+corrections, not instructions to shift or raise the physical keyboard. Rotation
+means the change is not the same displacement at every key or case edge.
+
+The saved joint offsets describe encoder/model arm correspondence; they do not
+move the base outline or keyboard in a bird's-eye drawing. Use the measured
+reference for physical placement checks and the fitted task for this policy's
+simulation. Keep each fitted task paired with its own mapping report.
+
+## Original physical-reference dimension checks
 
 Measurement cross-check, 2026-09-16 (frozen placement unchanged): dimensions
 recomputed from the case hull and plastic `base_so101_v2` mesh, with asset hashes
@@ -65,4 +93,7 @@ and numbers (local artifact: `output/frozen-layout-measurements-20260916/measure
 use the unchanged frozen task hash.
 
 For a stationary Newton view that stays open until the window closes:
-`./scripts/view_frozen_scene.sh`. It renders without advancing physics or running a policy.
+`./scripts/view_frozen_scene.sh` shows the September 15 reference. To inspect the
+current fitted example instead, use
+`./so101 scene --task-config configs/tasks/replay-calibrated-20260917.json`.
+Both render without advancing physics or running a policy.

@@ -9,12 +9,11 @@ Start with your own base-to-keyboard measurements. The
 example for the ongoing mapping investigation, not the required layout for a
 new user.
 
-**The bird’s-eye drawing shows the fitted simulator scene, not a verified IRL
-placement template.** The July scene's joint offsets and keyboard pose were fitted
-together from physical contacts. Its effective tilt/height can compensate for
-model differences, so model dimensions cannot all be treated as ruler targets.
-The helper creates candidate simulation layouts; physical joint and contact
-alignment still need independent measurements.
+**Each bird's-eye drawing belongs to a specific saved scene.** The physical
+reference, historical benchmark and current fitted training scene are different;
+choose the labelled view below. A fitted scene's effective pose can compensate
+for model differences, so its dimensions are not physical ruler targets. Keep
+the actual fixture fixed while calibrating the model against recorded contacts.
 
 Use this guide for the reference Logitech MX Keys geometry and the stock
 `base_so101_v2` plastic SO-101 base. A clamp is fine if the base is rigid and its
@@ -77,14 +76,28 @@ alignment guide also documents explicit supervised candidate experiments. The
 September scene's per-key calibration passed; its separate physical deployment
 qualification remains outstanding. See [the investigation status](docs/experiments/README.md).
 
-![Simulator projection with CAD base datum and model Q/P/Z landmarks](docs/fixtures/reference-birdseye.svg)
+| Bird's-eye view | What it represents |
+| --- | --- |
+| [September 15 physical reference](docs/fixtures/physical-reference-birdseye-20260915.svg) | The unchanged datum-based starting layout; use its [measurement record](docs/fixtures/physical_reference_20260915.md) for physical cross-checks. |
+| [September 17 fitted training scene](docs/fixtures/replay-calibrated-birdseye-20260917.svg) | The effective scene selected after 93/93 per-key replay checks and used by the current training run. Its [task JSON](configs/tasks/replay-calibrated-20260917.json) preserves that example, not a universal user layout. |
+| [Historical benchmark scene](docs/fixtures/reference-birdseye.svg) | The July scene used by the optional 19k policy. This is also the default `./so101 fixture` view and the Q/P/Z numerical example below. |
 
-For the current dated physical-reference candidate and its side-gap dimensions,
-use the [2026-09-15 physical-reference bird's-eye drawing](docs/fixtures/physical-reference-birdseye-20260915.svg).
+![September 17 fitted simulation scene; not physical ruler targets](docs/fixtures/replay-calibrated-birdseye-20260917.svg)
 
-[Open the full-size drawing](docs/fixtures/reference-birdseye.svg). It is a model
-projection, not a printable alignment template or a reachability map. The grid
-spacing is 50 mm. The arm and clamp are omitted so the base datum is visible.
+Joint offsets change the encoder-to-model arm pose. These drawings omit the arm,
+so offsets alone do not move the base or keyboard outlines. Fitting a new keyboard
+pose does change the outline and dimensions: the September 15 view therefore
+does **not** depict the September 17 training scene. The physical keyboard stayed
+fixed; use the [dated comparison](docs/fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene) to see the model correction.
+
+Draw any saved scene explicitly:
+
+```bash
+./so101 fixture --task-config output/my-scene/task.json --out-dir output/my-scene-view
+```
+
+Generated views use a 50 mm grid and omit the arm/clamp to expose the base datum.
+They are model projections, not printable alignment templates or reachability maps.
 
 ## 1. Establish the robot measurement frame
 

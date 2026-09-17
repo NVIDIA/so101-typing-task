@@ -68,6 +68,11 @@ needed a pan offset; the selected joint-and-keyboard fit retained zero pan and
 wrist-roll offsets. Fit and validate the complete scene/mapping for each setup.
 See the [comparison and measured limits](../experiments/scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits).
 
+After fitting, regenerate the bird's-eye view from the resulting `task.json`.
+The starting physical-reference drawing no longer represents the adjusted
+simulation scene. See the [labelled views](../../FIXTURE_SETUP.md) and
+[physical-reference versus fitted-scene comparison](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene).
+
 ## 1. Collect two or three hand-guided recordings
 
 Support the arm before running this command: it disables torque. Motor power
