@@ -33,6 +33,31 @@ are an effective correction that now supports this physical policy result; they
 do not prove that the physical keyboard was misplaced or that joint zeros alone
 were the cause. The fit did not replace the robot's LeRobot calibration.
 
+### Relative contribution of joint mapping and keyboard placement
+
+Interpretation recorded **September 17, 2026**. Joint mapping appears to be a
+major contributor to the vertical reach problem. In the earlier
+[powered-recording FK comparison](scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits),
+the historical elbow offset alone reduced mean absolute Z error from
+**20.01 to 7.94 mm** on 22 presses excluded from that fit. This is recorded-pose
+FK evidence. Separately, the operator observed that adding offsets restored
+physical key reach; those earlier policy attempts still dragged or hit the space bar.
+
+The [keyboard correction](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene)
+was **-1.068 mm X, +12.226 mm Y, +3.278 mm Z**, with **+3.135 degrees yaw** and
+**-0.500 degrees pitch**, relative to the datum-based physical-reference model.
+The computed front gap along the base centreline barely changed, from
+**129.172 to 129.437 mm**. The lateral shift and rotation still change key contact
+locations materially; rotation gives different displacements at different keys.
+The real fixture stayed frozen throughout.
+
+The evidence therefore supports a substantial joint-mapping contribution to
+height/reach, while the successful NEWTON run validates the **combined fitted
+scene, joint mapping and policy trained in that scene**. These comparisons do
+not quantify each component's share of the final success or establish that
+offsets alone suffice. The encoder-convention versus model/contact-geometry
+cause remains unresolved.
+
 ## How we got here
 
 1. **Measure and freeze the real fixture.** Keep the base and keyboard on the same

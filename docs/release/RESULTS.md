@@ -26,6 +26,11 @@ scene and sanitized evidence with `./so101 download --calibrated`; see the
 Raw recordings and the operator's calibration remain local. The historical
 checkpoint remains the default download.
 
+The [joint-mapping and placement findings](../experiments/physical_typing_success_20260917.md#relative-contribution-of-joint-mapping-and-keyboard-placement)
+record the elbow-only vertical-error reduction and the paired scene correction.
+Joint mapping substantially affected vertical reach; the demonstrated physical
+result used the combined fitted scene and mapping, with cause still unresolved.
+
 ## September 10: earlier public pipeline qualification
 
 This earlier short-budget AnchorBench policy learned six-letter typing after a

@@ -74,17 +74,21 @@ matching the selected `refined/task.json` in the [calibration record](../experim
 Its [bird's-eye drawing](replay-calibrated-birdseye-20260917.svg) is generated from
 that task and the same asset geometry.
 
-| Keyboard asset pose in robot-base coordinates | Physical-reference model | Fitted training scene |
+| Model quantity in robot-base coordinates | Physical-reference model | Fitted training scene |
 | --- | ---: | ---: |
 | Origin X, mm | 260.635 | 259.568 |
 | Origin Y, mm | 14.061 | 26.287 |
 | Origin Z, mm | 7.637 | 10.915 |
 | Roll / pitch / yaw, degrees | 0 / 0 / -90.056 | 0 / -0.500 / -86.921 |
+| Front base-to-case gap along base centreline, mm | 129.172 | 129.437 |
 
 The model-origin change is **-1.068 mm X, +12.226 mm Y, +3.278 mm Z**, with
 **+3.135 degrees yaw** and **-0.500 degrees pitch**. These are effective model
 corrections, not instructions to shift or raise the physical keyboard. Rotation
 means the change is not the same displacement at every key or case edge.
+The front gaps are computed from the case-hull projection, not new physical
+measurements. Their small difference does not make the lateral shift or rotation
+negligible. See the [joint-offset versus placement findings](../experiments/physical_typing_success_20260917.md#relative-contribution-of-joint-mapping-and-keyboard-placement).
 
 The saved joint offsets describe encoder/model arm correspondence; they do not
 move the base outline or keyboard in a bird's-eye drawing. Use the measured
