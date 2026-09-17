@@ -17,12 +17,14 @@ See [STATUS.md](STATUS.md) for measured validation.
 ```
 
 Choose workflow 1 below to train for your own layout. No artifact download is
-required. Workflow 2 is an optional existing policy for the reference fixture.
+required. Workflow 2 plays either released policy in its matching reference scene.
 
 First startup compiles Warp kernels; the launcher retains a user-owned runtime cache.
 Runtime source changes require `./so101 build` again. See the README budget table
-for disk space, installation estimates and the roughly 20.4-hour full training
-example. Install `uv` before using `./so101 setup-hardware`.
+for disk space and installation estimates. The September 500 + 2,000-update
+pipeline took 2 h 38 min 21 s on an RTX 5090, including evaluations/videos;
+the larger 20,000-update budget is optional. Install `uv` before
+using `./so101 setup-hardware`.
 
 ## Workflow 1: train with your chosen configuration
 
@@ -42,17 +44,22 @@ Use a separate example task and output folder so this check cannot replace the
 measured `my-fixture` or fitted `my-scene` used for physical typing:
 
 ```bash
-cp configs/tasks/keyboard-pose.json configs/tasks/my-keyboard.json
+mkdir -p output/sim-example
+cp configs/tasks/keyboard-pose.json output/sim-example/task.json
 # Optionally edit this simulated pose, then inspect it.
-./so101 fixture --task-config configs/tasks/my-keyboard.json --out-dir output/sim-example-view
-./so101 probe --task-config configs/tasks/my-keyboard.json
+./so101 fixture --task-config output/sim-example/task.json --out-dir output/sim-example-view
+./so101 probe --task-config output/sim-example/task.json
 ./so101 train --actuator anchorbench --stage p1a \
-  --task-config configs/tasks/my-keyboard.json --num-envs 64 --iterations 10
+  --task-config output/sim-example/task.json --num-envs 64 --iterations 10
 ```
 
 These are short setup checks. Use [TRAINING.md](TRAINING.md) for the staged
-P1A-to-Transit15 recipe and training-budget limitations. Add `--plan` to inspect
-the command without starting simulation or writing outputs.
+P1A-to-Transit15 recipe and training-budget limitations. Add `--plan` to simulation
+commands to inspect the launch without starting simulation or writing outputs.
+
+To inspect the scene in the Newton viewer, run
+`./so101 scene --task-config output/sim-example/task.json` from an X11 desktop
+terminal. It stays open until you close the window and does not run a policy.
 
 Newton MJWarp supports solver substeps, iterations, line-search iterations and
 tolerance. Actuator JSON supports stiffness, damping, armature, friction,
@@ -125,9 +132,11 @@ operator-enabled hardware execution. The bundle checks the trained nominal map,
 including changed keyboard geometry, against the qualified scene. Keep the same
 robot calibration throughout validation and deployment.
 
-For software-only dry runs, the released checkpoint/environment pair can still
-select its historical mapping automatically; new training requires an explicit
-mapping. Older bundles remain usable for those dry runs.
+For software-only exports without alignment evidence, only the exact historical
+19k checkpoint/environment pair selects its mapping automatically. The September
+checkpoint and new training require an explicit mapping. The downloaded reference
+mapping is not a calibration for a different robot. If fitting your setup changes
+the trained keyboard scene, return to workflow 1 and train for that scene.
 
 This software path has been tested locally. A new-user physical reproduction on
 a second SO-101 remains pending.

@@ -7,8 +7,9 @@ the generated request, exit, evaluation and deployment logs with the result.
 ## Software acceptance
 
 1. Build with `./so101 build` using only public dependencies.
-2. For the optional reference checkpoint, run `./so101 download`; every file must
-   pass its pinned checksum. Training from scratch does not require this download.
+2. For reference playback, use `./so101 download` for the historical 19k policy or
+   `./so101 download --calibrated` for the September policy; every file must pass
+   its pinned checksum. Training from scratch does not require either download.
 3. Run `./so101 probe` with your task JSON, or the optional reference-policy video command. Inspect the
    recording and strict evaluation report, including failure reasons.
 4. For physical typing on your own setup, first install the hardware environment,
@@ -19,8 +20,9 @@ the generated request, exit, evaluation and deployment logs with the result.
    smoke checks may use an example task without hardware.
 5. Complete [alignment qualification](ALIGNMENT.md) for physical use and export
    with that evidence, the same robot ID/calibration, and the evaluated checkpoint's
-   environment. Dry-run without `--execute`. For the optional 19k policy, qualify
-   its frozen historical scene; changing it requires training a new policy.
+   environment. Dry-run without `--execute`. For either released policy, qualify
+   your robot's mapping against its frozen trained scene; changing that scene
+   requires training a new policy.
 6. Compare the exported CPU actor to a recorded simulation trace using the
    parity command in [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
 

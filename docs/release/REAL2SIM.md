@@ -143,10 +143,11 @@ measurement JSON. For example:
 ```bash
 ./so101 train --actuator anchorbench --stage p1a \
   --task-config output/my-scene/task.json \
-  --num-envs 4096 --iterations 4000 --seed 1307
+  --num-envs 4096 --iterations 500 --seed 1307
 ```
 
-Choose the budget for your GPU, evaluate early, then follow the
+This starts the measured September recipe; choose the budget for your GPU,
+evaluate early, then follow the
 [six-letter continuation and evaluation recipe](TRAINING.md). These recordings
 are not fed into PPO. Simulation already uses model joint coordinates: retain the
 offsets for encoder reads and inverse hardware commands, rather than adding them

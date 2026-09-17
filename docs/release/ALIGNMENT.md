@@ -46,6 +46,13 @@ This file does not assert that your physical setup matches the historical model.
 If matching your setup requires a different simulated keyboard pose, use workflow 1
 and train for that fitted scene; the 19k policy's map stays frozen.
 
+The September `model_2498.pt` has a different trained scene, preserved in
+`configs/tasks/replay-calibrated-20260917.json` and its downloaded `params/`.
+Physical use requires your robot's mapping qualified against that scene. Its
+published fit documents the original robot; it is not transferable calibration
+or an automatically selected mapping. For a new setup, the record/fit/train route
+is the normal workflow.
+
 ## 2. Prepare an unqualified mapping
 
 Use the fitted scene and offsets from `real2sim.sh fit`, with the new reserved
@@ -185,7 +192,8 @@ Use the evaluated policy trained with this same nominal task configuration:
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For the released checkpoint, use its downloaded checkpoint/environment paths.
+For either released checkpoint, use its downloaded checkpoint/environment paths
+and alignment evidence for that exact trained scene.
 Export checks the trained nominal key map, keyboard pose, reset and offsets
 against the qualified scene. It copies all qualification evidence into the
 bundle, so later checks do not depend on the original recording directories.

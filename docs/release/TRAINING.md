@@ -15,9 +15,12 @@ checks below can run earlier and do not establish physical correspondence.
 ## Short validation
 
 ```bash
-./so101 train --actuator anchorbench --num-envs 64 --iterations 10 --seed 1307
+./so101 train --actuator anchorbench --stage p1a \
+  --task-config output/my-scene/task.json --num-envs 64 --iterations 10 --seed 1307
 ```
 
+For simulation-only installation checks, use the
+[separate example task](QUICKSTART.md#simulation-only-startup-check) instead.
 One-iteration runs with four environments have been tested for both public actuator
 profiles, task DR, changed nominal pose, custom solver settings and custom actuator
 parameters. The 64-environment, 10-update AnchorBench quickstart and DR run also
@@ -30,20 +33,18 @@ compiles Warp kernels; the user-owned runtime cache reuses them on later runs.
 The September 17 fitted-scene run used **500 P1A + 2,000 Transit15 updates**,
 passed 2,048/2,048 six-letter simulation episodes and completed one physical
 NEWTON trial. Its measured training/evaluation wall time was **2 h 38 min 21 s**
-on an RTX 5090. To try that budget with your own fitted scene, set `--iterations`
-to `500` and `2000` in the two training commands below, or use
-`--p1a-iterations 500 --transit-iterations 2000` with the supervisor. Evaluate your
-own checkpoints before continuing; this result does not guarantee another setup.
+on an RTX 5090. The commands below use that budget with your own fitted scene.
+Evaluate your own checkpoints before continuing; this result does not guarantee
+another setup or establish a minimum training budget.
 See the [exact checkpoint and evidence](../experiments/physical_typing_success_20260917.md).
 
-After the real-to-sim fit produces `output/my-scene/task.json`, an example two-stage
-budget is 4,000 P1A updates followed by 16,000 six-letter updates. Evaluate early
-and choose the continuation budget from your results:
+After the real-to-sim fit produces `output/my-scene/task.json`, run the two stages
+with an evaluation between them:
 
 ```bash
 ./so101 train --actuator anchorbench --stage p1a \
   --task-config output/my-scene/task.json \
-  --num-envs 4096 --iterations 4000 --seed 1307
+  --num-envs 4096 --iterations 500 --seed 1307
 
 # Evaluate a saved P1A checkpoint before choosing a continuation budget.
 ./so101 evaluate --actuator anchorbench --stage p1a \
@@ -56,12 +57,15 @@ and choose the continuation budget from your results:
 # Continue from the evaluated model with the same profile/configuration.
 ./so101 train --actuator anchorbench --stage transit15 \
   --checkpoint /absolute/path/to/P1A/model_N.pt \
-  --num-envs 4096 --iterations 16000 --seed 1307
+  --num-envs 4096 --iterations 2000 --seed 1307
 ```
 
-This documents a runnable staged recipe, not a newly reproduced benchmark result.
-The historical benchmark used qualified precursor checkpoints and specific
-multi-GPU runs. The released artifact manifest records checkpoint identities. A new seed, new geometry or new precursor is a new experiment.
+Increase the stage budgets if your evaluations justify it. The older example of
+4,000 + 16,000 updates remains available, but is not required to demonstrate the
+pipeline. The historical 19k benchmark used different precursor checkpoints and
+specific multi-GPU runs; neither recipe automatically reproduces that result.
+The released artifact manifest records checkpoint identities. A new seed, new
+geometry or new precursor is a new experiment.
 RSL-RL checkpoint indices are inherited on resume; use saved iteration metadata
 and the request's additional-iteration budget rather than guessing update counts
 from a filename. Do not select a checkpoint solely because it has the largest
@@ -72,8 +76,8 @@ checkpoint under `params/` are inherited automatically; keep the same actuator
 choice unless intentionally performing a separately labelled transfer experiment.
 Use `--task-config` or `--physics-config` explicitly when changing the experiment.
 
-The 4096-environment, full-budget recipe has not been rerun in the new public
-container. Memory use and wall time must be measured for the recipient's GPU.
+The optional 20,000-update recipe has not been rerun in the released container.
+Memory use and wall time must be measured for the recipient's GPU.
 Reduce `--num-envs` if necessary, but record it: it changes samples per PPO update
 and therefore the training budget. The current default is 64 environments, not a
 claim that 64 reproduces the historical training setup.
@@ -118,11 +122,13 @@ inside a persistent terminal such as tmux for a long experiment:
 ./so101 build
 python3 scripts/run_public_training_pipeline.py \
   --task-config output/my-scene/task.json \
+  --p1a-iterations 500 --transit-iterations 2000 \
   --out-dir output/my-training-seed1307
 ```
 
-Defaults are 4096 environments, 4000 P1A updates, then 16000 additional Transit15
-updates. It evaluates P1A on 1024 episodes with seed 2307 before advancing. The
+This command uses the same 500 + 2,000 budget, with 4096 environments. If you omit
+the two iteration flags, the supervisor retains its older 4,000 + 16,000 defaults.
+It evaluates P1A on 1024 episodes with seed 2307 before advancing. The
 default promotion threshold is 90% strict success, an engineering gate rather
 than a claim of hardware readiness. A failed gate saves its report and video,
 stops before Transit15, and marks `status.json` for inspection.

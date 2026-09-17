@@ -2,11 +2,12 @@
 
 Train an SO-101 typing policy in Newton for your keyboard placement, evaluate it,
 and export it for deployment with your robot's calibration and a verified joint
-mapping. An established AnchorBench ~19k checkpoint is available for simulation
-and **physical reference-fixture experiments**. Complete physical reproduction
-on a new user's setup remains to be qualified.
+mapping. The September fitted-scene policy completed one physical **NEWTON**
+trial; the historical ~19k policy achieved 89/100 six-letter trials on its original
+fixture. Both are available for simulation playback. For your own physical setup,
+start with workflow 1; complete reproduction by another user remains unverified.
 
-[Watch the typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4)
+[Watch the historical typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4)
 in the [Anchor-Lab media collection](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/main/media).
 
 ## Install
@@ -47,7 +48,9 @@ Follow this order for physical typing:
 1. [Install the hardware environment and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot.
 2. [Measure and freeze the physical fixture](FIXTURE_SETUP.md), saving the starting layout as `output/my-fixture/task.json`.
 3. [Record and fit the scene](docs/release/REAL2SIM.md): hand-guide key presses with torque off, fit joint offsets and keyboard pose, then pass the reset-per-key contact checks. Keep the fitted `output/my-scene/task.json` and `mapping-report.json` together.
-4. [Train and evaluate](docs/release/TRAINING.md) using that fitted scene, then complete the alignment and deployment steps below.
+4. [Train and evaluate](docs/release/TRAINING.md) using that fitted scene. The measured September recipe used 500 two-letter updates, then 2,000 six-letter updates.
+5. [Qualify alignment](docs/release/ALIGNMENT.md) using fresh recordings excluded from fitting and physical Q/G/P checks with the same mapping.
+6. [Export, dry-run and deploy](#both-workflows-qualify-alignment-and-deploy) the evaluated checkpoint with its matching scene and alignment evidence.
 
 The recordings calibrate the model; they are not policy-training demonstrations.
 The suspected encoder/model or contact-geometry discrepancy remains unresolved;
@@ -81,8 +84,8 @@ JSON configures Newton MJWarp and actuator parameters. Sparse VBD is not exposed
 by this interface. No pretrained download is needed to train from scratch.
 
 At the end of training, the launcher prints the host paths of the latest saved
-checkpoint and its matching environment. Use those paths in the commands below,
-with the stage used for that checkpoint:
+checkpoint and its matching environment. After the six-letter continuation, use
+those paths below. For a two-letter checkpoint, use `--stage p1a` and `--target HE`:
 
 ```bash
 ./so101 evaluate --actuator anchorbench --stage transit15 \
@@ -98,6 +101,18 @@ JSONs; export uses the trained nominal key map and joint reference. Use `p1a` an
 a two-letter target for P1A checkpoints. Runs and videos are saved under `output/`.
 
 ## Workflow 2: optionally try a released checkpoint
+
+Choose a matched policy/scene bundle. Neither download needs hardware for simulation:
+
+| Download | Policy and scene | Physical evidence |
+| --- | --- | --- |
+| `./so101 download` | Historical `model_19000.pt`, July fitted scene, mat fixture | 89/100 six-letter trials on the original benchmark setup |
+| `./so101 download --calibrated` | September `model_2498.pt`, newly fitted scene, no-mat fixture | One successful NEWTON trial on the new development robot |
+
+Their keyboard poses and joint mappings differ. Use the matching environment and
+keep the September bundle's complete `params/` directory. For physical use, your
+robot needs its own calibration and alignment evidence for the selected scene.
+If your fitted scene differs, train a policy for it using workflow 1.
 
 The default download is the established AnchorBench ~19k checkpoint, trained for
 a specific keyboard pose and fixed jaw. Simulation playback needs no physical robot. The historical setup used the
@@ -192,11 +207,15 @@ trajectory replay and physical Q/G/P checks. Then export and dry-run your policy
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For workflow 2, substitute the downloaded 19k checkpoint and environment paths
-above, retaining qualification for that historical scene.
-Training does not establish a physical joint mapping. For a software-only dry
-run, you may omit `--alignment`: the released pair selects its historical mapping;
-new training requires an explicit mapping as described in
+For either released policy, substitute its checkpoint and matching environment
+paths above, and qualify your robot's mapping against that policy's trained scene.
+The historical 19k route is detailed in the alignment guide. The September
+reference fit is evidence for its original robot, not qualification for yours.
+
+Training does not establish a physical joint mapping. For software-only exports
+without `--alignment`, automatic mapping recognizes **only the exact historical
+19k checkpoint/environment pair**. The September checkpoint and your own training
+require an explicit mapping as described in
 [hardware preparation](docs/release/HARDWARE_PREPARATION.md).
 
 Export and the dry run check your calibration without connecting to hardware;

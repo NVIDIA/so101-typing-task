@@ -92,7 +92,7 @@ def run(paths, records, out, rounds):
         print('Keep these robot-specific offsets for deployment:', out/'mapping-report.json')
         print('Train in the model coordinates with this scene (choose a budget and evaluate early):')
         print(shlex.join(['./so101', 'train', '--actuator', 'anchorbench', '--stage', 'p1a',
-                          '--task-config', str(out/'task.json'), '--num-envs', '4096', '--iterations', '4000']))
+                          '--task-config', str(out/'task.json'), '--num-envs', '4096', '--iterations', '500']))
         return 0
     except Exception as error:
         summary.update(status='failed', error=str(error)); save()

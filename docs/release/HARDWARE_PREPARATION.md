@@ -47,8 +47,9 @@ You can change the nominal keyboard position/yaw with a task JSON, retrain, and
 export that policy's geometry. You can also train over bounded XY/yaw placement
 variation and reset-joint noise. See [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md).
 
-The released pretrained checkpoints correspond to the original setup. Moving
-that physical keyboard does not update their training distribution. For your own
+Each released checkpoint corresponds to its own fitted scene: the historical
+19k mat fixture and the September no-mat fixture are different. Moving the
+physical keyboard does not update either policy's frozen map. For your own
 policy, calibrate the scene using [recorded motion](REAL2SIM.md), train with its
 saved task JSON, and keep the physical fixture unchanged. The fitted scene is an
 effective model; its coordinates are not instructions to move the real keyboard.
@@ -72,7 +73,7 @@ is representative alignment evidence, not a policy success guarantee.
 Export with `--alignment output/my-fixture/qualified/qualification.json` to make
 a physical-capable bundle. The original mapping options below still support
 software export and dry runs; they do not bypass the qualification requirement.
-Existing bundles without this evidence must be re-exported before physical use.
+Existing bundles without this evidence must be re-exported for standard physical use.
 For an explicit supervised experiment before qualification, export with
 `--alignment-candidate` and use `deploy --experimental --execute`; see
 [the experimental command and retained checks](ALIGNMENT.md#optional-supervised-experiments).
@@ -90,9 +91,11 @@ For an explicit supervised experiment before qualification, export with
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For the optional 19k policy, substitute its downloaded checkpoint/environment
+For either released policy, substitute its downloaded checkpoint/environment
 paths from the [README](../../README.md#workflow-2-optionally-try-a-released-checkpoint)
-and qualification for its original scene.
+and your robot's qualification for that exact trained scene. The September
+checkpoint requires an explicit mapping; only the historical 19k pair supports
+automatic mapping selection for software-only exports.
 
 Use a two-letter target such as `HE` for P1A policies; Transit15 policies use six
 letters. Export and the dry run both check the local LeRobot calibration for the selected
@@ -195,6 +198,7 @@ accessible. Begin with controlled validation and stop on unexpected motion or a
 wrong key. The runner enforces measured reset arrival and strict press/release
 judging. Logs are written to the bundle's `runs/` directory.
 
-Software preparation and dry runs have been tested. [Second-robot evidence and
-remaining release work](STATUS.md#physical-deployment-follow-up) distinguish
-restored reaching/contact from complete typing reproduction.
+Software preparation and dry runs have been tested, and the September fitted-scene
+policy completed one physical NEWTON trial in experimental mode. [Remaining
+release work](STATUS.md#physical-deployment-follow-up) includes reserved replay,
+full Q/G/P qualification, repeated physical reliability and independent reproduction.

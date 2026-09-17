@@ -29,9 +29,11 @@ scripts implement these commands or support explicitly labelled diagnostics.
 | `docker/`, `runtime/` | Pinned simulator build, dependency locks and runtime patch |
 | `output/`, `.artifacts/`, `local/` | Ignored runs, downloaded weights and workstation shortcuts; excluded from Docker |
 
-Raw recordings, camera captures and fit reports remain local. Investigation
-notes name them as artifact identifiers, not downloadable source links. Preserve
-their hashes and originals; do not rewrite old evidence to match new code.
+Raw recordings, camera captures and original fit reports remain local. Selected
+sanitized reports and physical-run evidence are published with the calibrated
+checkpoint. Investigation notes distinguish local artifact identifiers from
+downloadable evidence. Preserve original hashes and files; do not rewrite old
+evidence to match new code.
 Portable source must not depend on a particular user's home, serial number or
 an existing `output/` directory. Keep machine shortcuts in `local/`.
 Use generic device placeholders in instructions and synthetic identifiers in

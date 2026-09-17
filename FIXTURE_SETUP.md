@@ -35,9 +35,9 @@ joint offsets are fitted together while the physical fixture stays fixed.
 
 | Step | Work | Evidence before proceeding |
 | --- | --- | --- |
-| 1. Measure and freeze placement | Match base-to-keyboard datums, parallel edges, lateral alignment and support plane using the guide below. Keep the keyboard, base and fixed jaw fixed. | Dated measurements, bird's-eye drawing and the exact task JSON; ruler agreement alone does not verify arm FK. |
-| 2. Record real motion | Calibrate this robot with LeRobot, then hand-guide the fixed jaw with torque off through A–Z presses/releases. Collect two or three recordings with the fixture fixed. | Measured follower angles, timestamps and USB key edges; robot/calibration/model identities. No policy or commanded trajectory is used. |
-| 3. Check and fit the scene | Replay direct angles first. Fit fresh joint offsets and an effective keyboard pose from recorded contacts; refine against Newton contacts. All five arm offsets are supported. Keep jaw geometry fixed and preserve the measured layout separately. | Per-key residuals, parameter bounds and a separate effective task JSON. Simultaneous pan/yaw estimates are not unique mechanical-zero measurements. |
+| 1. Calibrate, measure and freeze placement | Complete LeRobot calibration with the sweep clear, then match base-to-keyboard datums, lateral alignment and support plane using the guide below. Keep the keyboard, base and fixed jaw fixed. | Dated measurements, bird's-eye drawing and the exact task JSON; ruler agreement alone does not verify arm FK. |
+| 2. Record real motion | Hand-guide the fixed jaw with torque off through A–Z presses/releases. Collect two or three recordings with the fixture and robot calibration fixed. | Measured follower angles, timestamps and USB key edges; robot/calibration/model identities. No policy or commanded trajectory is used. |
+| 3. Fit the scene | Fit fresh joint offsets and an effective keyboard pose from recorded contacts; refine against Newton contacts. All five arm offsets are supported. Keep jaw geometry fixed and preserve the measured layout separately. | Per-key residuals, parameter bounds and a separate effective task JSON. Simultaneous pan/yaw estimates are not unique mechanical-zero measurements. |
 | 4. Check recorded approaches | Reset between keys and replay each measured approach with the fitted scene and offsets. Require the intended first contact without simultaneous extra keys. | All recorded per-key checks pass. This is the original calibration criterion; continuous replay is a separate optional diagnostic. |
 | 5. Train | Use the passing fit's task JSON and evaluate early. Keep the fitted mapping for deployment. | Saved training scene and policy evaluation. The recordings are calibration evidence, not PPO demonstrations. |
 | 6. Verify and deploy physically | Check new recordings and policy-free Q/G/P hover/press/release commands using the same inverse mapping, then follow deployment qualification. | Independent contact/tracking/clearance evidence and the matching scene, policy and mapping. Simulation contact fitting alone does not prove physical policy performance. |
@@ -234,11 +234,11 @@ reset samples. Output directories must be new, protecting existing measurements.
 - **Train for your fixture:** validate the candidate scene and joint mapping
   against physical poses/contacts, train and evaluate, then export the matching
   `params/env.yaml` and joint mapping. Re-measure if the base or board moves.
-- **Use the optional ~19k checkpoint:** a software-only export can select its
-  historical joint mapping automatically. Standard physical use requires
-  qualification against its frozen scene. A new measurement file does not
-  reposition its map; the drawing alone cannot certify reproduction of the
-  original fixture.
+- **Use a released checkpoint:** standard physical use requires your robot's
+  qualification against that policy's frozen scene. A new measurement file does
+  not reposition its map. Only the historical ~19k pair selects a mapping
+  automatically for software-only export; the September policy requires an
+  explicit mapping. Neither drawing certifies physical reproduction.
 
 In both cases, perform standard LeRobot calibration for **your** SO-101.
 Calibration determines encoder coordinates; it does not register the keyboard

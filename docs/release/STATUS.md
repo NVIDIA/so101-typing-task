@@ -13,19 +13,19 @@ qualification remain pending. All new simulation runs use Newton MJWarp.
 | --- | --- | --- |
 | Public runtime | Public image digest, source ancestor and runtime patch build successfully; GPU reset/action probe passes | Independent recipient installation and GPU/driver coverage |
 | Training | Latest fitted-scene AnchorBench run: 500 P1A + 2,000 Transit15 updates, 2,048/2,048 strict six-letter simulation episodes; earlier USD/custom task/physics checks retained | Wider seed/GPU coverage and repeated physical trials |
-| Released policy playback | 1021/1024 strict evaluation episodes passed in the fresh README walkthrough; recorded NVIDIA typing passed | Additional seeds, independent GPU/machine and interactive X11 viewer |
+| Released policy playback | Historical 19k: 1021/1024 in the fresh README walkthrough; September 2498: 64/64 after anonymous release download and a passing NEWTON video | Independent GPU/machine and interactive X11 walkthrough |
 | Physics choices | JSON solver settings and actuator parameters saved/restored with contract hashes | Sparse VBD is not supported by this interface |
 | Keyboard placement and DR | Nominal XYZ/full orientation updates mesh and map; per-reset XY/yaw and joint noise; 3-reset probe preserved actor nominal map | Fixed-policy XY/yaw tolerance measured; physical and cross-physics robustness pending |
-| Staged recipe | Public P1A-to-Transit15 commands, output conventions and budget caveats documented | Short learned recipe qualified; optional 20,000-update budget not reproduced |
+| Staged recipe | 500 P1A + 2,000 Transit15 updates completed; commands, outputs and measured timing documented | Optional 20,000-update budget not reproduced |
 | Standard robot calibration | Pinned CPU-only LeRobot environment installs; official follower calibration command documented | Operator performs calibration on their own robot |
 | Deployment bundle | Calibration and trained geometry rechecked; standard execution requires qualified replay/probe evidence; explicit candidate mode completed one physical NEWTON trial | Fresh reserved replay, complete Q/G/P qualification and physical reliability |
-| Reference fixture | Model projections, Logitech MX keyboard, fixed typing jaw, closed moving jaw and 4.44 mm mat documented | Measured physical layout and contact correspondence; model dimensions alone are not ruler instructions |
+| Reference fixtures | Historical mat fixture and September no-mat fixture documented separately; measured starting layout and effective fitted scene have labelled drawings | Another user's measured contact correspondence; fitted model dimensions alone are not ruler instructions |
 | Repository | [NVIDIA-dev/so101-keyboard-typing-internal](https://github.com/NVIDIA-dev/so101-keyboard-typing-internal) contains both documented workflows and the pinned runtime, with Internal visibility | Code publication does not establish physical qualification |
 
-Acceptance: a recipient can install, try a released checkpoint, train with the
-supported physics/task configuration, evaluate, calibrate their own robot using
-LeRobot, and deploy using the saved nominal geometry. Software tests alone do not
-establish successful typing on another physical robot.
+Acceptance: a recipient can install and try a released checkpoint; for physical
+typing, calibrate their own robot using LeRobot, record and fit their scene,
+train/evaluate, qualify alignment, and deploy using the saved geometry and mapping.
+Software tests alone do not establish successful typing on another physical robot.
 
 The benchmark fixture is the default reference, not a restriction on training.
 Changed nominal placement and bounded pose randomization are supported. See
@@ -72,6 +72,15 @@ machine or cold-install result. Logs remain local under
 `output/release-newton-20260917/`.
 
 ## Scene-calibration workflow review — 2026-09-17 PDT
+
+The latest consistency pass makes the measured 500 + 2,000-update recipe the first
+training example, distinguishes both released scenes and their mapping choices,
+and preserves calibration-before-fixture ordering. A clean source copy passed
+280 host tests, 2 skips and 13 subtests, 25 offline command checks, 52 Markdown
+heading links and syntax checks for 41 documented shell blocks. The runtime
+rebuilt with cached layers and matches the reviewed source. This pass ran no GPU
+simulation or hardware motion; it does not add physical qualification evidence.
+Local audit: `output/repo-logic-review-20260917T235050Z/`.
 
 New-user documentation review: the README now orders robot calibration and
 measured-motion scene fitting before physical-use training, and carries the
@@ -146,7 +155,7 @@ original mat-trained `model_19000.pt`; the local no-mat `model_19996.pt` is sepa
 | --- | --- |
 | Run the implemented alignment workflow on hardware | Candidate preparation, reserved replay, Q/G/P qualification and deployment checks are implemented; current physical evidence has not passed |
 | Verify real/model alignment and fixture instructions | Measured physical poses and contacts across the keyboard, with the robot calibration and joint mapping recorded |
-| Complete the new-robot typing test | Exact press/release/clearance sequences and all attempted results retained |
+| Measure repeated new-robot typing | One exact NEWTON trial is complete; evaluate more sequences and retain every attempt, including failures |
 | Repeat the documented workflow independently | Another user/machine follows README and records installation, training/export and physical results |
 
 The software cleanup makes mapping selection explicit and reproducible. It does
@@ -172,8 +181,9 @@ qualification; file hashes cannot sense those changes.
 
 ## Evidence and limits
 
-`validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 277 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
+`validation_runs.json` records earlier successful local run IDs, image identities
+and selected results. The latest [release audit](#calibrated-policy-release-verification--2026-09-17-pdt)
+passed 280 host tests, 2 skipped, and 13 subtests (2026-09-17). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k

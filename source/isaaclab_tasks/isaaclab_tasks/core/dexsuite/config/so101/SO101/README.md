@@ -1,6 +1,10 @@
 # SO101 Robot - URDF and MuJoCo Description
 
-This repository contains the URDF and MuJoCo (MJCF) files for the SO101 robot.
+This directory contains the URDF and MuJoCo (MJCF) model sources for the SO101.
+For typing setup, follow the repository's top-level README. The Docker typing
+runtime loads the pinned robot USD selected by `SO101_ROBOT_USD` in
+`docker/typing-public.Dockerfile`; changing the MJCF calibration variant below
+does not switch that runtime model or calibrate the physical robot.
 
 ## Overview
 
