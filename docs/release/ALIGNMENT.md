@@ -47,6 +47,13 @@ accepts the standard diagnostic `fit4` report and requires distinct fitting and
 reserved recording hashes. Ad-hoc legacy reports need their provenance preserved;
 do not relabel them as standard fit reports.
 
+To inspect a policy's software contract using this candidate before qualification,
+use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
+checkpoint, matching environment, robot ID and a new output directory. The bundle
+records the selected offsets and supports `deploy` dry runs. It remains explicitly
+unqualified and cannot run with `--execute`; physical policy deployment still
+requires the passing evidence below and a new export with `--alignment`.
+
 ## 3. Replay reserved measured motion in simulation
 
 Replay using the prepared candidate. This uses the same frozen offsets for

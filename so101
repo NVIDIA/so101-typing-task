@@ -76,6 +76,7 @@ def main():
                          help='auto identifies the released 19k pair; explicit choices require verified physical/model alignment')
     mapping.add_argument('--joint-calibration', type=Path, help='Measured encoder-to-model fit for your robot')
     mapping.add_argument('--alignment', type=Path, help='qualified scene alignment for physical deployment')
+    mapping.add_argument('--alignment-candidate', type=Path, help='unqualified mapping for software dry runs only')
     prep.add_argument('--out-dir', type=Path, required=True)
     deploy = sub.add_parser('deploy', help='dry-run a deployment bundle; operator can opt in to hardware with --execute')
     deploy.add_argument('bundle', type=Path)
@@ -137,6 +138,8 @@ def main():
                        '--out-dir', str(args.out_dir.resolve())]
             if args.alignment:
                 command += ['--alignment', str(args.alignment.resolve())]
+            elif args.alignment_candidate:
+                command += ['--alignment-candidate', str(args.alignment_candidate.resolve())]
             elif args.joint_calibration:
                 command += ['--joint-calibration', str(args.joint_calibration.resolve())]
             else:

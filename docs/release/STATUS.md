@@ -71,7 +71,7 @@ qualification; file hashes cannot sense those changes.
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 246 tests, 2 skipped, and 13 subtests (2026-09-16). They cover
+selected results. Host checks passed: 247 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k
@@ -256,3 +256,14 @@ check because of its extra non-letter contact. No physical qualification was
 created, and no hardware was accessed. Calibration and fixture hashes are
 unchanged. Local reports are under
 `output/alignment-integration/20260917T045600Z/`.
+
+### Candidate export — 2026-09-17
+
+`prepare-deployment --alignment-candidate alignment.json` now supports software
+inspection of a fitted mapping before qualification. Its bundle pins the
+candidate, checks the trained scene and calibration, and remains blocked from
+physical policy execution. The normal qualified deployment path is unchanged.
+The current four-joint candidate was prepared with the completed frozen-scene
+`model_19998.pt`; its CPU dry run passed with the fitted coefficients. Host
+regression checks pass with 247 tests, 2 skips and 13 subtests. No physical motion
+or alignment qualification is claimed.

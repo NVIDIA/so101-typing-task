@@ -96,11 +96,33 @@ def environment(c):
                                   'velocity_limits_rad_s': list(bundle.JOINT_RATE_LIMITS_RAD_S), 'q_reset_ref': trajectory.RESET.tolist()}}}
 
 
-def export(e, qualification, monkeypatch, env=None):
+def export(e, qualification, monkeypatch, env=None, candidate=False):
     checkpoint = e.root/'model.pt'; checkpoint.write_bytes(b'synthetic-policy-test-only')
     env_path = e.root/'env.yaml'; env_path.write_text(yaml.safe_dump(env or environment(e.candidate['contract'])))
     monkeypatch.setattr(bundle, 'FixedCartesianPolicy', lambda p: SimpleNamespace(sha256=sa.digest(p)))
-    return bundle.prepare(checkpoint, env_path, 'test_robot', 'auto', e.root/'bundle', alignment_path=qualification)
+    kwargs = {'alignment_candidate_path' if candidate else 'alignment_path': qualification}
+    return bundle.prepare(checkpoint, env_path, 'test_robot', 'auto', e.root/'bundle', **kwargs)
+
+
+def test_candidate_bundle_preserves_offsets_but_cannot_enable_physical_execution(evidence, monkeypatch):
+    e = evidence
+    offsets = [3.12651, .74869, -9.61276, .54019, 0.]
+    e.candidate['contract']['joint_zero_offset_deg'] = offsets
+    e.candidate['contract']['mapping'] = {'kind': 'recording_fit4', 'fit_recording_sha256': 'fit',
+                                         'reserved_recording_sha256': [sa.digest(e.recording)]}
+    e.candidate['contract_sha256'] = sa.fingerprint(e.candidate['contract'])
+    dump(e.alignment, e.candidate)
+    manifest = export(e, e.alignment, monkeypatch, candidate=True)
+    root = e.root/'bundle'
+    profile, data = bundle.validate_manifest(root/'deployment.json', root/'checkpoint.pt', root/'env.yaml', 'test_robot')
+    assert list(profile.joint_zero_offset_deg) == offsets
+    assert manifest['alignment_qualified'] is False
+    assert data['mapping_selection'] == 'unqualified_alignment'
+    with pytest.raises(ValueError, match='requires a qualified'):
+        bundle.require_qualified_alignment(data)
+    e.calibration.write_text(e.calibration.read_text()+'\n')
+    with pytest.raises(ValueError, match='calibration changed'):
+        bundle.validate_manifest(root/'deployment.json', root/'checkpoint.pt', root/'env.yaml', 'test_robot')
 
 
 def test_qualified_evidence_is_portable_and_revalidated_on_export(evidence, monkeypatch):
