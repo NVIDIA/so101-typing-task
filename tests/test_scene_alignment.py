@@ -104,7 +104,7 @@ def export(e, qualification, monkeypatch, env=None, candidate=False):
     return bundle.prepare(checkpoint, env_path, 'test_robot', 'auto', e.root/'bundle', **kwargs)
 
 
-def test_candidate_bundle_preserves_offsets_but_cannot_enable_physical_execution(evidence, monkeypatch):
+def test_candidate_bundle_preserves_offsets_and_requires_explicit_experimental_mode(evidence, monkeypatch):
     e = evidence
     offsets = [3.12651, .74869, -9.61276, .54019, 0.]
     e.candidate['contract']['joint_zero_offset_deg'] = offsets
@@ -120,6 +120,8 @@ def test_candidate_bundle_preserves_offsets_but_cannot_enable_physical_execution
     assert data['mapping_selection'] == 'unqualified_alignment'
     with pytest.raises(ValueError, match='requires a qualified'):
         bundle.require_qualified_alignment(data)
+    assert bundle.validate_execution_mode(data, experimental=True) == 'experimental_unqualified_mapping'
+    assert data['alignment_qualified'] is False
     e.calibration.write_text(e.calibration.read_text()+'\n')
     with pytest.raises(ValueError, match='calibration changed'):
         bundle.validate_manifest(root/'deployment.json', root/'checkpoint.pt', root/'env.yaml', 'test_robot')
@@ -261,3 +263,37 @@ def test_unqualified_execute_does_not_launch_runner(monkeypatch, tmp_path):
     with pytest.raises(SystemExit) as error:
         deploy_bundle.main()
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize('execute', [False, True])
+def test_experimental_candidate_mode_forwards_exact_target_and_motion_opt_in(evidence, monkeypatch, execute):
+    from scripts.so101_homing import deploy_bundle
+    e = evidence
+    export(e, e.alignment, monkeypatch, candidate=True)
+    monkeypatch.setattr(deploy_bundle, 'require_calibration', lambda *_: e.calibration)
+    commands = []
+    monkeypatch.setattr(deploy_bundle.subprocess, 'call', lambda command: commands.append(command) or 0)
+    argv = ['deploy_bundle', str(e.root/'bundle'), 'NEWTON', '--experimental']
+    if execute:
+        argv += ['--execute', '--port', '/dev/test', '--keyboard-device', '/dev/test-keys']
+    monkeypatch.setattr('sys.argv', argv)
+    assert deploy_bundle.main() == 0
+    command = commands[0]
+    assert command[command.index('--target')+1] == 'NEWTON'
+    assert '--experimental' in command
+    assert ('--enable-robot' in command) is execute
+    assert ('--dry-run' in command) is not execute
+    # Experimental mode still rejects changed calibration before launching a runner.
+    e.calibration.write_text(e.calibration.read_text()+'\n')
+    with pytest.raises(SystemExit):
+        deploy_bundle.main()
+    assert len(commands) == 1
+
+
+@pytest.mark.parametrize('manifest', [
+    {'encoder_convention': 'benchmark'},
+    {'encoder_convention': 'candidate', 'alignment_candidate_sha256': 'hash'},
+])
+def test_experimental_execution_requires_a_calibration_pinned_candidate(manifest):
+    with pytest.raises(ValueError, match='pinned calibration'):
+        bundle.validate_execution_mode(manifest, experimental=True)

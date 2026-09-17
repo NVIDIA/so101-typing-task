@@ -133,6 +133,18 @@ def require_qualified_alignment(data):
                          'then re-export with --alignment qualification.json. Software dry runs remain available.')
 
 
+def validate_execution_mode(data, *, experimental=False):
+    """Keep an operator's candidate experiment distinct from release qualification."""
+    if not experimental:
+        require_qualified_alignment(data)
+        return 'qualified_alignment'
+    if (data.get('encoder_convention') != 'candidate'
+            or not data.get('alignment_candidate_sha256')
+            or not data.get('lerobot_calibration_sha256')):
+        raise ValueError('--experimental requires a prepared --alignment-candidate bundle with pinned calibration')
+    return 'experimental_unqualified_mapping'
+
+
 def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint_calibration_path=None, alignment_path=None,
             alignment_candidate_path=None):
     if not robot_id.strip():
@@ -218,7 +230,7 @@ def main():
     mapping.add_argument('--encoder-convention',choices=('auto','lerobot','benchmark'),default='auto')
     mapping.add_argument('--joint-calibration',type=Path,help='Measured encoder-to-model fit from joint_calibration')
     mapping.add_argument('--alignment', type=Path, help='qualified alignment with portable Q/G/P and replay evidence')
-    mapping.add_argument('--alignment-candidate', type=Path, help='unqualified alignment.json; software dry runs only')
+    mapping.add_argument('--alignment-candidate', type=Path, help='unqualified alignment.json; dry runs or explicit supervised experiments')
     parser.add_argument('--out-dir',type=Path,required=True)
     args=parser.parse_args()
     try:

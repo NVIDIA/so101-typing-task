@@ -7,7 +7,7 @@ import subprocess
 import sys
 import yaml
 from .robot import require_calibration
-from .deployment_bundle import validate_manifest, require_qualified_alignment
+from .deployment_bundle import validate_manifest, validate_execution_mode
 
 
 def main():
@@ -15,6 +15,7 @@ def main():
     p.add_argument('bundle',type=Path)
     p.add_argument('target')
     p.add_argument('--execute',action='store_true')
+    p.add_argument('--experimental', action='store_true', help='supervised candidate-mapping experiment; does not qualify alignment')
     p.add_argument('--port')
     p.add_argument('--keyboard-device')
     a=p.parse_args()
@@ -30,8 +31,8 @@ def main():
         if not isinstance(data.get('actuator_profile'), str):
             raise ValueError('deployment.json requires an actuator_profile')
         require_calibration(data['robot_id'])
-        if a.execute:
-            require_qualified_alignment(data)
+        if a.execute or a.experimental:
+            validate_execution_mode(data, experimental=a.experimental)
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
         p.error(str(error))
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
@@ -44,6 +45,7 @@ def main():
              '--enable-robot' if a.execute else '--dry-run']
     if a.port:command+=['--port',a.port]
     if a.keyboard_device:command+=['--device',a.keyboard_device]
+    if a.experimental:command+=['--experimental']
     return subprocess.call(command)
 
 

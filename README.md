@@ -167,7 +167,9 @@ new training requires an explicit mapping as described in
 
 Export and the dry run check your calibration without connecting to hardware;
 new bundles also reject changes to that calibration after export. Physical
-execution requires the qualified alignment. The final command above checks the
+execution in the standard workflow requires the qualified alignment. For an
+operator-supervised candidate test, see [experimental deployment](docs/release/ALIGNMENT.md#2-prepare-an-unqualified-mapping).
+The final command above checks the
 software contract without moving the robot.
 [The hardware guide](docs/release/HARDWARE_PREPARATION.md) provides the explicit
 operator-run execution command and explains the joint offsets. Keep your own

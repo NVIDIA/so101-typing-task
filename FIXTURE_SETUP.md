@@ -43,7 +43,7 @@ run earlier, but do not qualify a physical setup.
 
 Use [the alignment qualification workflow](docs/release/ALIGNMENT.md) to freeze
 one mapping, replay reserved measurements, test Q/G/P physically and export the
-passing evidence. Physical policy execution requires that evidence. The current
+passing evidence. Standard physical policy execution requires that evidence; the alignment guide also documents explicit supervised candidate experiments. The current
 development robot's reserved replay still has an extra contact and a miss, so
 its fitted mapping remains unqualified. See [the investigation status](docs/experiments/README.md).
 

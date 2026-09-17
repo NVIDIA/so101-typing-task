@@ -602,6 +602,7 @@ def main() -> int:
     parser.add_argument("--id", default=DEFAULT_ROBOT_ID)
     parser.add_argument("--enable-robot", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument('--experimental', action='store_true', help='supervised candidate-mapping experiment; no alignment qualification claim')
     parser.add_argument("--yes", action="store_true", help="Skip only the final operator confirmation.")
     parser.add_argument("--max-duration", type=float, default=None)
     parser.add_argument("--reset-transition-s", type=float, default=DEFAULT_RESET_TRANSITION_S)
@@ -639,14 +640,16 @@ def main() -> int:
     rest_q_deg: np.ndarray | None = None
     try:
         _validate_args(args)
-        if not args.dry_run and not args.deployment_config:
-            raise PolicyContractError('Physical policy execution requires a deployment bundle with qualified alignment.')
+        if (not args.dry_run or args.experimental) and not args.deployment_config:
+            raise PolicyContractError('Physical or experimental policy execution requires a prepared deployment bundle.')
         profile = deployment_profile(args.task_profile)
         if args.deployment_config:
-            from .deployment_bundle import validate_manifest, require_qualified_alignment
+            from .deployment_bundle import validate_manifest, validate_execution_mode
             profile, bundle = validate_manifest(args.deployment_config, args.checkpoint, args.env_config, args.id)
-            if not args.dry_run:
-                require_qualified_alignment(bundle)
+            if not args.dry_run or args.experimental:
+                summary['execution_mode'] = validate_execution_mode(bundle, experimental=args.experimental)
+            summary['alignment_qualified'] = bool(bundle.get('alignment_qualified', False))
+            summary['experimental'] = args.experimental
             if args.stage != bundle['stage']:
                 raise PolicyContractError('stage differs from deployment bundle')
             if args.expected_task_contract is not None and args.expected_task_contract != bundle['task_contract']:
@@ -659,6 +662,7 @@ def main() -> int:
             summary['lerobot_calibration_sha256'] = bundle.get('lerobot_calibration_sha256')
             summary['joint_calibration_sha256'] = bundle.get('joint_calibration_sha256')
             summary['alignment_sha256'] = bundle.get('alignment_sha256')
+            summary['alignment_candidate_sha256'] = bundle.get('alignment_candidate_sha256')
         startup_mode = _resolve_startup_mode(args, profile)
         rest_q_deg = load_rest_pose(args.rest_pose)
         _validate_rest_pose(rest_q_deg, profile)
@@ -717,6 +721,8 @@ def main() -> int:
             }
         )
         _emit_deployment_contract(out=out, summary=summary, deployment_contract=deployment_contract)
+        if args.experimental:
+            print('Supervised policy experiment: candidate mapping is not qualified; motion/contact checks remain enabled.')
         if args.dry_run:
             summary["status"] = "dry_run_ready"
             print(f"Software dry run passed ({args.stage.upper()}); no robot command was sent. "

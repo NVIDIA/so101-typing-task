@@ -5,8 +5,8 @@ mapping passed measured-motion replay and physical Q/G/P contact checks.
 It does not qualify policy performance or prove every key in the workspace.
 The current development robot's fitted mapping has **not** passed this gate.
 
-All `alignment` commands are offline. Only the explicitly marked FK `--execute`
-step moves hardware. Standard [LeRobot calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
+All `alignment` commands are offline. FK and policy `--execute` commands move
+hardware. Standard [LeRobot calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
 remains the setup procedure; automatic endpoint calibration is an optional,
 unfinished experiment.
 
@@ -50,9 +50,22 @@ do not relabel them as standard fit reports.
 To inspect a policy's software contract using this candidate before qualification,
 use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
 checkpoint, matching environment, robot ID and a new output directory. The bundle
-records the selected offsets and supports `deploy` dry runs. It remains explicitly
-unqualified and cannot run with `--execute`; physical policy deployment still
-requires the passing evidence below and a new export with `--alignment`.
+records the selected offsets and supports `deploy` dry runs. Standard physical
+deployment requires the passing evidence below and a new export with `--alignment`.
+
+An operator can instead run a supervised policy experiment with this candidate:
+
+```bash
+./so101 deploy output/my-candidate-bundle NEWTON --experimental --execute \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
+```
+
+Omit `--execute` to dry-run the same experimental contract. This explicit mode
+requires a prepared candidate with the robot calibration and trained geometry
+checked. It retains operator confirmation, reset arrival, joint limits, keyboard
+feedback, wrong-key stops and timeouts. Logs identify an unqualified experiment;
+the command neither changes calibration nor creates passing alignment evidence.
 
 ## 3. Replay reserved measured motion in simulation
 
@@ -142,7 +155,8 @@ against the qualified scene. It copies all qualification evidence into the
 bundle, so later checks do not depend on the original recording directories.
 The deployment runner rechecks calibration, geometry and evidence before motor
 access. Existing bundles without qualification still support software dry runs;
-physical execution requires a new export with `--alignment`.
+standard physical execution requires a new export with `--alignment`. The explicit
+supervised experimental mode above accepts a prepared candidate instead.
 
 Recalibration, moving the fixture or changing the jaw requires requalification.
 Software cannot detect a physically moved keyboard or replaced tip from file

@@ -66,6 +66,9 @@ Export with `--alignment output/my-fixture/qualified/qualification.json` to make
 a physical-capable bundle. The original mapping options below still support
 software export and dry runs; they do not bypass the qualification requirement.
 Existing bundles without this evidence must be re-exported before physical use.
+For an explicit supervised experiment before qualification, export with
+`--alignment-candidate` and use `deploy --experimental --execute`; see
+[the experimental command and retained checks](ALIGNMENT.md#2-prepare-an-unqualified-mapping).
 
 ## Export a deployment bundle
 

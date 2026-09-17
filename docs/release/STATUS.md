@@ -55,7 +55,7 @@ not complete these physical checks or establish a universal offset correction.
 The [alignment workflow](ALIGNMENT.md) now freezes a candidate, checks reserved
 measured-motion replay, verifies physical Q/G/P logs and packages hashed evidence.
 Export compares the qualified scene with the trained key map, keyboard pose and
-reset. Physical policy execution requires the qualification and rechecks the
+reset. Standard physical policy execution requires the qualification and rechecks the
 current calibration/model and copied evidence before motor access. Software dry
 runs remain available for older bundles. The same candidate offsets are used in
 simulation replay, physical probe reads/writes, policy reset and deployment.
@@ -71,7 +71,7 @@ qualification; file hashes cannot sense those changes.
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 247 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
+selected results. Host checks passed: 251 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k
@@ -267,3 +267,13 @@ The current four-joint candidate was prepared with the completed frozen-scene
 `model_19998.pt`; its CPU dry run passed with the fitted coefficients. Host
 regression checks pass with 247 tests, 2 skips and 13 subtests. No physical motion
 or alignment qualification is claimed.
+
+### Supervised policy experiments — 2026-09-17
+
+An explicit `deploy --experimental --execute` now permits an operator-supervised
+trial with an unqualified candidate bundle. It checks calibration, model, mapping
+and checkpoint/environment identity and retains the existing motion and keyboard
+checks. The run is logged as `experimental_unqualified_mapping`; release
+qualification and its evidence are unchanged. The requested model_19998/fit4
+NEWTON dry run passed. Host checks pass with 251 tests, 2 skips and 13 subtests.
+No physical motion was performed during preparation.
