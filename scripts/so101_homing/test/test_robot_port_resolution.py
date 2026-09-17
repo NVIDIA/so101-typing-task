@@ -16,15 +16,15 @@ def test_resolve_robot_port_requires_explicit_port_when_multiple_controllers(
 ) -> None:
     ports_by_pattern = {
         "/dev/serial/by-id/*": [
-            "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AB0179854-if00",
-            "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AE6079843-if00",
+            "/dev/serial/by-id/usb-SO101_TEST_A-if00",
+            "/dev/serial/by-id/usb-SO101_TEST_B-if00",
         ],
         "/dev/ttyACM*": ["/dev/ttyACM0", "/dev/ttyACM1"],
         "/dev/ttyUSB*": [],
     }
     real_paths = {
-        "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AB0179854-if00": "/dev/ttyACM0",
-        "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AE6079843-if00": "/dev/ttyACM1",
+        "/dev/serial/by-id/usb-SO101_TEST_A-if00": "/dev/ttyACM0",
+        "/dev/serial/by-id/usb-SO101_TEST_B-if00": "/dev/ttyACM1",
     }
 
     monkeypatch.setattr(robot.glob, "glob", lambda pattern: ports_by_pattern[pattern])
@@ -35,7 +35,7 @@ def test_resolve_robot_port_requires_explicit_port_when_multiple_controllers(
 
 
 def test_resolve_robot_port_returns_only_candidate(monkeypatch: pytest.MonkeyPatch) -> None:
-    port = "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AE6079843-if00"
+    port = "/dev/serial/by-id/usb-SO101_TEST_B-if00"
     ports_by_pattern = {
         "/dev/serial/by-id/*": [port],
         "/dev/ttyACM*": ["/dev/ttyACM1"],

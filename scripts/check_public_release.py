@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PATTERNS = {
     'cluster integration': re.compile(r'os' + r'mo|swift' + r'://|pdx[.]s8k|AUTH_' + r'team|isaac-' + r'dev-|am' + r'lfs-', re.I),
     'workstation path': re.compile(r'/ho' + r'me/[^/\s]+|/mnt/' + r'amlfs'),
-    'credential material': re.compile(r'gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{25,}|BEGIN (?:RSA |OPENSSH )?PRIVATE' + r' KEY'),
+    'credential material': re.compile(r'gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{40,}|hf_[A-Za-z0-9]{25,}|sk-[A-Za-z0-9]{25,}|BEGIN (?:RSA |OPENSSH )?PRIVATE' + r' KEY'),
+    'hardware serial': re.compile(r'(?:Serial_|so101_(?:leader_)?)[A-Fa-f0-9]{8,}(?![A-Fa-f0-9])|(?<![A-Za-z0-9])(?=[A-F0-9]{0,9}[A-F])[A-F0-9]{10}(?![A-Za-z0-9])'),
     'obsolete repository': re.compile(r'github[.]com/' + r'es-rl/so101' + r'_keyboard_task'),
 }
 

@@ -72,7 +72,7 @@ The historical correction changes three motors: shoulder lift, elbow flex and
 wrist flex. Shoulder pan and wrist roll have zero offsets. The sixth motor moves
 the gripper jaw and does not move the fixed typing tip in this model.
 
-For follower `so101_5B79015117`, with its existing calibration and
+For the September development follower, with its existing calibration and
 [`physical-reference-20260915.json`](../../configs/tasks/physical-reference-20260915.json)
 frozen, fitting **only shoulder pan** gives **+3.128876938 degrees**. All other
 offsets retain their historical values. The candidate in arm-joint order is:

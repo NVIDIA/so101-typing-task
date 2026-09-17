@@ -38,8 +38,8 @@ Next operator-run capture, with the arm supported before torque is disabled:
 
 ```bash
 ./scripts/scene_check.sh record \
-  --robot-id so101_5B79015117 \
-  --port /dev/serial/by-id/usb-1a86_USB_Single_Serial_5B79015117-if00 \
+  --robot-id my_typing_robot \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
   --keyboard-device /dev/input/by-id/usb-Logitech_USB_Receiver-event-kbd \
   --task-config configs/tasks/physical-reference-20260915.json \
   --seconds 300 --output-root output/fixture-photos-20260915/mapping-validation-20260916
@@ -55,7 +55,7 @@ Fresh torque-off validation capture completed **2026-09-16 16:18 PDT** at
 It contains 3,969 samples over 79.9 seconds and 33 physical presses (A–Z plus
 repeats). The predeclared stable-window rule retained 22 presses and excluded
 11 presses shorter than 200 ms or without the required settled window. The
-capture uses robot `so101_5B79015117`, calibration SHA-256
+capture uses the September development follower, calibration SHA-256
 `b4ef349bf420b14887f69d01f82f1d880ef0a5c9f26f52900fb51445bc4891ae`, and frozen
 task SHA-256 `3690b63ec8711698bbe3af39f4ae9236c1c5715e0fd9880bcce6a36121d62feb`.
 
@@ -450,7 +450,7 @@ checked against the installed code, not inferred from an upstream version.
 
 ## Earlier investigation and evidence
 
-Scope: `so101_5B79015117`, its own LeRobot calibration, and the fixed jaw.
+Scope: the September development follower, its own LeRobot calibration, and the fixed jaw.
 Keep `configs/tasks/physical-reference-20260915.json` unchanged (SHA-256
 `3690b63ec8711698bbe3af39f4ae9236c1c5715e0fd9880bcce6a36121d62feb`).
 This investigation does not modify the running training snapshot or deployment

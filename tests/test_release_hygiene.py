@@ -3,7 +3,24 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from scripts import check_public_release as check
+
+
+@pytest.mark.parametrize('label,payload', [
+    ('hardware serial', '/dev/serial/by-id/usb-controller_Serial_' + '12AB34CD' + '56-if00'),
+    ('credential material', 'github' + '_pat_' + 'a' * 40),
+    ('credential material', 'hf_' + 'a' * 30),
+])
+def test_identifiers_and_tokens_are_rejected_without_echoing_values(tmp_path, monkeypatch, capsys, label, payload):
+    (tmp_path/'new-note.md').write_text(payload)
+    monkeypatch.setattr(check, 'ROOT', tmp_path)
+    monkeypatch.setattr(sys, 'argv', ['check_public_release.py'])
+    assert check.main() == 1
+    output = capsys.readouterr()
+    assert f'new-note.md: {label}' in output.err
+    assert payload not in output.err + output.out
 
 
 def test_untracked_private_path_is_rejected_before_staging(tmp_path, monkeypatch, capsys):

@@ -9,11 +9,11 @@ sent commands. There are no added joint offsets in recording or default replay.
 This tests whether hand support/loading affects scene correspondence; it does not
 assume that teleoperation fixes the mismatch.
 
-Run from the repository root. The local launcher identifies the single serial
-device other than follower `5B79015117`. With multiple candidate devices, specify
-`--leader-port /dev/serial/by-id/DEVICE`. It derives a separate leader calibration
-ID from that port; use `--leader-id EXISTING_ID` consistently if already calibrated
-under another name. It never selects another robot's calibration automatically.
+The original workstation launcher inferred the leader from attached devices.
+The current portable launcher requires explicit follower/leader ports and
+calibration IDs; see `./scripts/leader_scene_check.sh --help`. The shorthand
+commands below describe that historical session, not complete new-user commands.
+Use [the portable workflow](../../FIXTURE_SETUP.md) for your own setup.
 
 1. `./scripts/leader_scene_check.sh check` checks files and dependencies without
    opening serial devices. A newly attached leader needs its own calibration.
@@ -113,8 +113,8 @@ check command tracking and actual key contact before deployment claims.
 
 ## Preparation evidence
 
-On September 16, leader `5B79017990` was identified separately from follower
-`5B79015117`. The operator completed standard leader calibration. Read-only
+On September 16, the leader was identified separately from the development
+follower. The operator completed standard leader calibration. Read-only
 inspection at `20260916T210902.466905Z` verified both live calibration snapshots,
 leader torque off and follower jaw closed; starting alignment still needed
 adjustment. No teleoperation recording was executed during preparation.

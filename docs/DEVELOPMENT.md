@@ -22,6 +22,11 @@ notes name them as artifact identifiers, not downloadable source links. Preserve
 their hashes and originals; do not rewrite old evidence to match new code.
 Portable source must not depend on a particular user's home, serial number or
 an existing `output/` directory. Keep machine shortcuts in `local/`.
+Use generic device placeholders in instructions and synthetic identifiers in
+tests. Model dimensions, benchmark transforms, joint limits and pinned dependency
+hashes are intentional reproducibility constants. Git author metadata and older
+revisions require a separate history review; a clean current tree is not an
+anonymized Git history.
 
 ## Host checks (no robot connection)
 

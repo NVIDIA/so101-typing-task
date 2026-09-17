@@ -2,7 +2,7 @@
 
 > Dated investigation record. Commands and results describe this workstation at the time; follow [the portable workflow](../../FIXTURE_SETUP.md) for a new setup. Raw recordings and `output/` evidence are local artifacts, not included in the source release.
 
-Three torque-off recordings were collected on `so101_5B79015117` with the
+Three torque-off recordings were collected on the September development follower with the
 physical keyboard held fixed. Each recording contains one Q, one G, and one P
 press. The historical analysis and replay below used the **earlier photo
 candidate**, `output/fixture-photos-20260915/candidate-task.json`, SHA-256

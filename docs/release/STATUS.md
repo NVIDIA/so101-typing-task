@@ -56,6 +56,13 @@ machine test. Audit logs are local under `output/release-audit/20260917T180433Z/
 No hardware motion or new GPU simulation was run for this cleanup. Active training
 continues from its separate frozen source/image snapshot.
 
+Privacy/portability follow-up: removed an unused controller-specific port and
+replaced serial numbers in public notes/tests with generic or synthetic identities.
+The release check now rejects hardware serials and additional token formats.
+Source and downloaded-artifact checks pass; the updated host suite passes
+277 tests, 2 skips and 13 subtests. Git history still retains author identity and
+earlier serial references; these edits do not anonymize historical revisions.
+
 ## Physical deployment follow-up
 
 On 2026-09-15, the operator reported that restoring the historical offsets with
@@ -63,8 +70,8 @@ the same 19k policy resolved the new arm's reach/contact difficulty. Two recorde
 attempts completed N/V/I press, release and clearance, then pressed F while
 targeting D. The logs end in `wrong_key`, not success. Placement, remaining joint
 alignment, dynamics and contact differences have not been isolated.
-Local evidence: `output/so101_5B79015117_benchmark/runs/20260915T182653.769109Z_hardware.jsonl`
-and `20260915T190721.809010Z_hardware.jsonl` in the same directory. These used the
+Local log filenames: `20260915T182653.769109Z_hardware.jsonl`
+and `20260915T190721.809010Z_hardware.jsonl`. These used the
 original mat-trained `model_19000.pt`; the local no-mat `model_19996.pt` is separate.
 
 | Remaining release work | Completion evidence |
@@ -98,7 +105,7 @@ qualification; file hashes cannot sense those changes.
 ## Evidence and limits
 
 `validation_runs.json` records successful local run IDs, image identities and
-selected results. Host checks passed: 274 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
+selected results. Host checks passed: 277 tests, 2 skipped, and 13 subtests (2026-09-17). They cover
 CLI/configuration validation, geometry
 transforms, deployment identity/hash checks, mapping selection, calibration-file
 drift, measured-fit export, and the existing homing contracts. The released 19k

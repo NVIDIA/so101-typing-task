@@ -44,8 +44,10 @@ variation and reset-joint noise. See [TASK_CONFIGURATION.md](TASK_CONFIGURATION.
 
 The released pretrained checkpoints correspond to the original setup. Moving
 that physical keyboard does not update their training distribution. For your own
-trained policy, match the physical layout to its nominal task configuration and
-check that any placement variation is within the distribution you evaluated.
+policy, calibrate the scene using [recorded motion](REAL2SIM.md), train with its
+saved task JSON, and keep the physical fixture unchanged. The fitted scene is an
+effective model; its coordinates are not instructions to move the real keyboard.
+Any placement variation needs separate evaluation.
 
 For an FK sanity check, compute the fixed typing-tip position with
 `scripts/so101_homing/so101_kinematics.py` and compare it with the selected

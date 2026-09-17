@@ -10,7 +10,6 @@ ARM_JOINT_NAMES = (
 
 DEFAULT_ROBOT_ID = "my_follower"
 DEFAULT_KEYBOARD_DEVICE = "/dev/input/by-id/usb-Logitech_USB_Receiver-event-kbd"
-DEFAULT_ROBOT_PORT = "/dev/serial/by-id/usb-1a86_USB_Single_Serial_5AE6079843-if00"
 HOMING_KEY_SEQUENCE = ("f", "y", "n")
 DEFAULT_CAPTURE_PHRASE = "".join(HOMING_KEY_SEQUENCE)
 

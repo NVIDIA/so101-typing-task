@@ -165,9 +165,10 @@ raise/lower hardware solely to match this table.
 ./so101 probe --task-config output/my-fixture/task.json
 ```
 
-Complete the [measured-trajectory checks](#hand-guided-scene-check) before the
-[P1A-to-six-letter training recipe](docs/release/TRAINING.md), retaining this task
-configuration after validating it. The tool fits XYZ translation and full
+Use this task as the measured reference for the
+[recorded-motion scene calibration](docs/release/REAL2SIM.md). Preserve it, then
+train using the separate task JSON produced by that calibration. The measurement
+tool fits XYZ translation and full
 orientation from the three measured landmarks, including keyboard tilt. It moves
 the existing asset as one rigid object; its built-in key slope is preserved.
 The output uses metres and an absolute `rotation_xyzw` quaternion. The simulator
