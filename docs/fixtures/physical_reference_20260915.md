@@ -6,6 +6,37 @@ and keep this reference record unchanged. The September 17 contact fit saved a
 separate effective simulation pose; it did not move the real keyboard or replace
 these measurements. A physical setup change requires a new dated measurement.
 
+## Physical setup used for the September NEWTON checkpoint
+
+This is the real fixture used for the September 16 recordings and the successful
+September 17 `model_2498.pt` trial. To reproduce its placement, stand behind the
+robot looking toward the keyboard and measure the **plastic base**, excluding
+the clamp, motor cover and cable bracket:
+
+| Physical setup item | Placement used |
+| --- | --- |
+| Hardware | SO-101 with the same fixed typing jaw; moving jaw fully closed; Logitech MX Keys keyboard |
+| Support plane | Plastic base and keyboard directly on the same flat tabletop; base clamped securely; no keyboard mat or added riser |
+| Forward gap | About **130 mm (13 cm)** from the keyboard-facing flat face of the plastic base to the nearest long keyboard **case edge**, measured perpendicular to the edge along the base centreline |
+| Edge orientation | Nearest long keyboard edge parallel to the base's front/back edges: approximately zero physical edge yaw |
+| Left/right alignment | Extend the short straight segment on the base's right side forward toward the keyboard; it lines up with the bottom-right corner of the **right Ctrl key**, next to the left-arrow key |
+
+Use the [physical-reference drawing](physical-reference-birdseye-20260915.svg)
+to cross-check the layout. Its lateral projections are about **173.7 mm** from
+the widest left base edge to the keyboard's left end and **145.6 mm** on the
+right. These side distances, and the more precise **129.17 mm** front gap below,
+are computed from the datum-based reference model. The operator reported the
+physical front gap as approximately **130 mm**; the model decimals are not
+independent ruler measurements or a demonstrated placement tolerance.
+
+Keep this real fixture fixed. The September 17 fit adjusted the **simulation**
+keyboard pose and encoder-to-model joint mapping to reproduce recorded contacts;
+do not move the real keyboard by that model correction. Another robot still
+needs its own LeRobot calibration and [alignment checks](../release/ALIGNMENT.md).
+A different fitted training scene requires its own policy.
+
+## Preserved datum-based reference model
+
 The tracked pose record is [`physical_reference_20260915.json`](physical_reference_20260915.json).
 The portable physical-reference configuration is
 [`configs/tasks/physical-reference-20260915.json`](../../configs/tasks/physical-reference-20260915.json).
@@ -16,7 +47,7 @@ The generated reference task is
 It uses the existing keyboard asset, tabletop height and native keyboard slope,
 parallel keyboard/base edges, and the physical landmark that the short straight
 segment on the robot base projects through the bottom-right corner of the right
-Ctrl key. The keyboard pose is:
+Ctrl key. This reference model's keyboard CAD-origin pose is:
 
 ```text
 position_m       = (0.2606351862725319, 0.0140614168264038, 0.0076366833485381)

@@ -37,7 +37,7 @@ were the cause. The fit did not replace the robot's LeRobot calibration.
 
 1. **Measure and freeze the real fixture.** Keep the base and keyboard on the same
    flat tabletop, secure them, and use base edges/vertices as placement datums.
-   Preserve the [measured reference](../fixtures/physical_reference_20260915.md)
+   Preserve the [physical placement and measured reference](../fixtures/physical_reference_20260915.md#physical-setup-used-for-the-september-newton-checkpoint)
    separately from any fitted simulation transform.
 2. **Record real measured motion and key events.** The selected September 16 data
    comprises 60 powered leader/follower presses and 33 torque-off hand-guided

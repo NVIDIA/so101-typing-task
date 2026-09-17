@@ -127,6 +127,15 @@ the supported-model benchmark/development artifacts. Existing downloaded files a
 
 ### September calibrated-scene example
 
+**Physical layout used for this checkpoint:** the clamped SO-101 plastic base and
+Logitech MX Keys rested directly on the same flat table, with no keyboard mat.
+The front base face was about **130 mm (13 cm)** from the nearest keyboard case
+edge, with the edges parallel. The base's short right-side straight edge aligned
+with the bottom-right corner of the right Ctrl key beside the left-arrow key.
+See the [physical setup instructions and reference drawing](docs/fixtures/physical_reference_20260915.md#physical-setup-used-for-the-september-newton-checkpoint)
+for the measurement directions and lateral cross-checks. This is the real fixture
+that remained frozen while the simulation below was fitted.
+
 **Latest fitted simulation keyboard pose — September 17, 2026**, used by `model_2498.pt`:
 
 | Quantity | Value |

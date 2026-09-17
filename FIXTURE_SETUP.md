@@ -4,10 +4,10 @@ For the normal collect → calibrate → train workflow, use the
 [short real-to-sim guide](docs/release/REAL2SIM.md) and `scripts/real2sim.sh`.
 This page provides the measurement details and advanced diagnostics.
 
-Start with your own base-to-keyboard measurements. The
-[September 15 reference](docs/fixtures/physical_reference_20260915.md) is a dated
-example for the ongoing mapping investigation, not the required layout for a
-new user.
+For training on your own layout, start with your own base-to-keyboard measurements.
+To reproduce the released September NEWTON example, use its
+[frozen physical setup instructions](docs/fixtures/physical_reference_20260915.md#physical-setup-used-for-the-september-newton-checkpoint).
+Those describe the real placement; the fitted simulation coordinates are separate.
 
 **Each bird's-eye drawing belongs to a specific saved scene.** The physical
 reference, historical benchmark and current fitted training scene are different;
