@@ -225,10 +225,11 @@ reset samples. Output directories must be new, protecting existing measurements.
 - **Train for your fixture:** validate the candidate scene and joint mapping
   against physical poses/contacts, train and evaluate, then export the matching
   `params/env.yaml` and joint mapping. Re-measure if the base or board moves.
-- **Use the optional ~19k checkpoint:** export automatically selects its historical
-  joint mapping. Check physical poses/contacts before typing. A new measurement
-  file does not reposition its frozen map; the drawing alone cannot certify
-  reproduction of the original fixture.
+- **Use the optional ~19k checkpoint:** a software-only export can select its
+  historical joint mapping automatically. Standard physical use requires
+  qualification against its frozen scene. A new measurement file does not
+  reposition its map; the drawing alone cannot certify reproduction of the
+  original fixture.
 
 In both cases, perform standard LeRobot calibration for **your** SO-101.
 Calibration determines encoder coordinates; it does not register the keyboard

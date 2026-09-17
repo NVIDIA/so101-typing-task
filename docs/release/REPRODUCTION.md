@@ -11,12 +11,16 @@ the generated request, exit, evaluation and deployment logs with the result.
    pass its pinned checksum. Training from scratch does not require this download.
 3. Run `./so101 probe` with your task JSON, or the optional reference-policy video command. Inspect the
    recording and strict evaluation report, including failure reasons.
-4. For your own setup, run the staged recipe in [TRAINING.md](TRAINING.md), evaluate both seeds,
-   and record initialization wall time separately from training-loop time.
-5. Install with `./so101 setup-hardware`, complete your robot's standard LeRobot
-   calibration, then export the policy under that same robot ID. The released
-   19k pair selects benchmark offsets automatically; new training requires a
-   measured fit or an explicit verified mapping. Dry-run without `--execute`.
+4. For physical typing on your own setup, first install the hardware environment,
+   calibrate your robot with LeRobot, measure/freeze the fixture, and follow
+   [REAL2SIM.md](REAL2SIM.md) to record and fit the scene. Then train with that
+   fitted task using [TRAINING.md](TRAINING.md), evaluate both seeds, and record
+   initialization wall time separately from training-loop time. Simulation-only
+   smoke checks may use an example task without hardware.
+5. Complete [alignment qualification](ALIGNMENT.md) for physical use and export
+   with that evidence, the same robot ID/calibration, and the evaluated checkpoint's
+   environment. Dry-run without `--execute`. For the optional 19k policy, qualify
+   its frozen historical scene; changing it requires training a new policy.
 6. Compare the exported CPU actor to a recorded simulation trace using the
    parity command in [HARDWARE_PREPARATION.md](HARDWARE_PREPARATION.md).
 
@@ -27,8 +31,10 @@ in [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md).
 
 ## Operator and physical acceptance
 
-The operator performs standard LeRobot follower calibration, checks the fixed jaw,
-measures the fixture pose, and confirms model/encoder alignment before motion.
+The operator performs standard LeRobot follower calibration before recording,
+checks the fixed jaw, freezes the fixture pose, then validates reserved replay
+and physical Q/G/P contacts before standard policy execution. Preserve that
+calibration throughout the workflow; do not repeat it merely because training ended.
 Follow the hardware guide for the explicit execution command and stop procedure.
 Record attempted sequences and every wrong key, stop or failed reset, not only
 successful clips. Keep new-robot results separate from the historical benchmark.

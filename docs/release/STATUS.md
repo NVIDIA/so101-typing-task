@@ -33,6 +33,25 @@ Changed nominal placement and bounded pose randomization are supported. See
 
 ## Scene-calibration workflow review — 2026-09-17 PDT
 
+New-user documentation review: the README now orders robot calibration and
+measured-motion scene fitting before physical-use training, and carries the
+fitted task through the training and supervisor examples. Simulation-only checks
+use separate example files; the quickstart keeps the same actuator/stage through
+evaluation. The historical 19k alignment route preserves its original scene.
+Optional unqualified hardware experiments follow the standard deployment steps.
+
+A source-only snapshot passed **277 tests, 2 skips and 13 subtests**, plus
+**19 CLI/command checks**, source hygiene/local links, Markdown heading anchors,
+Python compilation and syntax checks for 13 shell scripts. Command checks cover
+fixture generation and a synthetic measurement handoff, training/resume/evaluation
+plans, recorder/alignment help, and missing-calibration rejection before output
+creation. Plan checks do not load a policy or run simulation. The snapshot had no
+Git metadata, local recordings, checkpoints or hardware environment at extraction;
+installed Python dependencies were reused. Logs are local under
+`output/workflow-review/20260917T201641Z/`. No GPU simulation or hardware motion
+was performed; this is workflow/software evidence, not independent installation
+or physical typing qualification.
+
 The [short real-to-sim guide](REAL2SIM.md) now connects hand-guided recording,
 joint/keyboard-pose fitting, reset-per-key Newton contact checks and training in
 the saved scene. The September recordings reproduce **93/93 first contacts**;

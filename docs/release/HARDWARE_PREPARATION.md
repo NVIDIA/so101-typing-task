@@ -26,16 +26,21 @@ lerobot-calibrate --robot.type=so101_follower \
 ```
 
 The operator follows LeRobot's neutral-pose and joint-range instructions. This is
-an interactive hardware procedure. Give your user access to the serial controller
+an interactive hardware procedure; keep the calibration sweep clear before
+placing and freezing the keyboard for recording. Identify the stable device paths
+with `ls -l /dev/serial/by-id/ /dev/input/by-id/`; select the typing keyboard's
+`*-event-kbd` entry for recording and deployment. Give your user access to the serial controller
 and keyboard evdev device using your system's `dialout`/`input` groups or device
 rules; do not run the entire pipeline as root.
 
 ## Choose the physical layout
 
-[FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the published Logitech MX
-keyboard, closed jaw, fixed typing tip and reference mat. The bird’s-eye drawing
-projects the fitted simulator scene, whose dimensions are not verified physical
-ruler instructions. The height schematic explains a measurement convention.
+[FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the supported Logitech MX
+keyboard, closed moving jaw and fixed typing tip. The historical 19k fixture used
+a mat; your own measured and calibrated layout need not. Its labelled bird's-eye
+views distinguish measured-reference placement from fitted simulation scenes.
+Fitted dimensions are not physical ruler instructions. The height schematic
+explains the measurement convention.
 `./so101 fixture` fits a candidate XYZ/full-orientation pose and preserves the
 asset's built-in key geometry; it does not verify real-to-sim contact alignment.
 You can change the nominal keyboard position/yaw with a task JSON, retrain, and
@@ -70,20 +75,24 @@ software export and dry runs; they do not bypass the qualification requirement.
 Existing bundles without this evidence must be re-exported before physical use.
 For an explicit supervised experiment before qualification, export with
 `--alignment-candidate` and use `deploy --experimental --execute`; see
-[the experimental command and retained checks](ALIGNMENT.md#2-prepare-an-unqualified-mapping).
+[the experimental command and retained checks](ALIGNMENT.md#optional-supervised-experiments).
 
 ## Export a deployment bundle
 
 ```bash
-# Released 19k reference after qualifying your physical alignment.
+# Your evaluated six-letter policy after qualifying its physical alignment.
 ./so101 prepare-deployment \
-  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
-  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
+  --checkpoint /absolute/path/to/model_N.pt \
+  --env-config /absolute/path/to/params/env.yaml \
   --robot-id my_typing_robot \
   --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
+
+For the optional 19k policy, substitute its downloaded checkpoint/environment
+paths from the [README](../../README.md#workflow-2-optionally-try-the-established-19k-checkpoint)
+and qualification for its original scene.
 
 Use a two-letter target such as `HE` for P1A policies; Transit15 policies use six
 letters. Export and the dry run both check the local LeRobot calibration for the selected

@@ -37,8 +37,11 @@ Use the printed recording path below. Keep the fitted task and mapping unchanged
 For the released 19k checkpoint, `configs/tasks/reference-fixture.json` selects
 its original nominal simulation scene. Use that file consistently in place of
 both task paths (`output/my-fixture/task.json` and `output/my-scene/task.json`)
-below when testing that fixture. It does not assert
-that your physical setup already matches the historical model.
+in the recording, replay and FK commands when testing that fixture. Prepare the
+historical candidate shown in step 2 instead of fitting a new keyboard pose.
+This file does not assert that your physical setup matches the historical model.
+If matching your setup requires a different simulated keyboard pose, use workflow 1
+and train for that fitted scene; the 19k policy's map stays frozen.
 
 ## 2. Prepare an unqualified mapping
 
@@ -68,6 +71,18 @@ validation-recording arguments with exactly one of:
 - `--encoder-convention benchmark` for an explicit historical-offset comparison.
 - `--joint-calibration output/joint-fit.json` for independently measured joint correspondence.
 
+For the optional 19k policy, this explicit historical comparison replaces the
+fitted-report preparation command above; choose one, using a new output directory:
+
+```bash
+./so101 alignment prepare --robot-id my_typing_robot \
+  --task-config configs/tasks/reference-fixture.json \
+  --encoder-convention benchmark --out-dir output/my-fixture/alignment
+```
+
+Use your own LeRobot calibration. The historical offsets remain a candidate until
+your reserved replay and physical probes pass; they are not universal constants.
+
 The output `alignment.json` is **unqualified**. Preparing it freezes offsets and
 identities; it does not approve physical deployment. The recording-based path
 accepts diagnostic `fit4`, `fit3_pose` or `joint_scene` reports and requires distinct fitting and
@@ -75,50 +90,6 @@ reserved recording hashes. Ad-hoc legacy reports need their provenance preserved
 do not relabel them as standard fit reports.
 Contact searches that used every supplied recording need the fresh reserved
 capture above. Reserving it is not a passing replay or physical result.
-
-To inspect a policy's software contract using this candidate before qualification,
-use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
-checkpoint, matching environment, robot ID and a new output directory. The bundle
-records the selected offsets and supports `deploy` dry runs. Standard physical
-deployment requires the passing evidence below and a new export with `--alignment`.
-
-An operator can instead run a supervised policy experiment with this candidate:
-
-```bash
-./so101 deploy output/my-candidate-bundle NEWTON --experimental --execute \
-  --port /dev/serial/by-id/YOUR_CONTROLLER \
-  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
-```
-
-Omit `--execute` to dry-run the same experimental contract. This explicit mode
-requires a prepared direct-LeRobot or candidate bundle with the robot calibration
-and trained geometry checked. It retains operator confirmation, reset arrival,
-joint limits, keyboard feedback, wrong-key stops and timeouts. Logs identify an
-unqualified experiment;
-the command neither changes calibration nor creates passing alignment evidence.
-
-To compare the policy without any fitted or historical offsets, prepare the
-same checkpoint with ``--encoder-convention lerobot`` and use the same explicit
-``--experimental`` flag. The resulting log is labelled
-``experimental_direct_lerobot``.
-
-If a physical trial reaches a key but drags across neighboring keycaps, the
-candidate launcher can require a larger **experimental** measured-FK clearance
-before lateral advance:
-
-```bash
-./so101 deploy output/my-candidate-bundle NEWTON --experimental \
-  --experimental-clearance-m 0.030 --execute \
-  --port /dev/serial/by-id/YOUR_CONTROLLER \
-  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
-```
-
-This changes the release/clearance transition gate relative to training. The
-checkpoint weights, observation format and joint mapping stay fixed, but phase
-timing changes and can therefore change observations and subsequent actions.
-It does not command a guaranteed vertical lift or guarantee clearance throughout
-lateral travel. The current physical trials have not established this override
-as a fix; it remains an unqualified experiment.
 
 ## 3. Replay reserved measured motion in simulation
 
@@ -128,10 +99,11 @@ direct, historical, independently measured and recording-fitted mappings:
 ```bash
 ./scripts/scene_check.sh replay --recording /absolute/path/to/validation/recording.json \
   --alignment output/my-fixture/alignment/alignment.json \
-  --replay-task-config output/my-scene/task.json
+  --replay-task-config output/my-scene/task.json --headless
 ```
 
-Use the same fitted task for replay, FK generation and policy training.
+Use the same fitted task for replay, FK generation and policy training. Remove
+`--headless` to open the Newton viewer from an X11 desktop terminal.
 
 Retain the printed `scene-report.json` path. A completed replay is not necessarily
 a pass: qualification recomputes the physical/simulated event comparison. A
@@ -150,6 +122,10 @@ Example for Q; repeat with G and P and separate `fk-G`/`fk-P` output folders:
   --trajectory output/my-fixture/fk-Q/trajectory.json
 ./scripts/run_fk_probe_f.sh --trajectory output/my-fixture/fk-Q/trajectory.json --sim
 ```
+
+`--sim` requires an X11 desktop (`DISPLAY` and display access). For a headless
+machine, replace it with `--video`; both produce `sim-report.json` beside the
+trajectory. Check that report for a pass before physical replay.
 
 After the simulation passes, with the physical sweep clear and the operator
 ready to stop power, run **one key at a time**:
@@ -196,7 +172,7 @@ physical truth. Keep unsuccessful attempts alongside the originals for review.
 
 ## 6. Export the policy trained for that scene
 
-Train and evaluate with the same nominal task configuration. Export using:
+Use the evaluated policy trained with this same nominal task configuration:
 
 ```bash
 ./so101 prepare-deployment --checkpoint /absolute/path/to/model_N.pt \
@@ -213,9 +189,69 @@ bundle, so later checks do not depend on the original recording directories.
 The deployment runner rechecks calibration, geometry and evidence before motor
 access. Existing bundles without qualification still support software dry runs;
 standard physical execution requires a new export with `--alignment`. The explicit
-supervised experimental mode above accepts a prepared candidate instead.
+[supervised experimental mode](#optional-supervised-experiments) accepts a prepared
+candidate instead.
+
+After reviewing the dry run, the operator runs the qualified policy explicitly:
+
+```bash
+./so101 deploy output/my_typing_robot NVIDIA --execute \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
+```
+
+Follow the [hardware guide's operator checks and stop procedure](HARDWARE_PREPARATION.md#operator-run-deployment).
 
 Recalibration, moving the fixture or changing the jaw requires requalification.
 Software cannot detect a physically moved keyboard or replaced tip from file
 hashes; keep the fixture marked and fixed. Q/G/P alignment does not establish
 full-keyboard accuracy, placement tolerance or successful six-letter policy typing.
+
+## Optional supervised experiments
+
+These are controlled tests of an unqualified mapping, outside the standard
+qualification and deployment sequence above.
+
+To inspect a policy's software contract using this candidate before qualification,
+use `prepare-deployment --alignment-candidate PATH/TO/alignment.json` with the
+checkpoint, matching environment, robot ID and a new output directory. The bundle
+records the selected offsets and supports `deploy` dry runs. Standard physical
+deployment requires the qualification evidence above and a new export with `--alignment`.
+
+An operator can instead run a supervised policy experiment with this candidate:
+
+```bash
+./so101 deploy output/my-candidate-bundle NEWTON --experimental --execute \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
+```
+
+Omit `--execute` to dry-run the same experimental contract. This explicit mode
+requires a prepared direct-LeRobot or candidate bundle with the robot calibration
+and trained geometry checked. It retains operator confirmation, reset arrival,
+joint limits, keyboard feedback, wrong-key stops and timeouts. Logs identify an
+unqualified experiment;
+the command neither changes calibration nor creates passing alignment evidence.
+
+To compare the policy without any fitted or historical offsets, prepare the
+same checkpoint with ``--encoder-convention lerobot`` and use the same explicit
+``--experimental`` flag. The resulting log is labelled
+``experimental_direct_lerobot``.
+
+If a physical trial reaches a key but drags across neighboring keycaps, the
+candidate launcher can require a larger **experimental** measured-FK clearance
+before lateral advance:
+
+```bash
+./so101 deploy output/my-candidate-bundle NEWTON --experimental \
+  --experimental-clearance-m 0.030 --execute \
+  --port /dev/serial/by-id/YOUR_CONTROLLER \
+  --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
+```
+
+This changes the release/clearance transition gate relative to training. The
+checkpoint weights, observation format and joint mapping stay fixed, but phase
+timing changes and can therefore change observations and subsequent actions.
+It does not command a guaranteed vertical lift or guarantee clearance throughout
+lateral travel. The current physical trials have not established this override
+as a fix; it remains an unqualified experiment.

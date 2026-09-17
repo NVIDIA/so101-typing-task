@@ -27,7 +27,7 @@ compiles Warp kernels; the user-owned runtime cache reuses them on later runs.
 
 ## Train for your configured keyboard pose
 
-After creating your task JSON as shown in the README, an example two-stage
+After the real-to-sim fit produces `output/my-scene/task.json`, an example two-stage
 budget is 4,000 P1A updates followed by 16,000 six-letter updates. Evaluate early
 and choose the continuation budget from your results:
 
@@ -36,7 +36,15 @@ and choose the continuation budget from your results:
   --task-config output/my-scene/task.json \
   --num-envs 4096 --iterations 4000 --seed 1307
 
-# Select the final model from that run, and use the same profile/configuration.
+# Evaluate a saved P1A checkpoint before choosing a continuation budget.
+./so101 evaluate --actuator anchorbench --stage p1a \
+  --checkpoint /absolute/path/to/P1A/model_N.pt \
+  --env-config /absolute/path/to/P1A/params/env.yaml --num-envs 1024 --seed 2307
+./so101 video --actuator anchorbench --stage p1a \
+  --checkpoint /absolute/path/to/P1A/model_N.pt \
+  --env-config /absolute/path/to/P1A/params/env.yaml --target HE
+
+# Continue from the evaluated model with the same profile/configuration.
 ./so101 train --actuator anchorbench --stage transit15 \
   --checkpoint /absolute/path/to/P1A/model_N.pt \
   --num-envs 4096 --iterations 16000 --seed 1307
@@ -66,8 +74,14 @@ claim that 64 reproduces the historical training setup.
 ```bash
 ./so101 evaluate --actuator anchorbench --stage transit15 \
   --checkpoint /absolute/path/to/model_N.pt \
-  --env-config /absolute/path/to/params/env.yaml --num-envs 1024 --seed 1307
+  --env-config /absolute/path/to/params/env.yaml --num-envs 1024 --seed 2307
+./so101 video --actuator anchorbench --stage transit15 \
+  --checkpoint /absolute/path/to/model_N.pt \
+  --env-config /absolute/path/to/params/env.yaml --target NVIDIA
 ```
+
+Repeat evaluation with `--seed 3307`. Review the videos for clean presses,
+release and clearance; scalar success alone does not establish contact quality.
 
 Use the same task, reward, observations, training sample budget, seeds, checkpoint
 selection rule and evaluation sequences when comparing independently trained
@@ -94,7 +108,8 @@ inside a persistent terminal such as tmux for a long experiment:
 ```bash
 ./so101 build
 python3 scripts/run_public_training_pipeline.py \
-  --out-dir output/reference-training-seed1307
+  --task-config output/my-scene/task.json \
+  --out-dir output/my-training-seed1307
 ```
 
 Defaults are 4096 environments, 4000 P1A updates, then 16000 additional Transit15
@@ -103,15 +118,19 @@ default promotion threshold is 90% strict success, an engineering gate rather
 than a claim of hardware readiness. A failed gate saves its report and video,
 stops before Transit15, and marks `status.json` for inspection.
 
-Transit15 is evaluated on 1024 episodes each with seeds 2307 and 3307. Export is
-skipped if either evaluation fails the quality gate. For the optional deployment
-step, run `./so101 setup-hardware` and calibrate your robot, then add
-`--prepare-deployment --robot-id YOUR_CALIBRATED_ID` and your verified
-`--encoder-convention lerobot|benchmark` or `--joint-calibration FILE`. The
-supervisor rejects a missing mapping before training starts. Training does not
-measure the physical robot's coordinate alignment. Export and dry-run preflight
-require that calibration file; this step never executes hardware motion. Recorded videos still need visual review; scalar gates
-do not certify contact quality or sim-to-real transfer.
+Transit15 is evaluated on 1024 episodes each with seeds 2307 and 3307. The default
+run ends after simulation checks. For physical deployment, follow
+[alignment qualification and export](ALIGNMENT.md) using the fitted scene/mapping
+and the same robot calibration used for recording.
+
+The optional `--prepare-deployment --robot-id YOUR_CALIBRATED_ID` only creates a
+bundle without alignment qualification and a software dry run. It requires explicit
+`--encoder-convention lerobot`, `--encoder-convention benchmark`, or
+`--joint-calibration FILE`; it does not accept the scene-fit mapping report or
+qualified alignment. Use the separate alignment/export workflow
+for those. Export is skipped if either six-letter evaluation fails the quality
+gate. Recorded videos still need visual review; scalar gates do not certify
+contact quality or sim-to-real transfer.
 
 The output directory must be new. `status.json` records current stage and terminal
 status; `gpu.csv` records total GPU memory/use every 10 seconds, including desktop
@@ -119,8 +138,8 @@ processes. Each stage has its own public CLI request and resolved training input
 For individual commands, `./so101 ... --output-dir NEW_DIRECTORY` selects an explicit
 output directory instead of the default timestamped location.
 
-To train a configured keyboard pose, add `--task-config configs/tasks/my-keyboard.json`
-to the supervisor command; `--physics-config FILE` optionally supplies MJWarp
+The command above uses your fitted task; for simulation-only experiments substitute
+your example task JSON. `--physics-config FILE` optionally supplies MJWarp
 overrides. Without these options it uses the default reference configuration.
 Both files are validated before creating the output directory, copied into its
 `inputs/` directory, and used for both training stages. Editing the original files

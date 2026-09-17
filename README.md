@@ -41,39 +41,38 @@ cd so101-keyboard-typing-internal
 
 ## Workflow 1: train for your setup
 
-For physical typing, follow the short [real-to-sim calibration guide](docs/release/REAL2SIM.md):
-**hand-guide key presses with torque off → fit and check the simulation scene →
-train using the saved scene**. `./scripts/real2sim.sh record` captures measured
-motion; `./scripts/real2sim.sh fit` fits joint offsets and keyboard pose and checks
-first-key contacts with a reset between keys. The recordings calibrate geometry;
-they are not policy-training demonstrations. Keep the resulting `task.json` for
-training and `mapping-report.json` for the later physical deployment checks.
+Follow this order for physical typing:
+
+1. [Install the hardware environment and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot.
+2. [Measure and freeze the physical fixture](FIXTURE_SETUP.md), saving the starting layout as `output/my-fixture/task.json`.
+3. [Record and fit the scene](docs/release/REAL2SIM.md): hand-guide key presses with torque off, fit joint offsets and keyboard pose, then pass the reset-per-key contact checks. Keep the fitted `output/my-scene/task.json` and `mapping-report.json` together.
+4. [Train and evaluate](docs/release/TRAINING.md) using that fitted scene, then complete the alignment and deployment steps below.
+
+The recordings calibrate the model; they are not policy-training demonstrations.
+The suspected encoder/model or contact-geometry discrepancy remains unresolved;
+the fit is an effective correction, not proof of geometrically identical scenes.
 
 The nominal keyboard position/orientation is relative to the simulated robot.
 Keep the physical fixture fixed after calibration; train and deploy with its saved
 scene and joint mapping.
 For a calibrated physical setup, use `output/my-scene/task.json` from the guide.
-The commands below also support simulation-only setup and installation checks.
 The task JSON supports nominal XYZ/full orientation and optional XY/yaw placement randomization.
 Use [task configuration](docs/release/TASK_CONFIGURATION.md) to choose a simulated
 layout. The [fixture helper](FIXTURE_SETUP.md) draws that model and can fit a
 candidate layout from measurements; it does not establish real-to-sim alignment.
 
 ```bash
-cp configs/tasks/keyboard-pose.json configs/tasks/my-keyboard.json
-# Edit the nominal simulated pose, then draw and inspect it.
-./so101 fixture --task-config configs/tasks/my-keyboard.json --out-dir output/my-fixture
-./so101 probe --task-config configs/tasks/my-keyboard.json
+./so101 fixture --task-config output/my-scene/task.json --out-dir output/my-scene-view
+./so101 probe --task-config output/my-scene/task.json
 
 # Startup check; this budget is not intended to produce a deployable policy.
 ./so101 train --actuator anchorbench --stage p1a \
-  --task-config configs/tasks/my-keyboard.json --num-envs 64 --iterations 10
+  --task-config output/my-scene/task.json --num-envs 64 --iterations 10
 ```
 
-The startup check can run before hardware is available. For physical typing,
-use the scene produced by the real-to-sim guide above; editing a task JSON alone
-does not validate contact alignment. Physical contact checks follow in the
-deployment workflow below.
+Without hardware, use the [simulation-only startup check](docs/release/QUICKSTART.md#simulation-only-startup-check)
+or the reference checkpoint below. Editing an example task JSON alone does not
+validate physical contact alignment.
 
 Continue with the [P1A-to-six-letter training recipe](docs/release/TRAINING.md).
 Choose `anchorbench` or `usd` actuators. Optional `--physics-config`
@@ -109,7 +108,7 @@ The scene's joint mapping and keyboard pose were calibrated from recorded IRL
 contacts and then frozen in the matching environment YAML. The [historical
 provenance record](docs/fixtures/historical_offset_provenance_20260718.md)
 documents the measured contacts, the rejected diagnostic fits, the locked
-contract, and its 78/78 direct replay gate. The [model drawing](FIXTURE_SETUP.md)
+contract, and its 78/78 direct replay gate. The [historical model drawing](docs/fixtures/reference-birdseye.svg)
 shows that frozen scene; its dimensions are not physical ruler instructions.
 Physical use needs alignment checks, and moving the real keyboard does not update
 the policy's frozen map.
@@ -125,39 +124,32 @@ The default download contains only these weights, their environment and evaluati
 report, verified against pinned hashes. `./so101 download --all` explicitly fetches
 the supported-model benchmark/development artifacts. Existing downloaded files are retained.
 
-## Both workflows: calibrate your robot and deploy
+## Both workflows: qualify alignment and deploy
 
 **You perform standard LeRobot calibration on your own robot.** Calibration
 establishes encoder coordinates; it does not measure the keyboard pose. Do not
 copy another robot's calibration or assume its additional fitted offsets apply.
-For workflow 1, complete this setup before collecting the scene-validation
-recordings; reuse that calibration for deployment rather than recalibrating
-between validation and export.
-
-```bash
-./so101 setup-hardware
-source .venv-hardware/bin/activate
-lerobot-calibrate --robot.type=so101_follower \
-  --robot.port=/dev/serial/by-id/YOUR_CONTROLLER --robot.id=my_typing_robot
-```
+Workflow 1 already completed [hardware setup and calibration](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate)
+before recording; reuse that calibration at deployment. For workflow 2, complete
+it before physical alignment. Do not recalibrate between validation and export.
 
 Complete the [alignment workflow](docs/release/ALIGNMENT.md) for your frozen
 scene. It produces `output/my-fixture/qualified/qualification.json` from reserved
 trajectory replay and physical Q/G/P checks. Then export and dry-run your policy:
 
 ```bash
-# Workflow 2: released reference checkpoint, with your qualified physical mapping.
+# Workflow 1: your evaluated checkpoint and its matching trained scene.
 ./so101 prepare-deployment \
-  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
-  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml \
+  --checkpoint /absolute/path/to/model_N.pt \
+  --env-config /absolute/path/to/params/env.yaml \
   --robot-id my_typing_robot \
   --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
 ./so101 deploy output/my_typing_robot NVIDIA
 ```
 
-For workflow 1, replace the checkpoint and environment paths with your selected
-checkpoint and its `params/env.yaml`, retaining qualification for that scene.
+For workflow 2, substitute the downloaded 19k checkpoint and environment paths
+above, retaining qualification for that historical scene.
 Training does not establish a physical joint mapping. For a software-only dry
 run, you may omit `--alignment`: the released pair selects its historical mapping;
 new training requires an explicit mapping as described in
@@ -166,7 +158,7 @@ new training requires an explicit mapping as described in
 Export and the dry run check your calibration without connecting to hardware;
 new bundles also reject changes to that calibration after export. Physical
 execution in the standard workflow requires the qualified alignment. For an
-operator-supervised candidate test, see [experimental deployment](docs/release/ALIGNMENT.md#2-prepare-an-unqualified-mapping).
+operator-supervised candidate test, see [experimental deployment](docs/release/ALIGNMENT.md#optional-supervised-experiments).
 The final command above checks the
 software contract without moving the robot.
 [The hardware guide](docs/release/HARDWARE_PREPARATION.md) provides the explicit

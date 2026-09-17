@@ -74,10 +74,14 @@ Use an explicit perturbation file to vary actual reset placement while preservin
 the trained nominal actor map and policy weights:
 
 ```bash
-./so101 evaluate --checkpoint /absolute/path/to/model_N.pt \
+./so101 evaluate --actuator anchorbench --stage transit15 \
+  --checkpoint /absolute/path/to/model_N.pt \
   --env-config /absolute/path/to/params/env.yaml --num-envs 1024 --seed 2307 \
   --perturbation-config configs/evaluation/placement-1mm.json
 ```
+
+Match `--actuator` and `--stage` to your checkpoint; the example assumes an
+AnchorBench six-letter policy.
 
 The training environment contract is validated before applying this separate
 experiment. The perturbation file accepts only `domain_randomization`, replaces
