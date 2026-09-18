@@ -54,7 +54,7 @@ Simulation-only setup checks can run earlier.
 | [September 17 fitted training scene](docs/fixtures/replay-calibrated-birdseye-20260917.svg) | The latest effective scene, selected after 93/93 per-key replay checks and used by `model_2498.pt` for the successful physical NEWTON trial. Its [task JSON](configs/tasks/replay-calibrated-20260917.json) preserves that example, not a universal user layout. |
 | [Historical benchmark scene](docs/fixtures/reference-birdseye.svg) | The July scene used by the optional 19k policy. This is also the default `./so101 fixture` view and the Q/P/Z numerical example below. |
 
-The [latest fitted simulation pose table](README.md#september-calibrated-scene-example)
+The [fitted simulation pose table](docs/fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene)
 gives the September 17 XYZ and orientation in the simulated robot-base frame.
 The real base and keyboard remained frozen; the simulated pose was adjusted to
 fit the recorded real contacts. The September 15 physical-reference view above

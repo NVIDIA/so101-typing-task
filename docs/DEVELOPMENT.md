@@ -22,6 +22,11 @@ elapsed runtimes when they help users plan, and keep dates or hashes that identi
 a calibration or release. Link to one detailed result instead of repeating it
 throughout the setup guides.
 
+Use the [NVIDIA SO-101 workshop](https://github.com/isaac-sim/Sim-to-Real-SO-101-Workshop)
+as a documentation reference: concise requirements, ordered installation, model
+downloads and a command index. Keep task-specific detail in the linked guides;
+document this repository's tested runtime, hardware and commands.
+
 | Location | Purpose |
 | --- | --- |
 | `README.md` | Install, train/evaluate, optional reference checkpoint, export/deploy |
