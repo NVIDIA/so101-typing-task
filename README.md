@@ -54,8 +54,9 @@ Warp kernels; later runs reuse the cache.
 
 ## Workflow 1: train for your setup
 
-The policy uses a fixed keyboard map. Keep the real base, keyboard and typing jaw
-fixed throughout calibration, training and deployment.
+The policy uses a fixed keyboard map. Complete LeRobot motor calibration with
+the arm's sweep clear, then place the keyboard. Keep the real base, keyboard and
+typing jaw fixed throughout scene calibration, training and deployment.
 
 Use the September tabletop setup: clamp the plastic robot base and secure the
 keyboard directly on the same flat table, with **no mat or riser**. Start with
@@ -65,7 +66,7 @@ the bottom-right corner of the right Ctrl key. The
 [September physical setup](FIXTURE_SETUP.md)
 shows the placement checks and drawing. Measure your own placement before fitting it.
 
-1. [Set up and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot.
+1. [Set up and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot before securing the keyboard in its typing position.
 2. [Measure the fixture](docs/release/TASK_CONFIGURATION.md#measure-your-fixture) and save the starting layout as `output/my-fixture/task.json`.
 3. [Record and fit the scene](docs/release/REAL2SIM.md): hand-guide key presses with torque off, fit joint offsets and the simulated keyboard pose, then check the recorded contacts. Keep `output/my-scene/task.json` and `mapping-report.json` together.
 4. [Train and evaluate](docs/release/TRAINING.md) in the fitted scene: two-letter P1A, then six-letter Transit15.
