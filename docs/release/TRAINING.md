@@ -41,7 +41,7 @@ Its measured training/evaluation wall time was **2 h 38 min 21 s**
 on an RTX 5090. The commands below use that budget with your own fitted scene.
 Evaluate your own checkpoints before continuing; this result does not guarantee
 another setup or establish a minimum training budget.
-See the [checkpoint results and evidence](RESULTS.md).
+See the [checkpoint evidence](calibrated_policy_result.json).
 
 After the real-to-sim fit produces `output/my-scene/task.json`, run the two stages
 with an evaluation between them:
@@ -161,8 +161,7 @@ Both files are validated before creating the output directory, copied into its
 later does not change the running experiment. `status.json` records the original
 paths, snapshot paths and SHA-256 hashes. Evaluation and video use the matching
 checkpoint's saved `params/` configuration automatically. `--image IMAGE` selects
-the Docker image for every simulation stage. [Measured results](RESULTS.md)
-separate the September physical example from earlier software-only runs.
+the Docker image for every simulation stage.
 
 ## Disk, time and ownership
 

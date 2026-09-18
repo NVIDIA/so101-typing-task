@@ -8,7 +8,7 @@ Use Linux x86-64, an NVIDIA GPU, Docker with NVIDIA Container Toolkit and host
 Python 3.10+. Building uses the pinned NVIDIA Isaac Lab image and its applicable
 license terms. Runtime dependencies are public, and no additional source checkout
 or cluster account is required. Simulation does not receive robot devices.
-See [RESULTS.md](RESULTS.md) for the tested configuration and measured results.
+See the [README requirements](../../README.md#requirements) for tested hardware and training cost.
 
 ## Build
 

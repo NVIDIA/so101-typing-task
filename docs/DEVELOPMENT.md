@@ -97,7 +97,8 @@ source fingerprint. Test an extracted source snapshot without `output/`,
 and source checks. A cached build on this workstation is not an independent
 installation. Keep running training jobs on their frozen source/image snapshots.
 
-Record published measurements in [RESULTS.md](release/RESULTS.md), review the diff,
-and inspect the exact source archive. Keep detailed check logs in ignored outputs.
+Keep the [README benchmark](../README.md#physical-benchmark) linked to its published
+evidence, review the diff, and inspect the exact source archive. Keep detailed check
+logs in ignored outputs.
 Green host CI does not establish physical alignment, contact accuracy or
 second-robot typing.

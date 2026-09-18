@@ -52,9 +52,9 @@ passed **93/93** such checks on its fitting recordings.
 
 **Physical result:** on a second SO-101, a fresh policy trained in that
 jointly fitted scene completed **NEWTON** in 7.10 seconds with matching releases
-and clearance, using the fitted conversion on encoder reads and hardware goals.
-This was one supervised experimental trial; see the
-[measured results and evidence](RESULTS.md).
+and model-FK clearance, using the fitted conversion on encoder reads and hardware goals.
+This was one supervised experimental trial without completed alignment qualification;
+see the [recorded evidence](calibrated_policy_result.json).
 
 ### What the fitted offsets mean
 
@@ -62,8 +62,9 @@ Offsets use `q_model = q_LeRobot + offset`; hardware goals use the inverse
 subtraction. The September fit selected about +1.336° shoulder lift, -10.150° elbow
 flex and +1.414° wrist flex, with zero pan and wrist-roll offsets. These values
 belong to that robot and fitted scene. Fit and validate your own complete mapping;
-copying the released offsets does not calibrate another robot. The
-[results](RESULTS.md#scene-and-joint-mapping) describe the measured limits.
+copying the released offsets does not calibrate another robot.
+Both the July and September fits selected about a -10° elbow correction, with
+smaller positive shoulder-lift and wrist-flex corrections.
 
 After fitting, regenerate the bird's-eye view from the resulting `task.json`.
 The starting physical-reference drawing no longer represents the adjusted

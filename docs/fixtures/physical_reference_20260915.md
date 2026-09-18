@@ -82,7 +82,7 @@ corrections, not instructions to shift or raise the physical keyboard. Rotation
 means the change is not the same displacement at every key or case edge.
 The front gaps are computed from the case-hull projection, not new physical
 measurements. Their small difference does not make the lateral shift or rotation
-negligible. See the [joint-mapping and placement results](../release/RESULTS.md#scene-and-joint-mapping).
+negligible. See the [joint-mapping convention](../release/REAL2SIM.md#what-the-fitted-offsets-mean).
 
 The saved joint offsets describe encoder/model arm correspondence; they do not
 move the base outline or keyboard in a bird's-eye drawing. Use the measured

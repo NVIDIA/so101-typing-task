@@ -18,7 +18,7 @@ ARTIFACTS="$PWD/.artifacts/so101-keyboard-typing-benchmark"
 
 Use its matching environment without a September task override. The checkpoint
 retains its original scene and joint-coordinate contract; its offsets are not a
-calibration for another robot. See [historical results](../release/RESULTS.md)
+calibration for another robot. See the [physical benchmark](../../README.md#physical-benchmark)
 for benchmark evidence and [the archived model drawing](reference-birdseye.svg)
 for its effective simulation placement. That drawing is not a physical setup
 recipe. The current [physical reference](physical_reference_20260915.md) and

@@ -8,6 +8,21 @@ in simulation.
 
 [Watch the typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4).
 
+## Physical benchmark
+
+On the original July robot and fixed fixture, separately trained 19k checkpoints
+were evaluated on the same 100 six-letter sequences. Success required the exact
+word, matching key releases and clearance.
+
+| Training actuator model | Physical success |
+| --- | ---: |
+| AnchorBench | **89% (89/100)** |
+| Default USD | **41% (41/100)** |
+
+Both passed 100/100 sequences in simulation. These historical rates are separate
+from the September checkpoint used below. See the
+[published benchmark report](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark/blob/44d8ad43e2619e0d6e89528fea07f887de93678e/evaluation/three_way_mjwarp19k_vbd20k_usd19k_orange2.summary.json).
+
 ## Requirements
 
 | Use | Requirements |
@@ -109,7 +124,7 @@ On a second SO-101, the record/fit/train workflow produced one successful physic
 **NEWTON** trial with this checkpoint. The real fixture stayed fixed while the
 simulation pose and joint mapping were fitted from recorded contacts. This is one
 supervised trial, not a reliability benchmark or a transfer test of the same
-policy between robots. See the [measured results](docs/release/RESULTS.md).
+policy between robots. See the [recorded evidence](docs/release/calibrated_policy_result.json).
 
 The [physical fixture and fitted simulation pose](docs/fixtures/physical_reference_20260915.md)
 have separate drawings. Use the measured reference to place the hardware and the
@@ -176,6 +191,6 @@ Use `./so101 COMMAND --help` or `./scripts/real2sim.sh record --help` for option
 - [Fixture measurements and drawings](FIXTURE_SETUP.md) · [Scene calibration](docs/release/REAL2SIM.md)
 - [Training](docs/release/TRAINING.md) · [Task and physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) · [Alignment](docs/release/ALIGNMENT.md)
-- [Results](docs/release/RESULTS.md) · [Artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
+- [Artifacts and evaluation evidence](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
 - [Runtime provenance](runtime/README.md) · [Development checks](docs/DEVELOPMENT.md)
 - [License](LICENSE) · [Third-party attribution](THIRD_PARTY_NOTICES.md)
