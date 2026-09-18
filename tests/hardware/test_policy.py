@@ -3,9 +3,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+"""Policy observations, command conversion and physical key-event handling."""
+
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -15,11 +18,11 @@ from so101_typing.hardware.fixed_cartesian_policy import (
     ACTION_DIM,
     CLEARANCE_M,
     CONTROL_DT_S,
+    FixedCartesianTypingState,
     JOINT_RATE_LIMITS_RAD_S,
     OBSERVATION_DIM,
     PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG,
     PHYSICAL_CALIBRATED_20260718_PROFILE,
-    FixedCartesianTypingState,
     build_observation,
     frozen_target_xyz,
     infer_policy_contract,
@@ -27,7 +30,19 @@ from so101_typing.hardware.fixed_cartesian_policy import (
     lerobot_position_to_profile_model_rad,
     profile_model_rad_to_lerobot_position,
 )
-from so101_typing.hardware.policy_runtime import PolicyContractError
+from so101_typing.hardware.keyboard_events import (
+    CapturedSession,
+    KeyEvent,
+    _normalize_key_name,
+    levenshtein,
+    score_typed,
+)
+from so101_typing.hardware.policy_runtime import (
+    KeyboardMonitor,
+    PolicyContractError,
+    PressGate,
+    load_rest_pose,
+)
 from so101_typing.hardware.run_fixed_cartesian_policy_handoff import (
     _model_goal_to_arm_q_deg,
     _move_to_fixed_reset,
@@ -40,6 +55,8 @@ from so101_typing.hardware.run_fixed_cartesian_policy_handoff import (
 )
 from so101_typing.hardware.so101_kinematics import GRIPPER_MODEL_MIN_RAD
 
+
+# Policy observations and joint commands
 
 def _synthetic_state() -> dict[str, np.ndarray]:
     state: dict[str, np.ndarray] = {
@@ -487,3 +504,124 @@ def test_training_environment_recognizes_matched_actuator_profile(
     assert report["actuator_profile"] == actuator_profile
     assert report["task_contract"] == task_contract
     assert report["clearance_m"] == pytest.approx(0.015)
+
+
+# Keyboard event capture and scoring
+
+def test_score_exact_phrase() -> None:
+    score = score_typed("newton is the best", "newton is the best")
+
+    assert score["exact_match"] is True
+    assert score["position_accuracy"] == 1.0
+    assert score["levenshtein"] == 0
+
+
+def test_score_empty_capture_is_failure() -> None:
+    score = score_typed("", "newton is the best")
+
+    assert score["exact_match"] is False
+    assert score["correct_chars"] == 0
+    assert score["levenshtein"] == 18
+
+
+def test_levenshtein() -> None:
+    assert levenshtein("newton is best", "newton is the best") == 4
+
+
+def test_captured_session_round_trip(tmp_path: Path) -> None:
+    path = tmp_path / "typed.json"
+    session = CapturedSession(
+        events=[
+            KeyEvent(char="n", code=49, key_name="KEY_N", t_press=1.0, t_release=1.1),
+            KeyEvent(char="e", code=18, key_name="KEY_E", t_press=1.2, t_release=1.3),
+        ],
+        device_path="/dev/input/event99",
+        device_name="test keyboard",
+        stop_reason="stop_key:KEY_ESC",
+        t_start_monotonic=10.0,
+        t_end_monotonic=11.0,
+    )
+
+    session.write(path)
+    loaded = CapturedSession.load(path)
+
+    assert loaded.typed_string() == "ne"
+    assert loaded.device_path == "/dev/input/event99"
+    assert loaded.device_name == "test keyboard"
+    assert loaded.stop_reason == "stop_key:KEY_ESC"
+
+
+def test_normalize_stop_key_name() -> None:
+    assert _normalize_key_name("esc") == "KEY_ESC"
+    assert _normalize_key_name("KEY_F12") == "KEY_F12"
+
+
+# Press, release and clearance handling
+
+def test_press_gate_rejects_overlapping_key_down_edges() -> None:
+    gate = PressGate()
+    assert gate.process({"code": 30, "value": 1}) is False
+    assert gate.process({"code": 30, "value": 0}) is False
+    assert gate.process({"code": 31, "value": 1}) is False
+    assert gate.process({"code": 32, "value": 1}) is True
+    assert gate.invalid_overlap is True
+
+
+def test_keyboard_monitor_tracks_pressed_key_edges() -> None:
+    monitor = KeyboardMonitor.__new__(KeyboardMonitor)
+    monitor.pressed_codes = set()
+
+    monitor._record_key_state(code=33, value=1)
+    assert monitor.pressed_codes == {33}
+    monitor._record_key_state(code=33, value=0)
+
+    assert monitor.pressed_codes == set()
+
+
+def test_keyboard_monitor_drains_pressed_keys_before_release() -> None:
+    monitor = KeyboardMonitor.__new__(KeyboardMonitor)
+    monitor.pressed_codes = {33}
+
+    def release_key() -> tuple[list[dict[str, object]], bool]:
+        monitor._record_key_state(code=33, value=0)
+        return [], False
+
+    monitor.poll = release_key
+
+    assert monitor.drain_until_released(timeout_s=0.01) is True
+
+
+def test_rest_pose_requires_expected_joint_order_and_no_contact(tmp_path: Path) -> None:
+    rest_path = tmp_path / "rest_pose.json"
+    rest_path.write_text(
+        json.dumps(
+            {
+                "kind": "so101_policy_rest_pose",
+                "schema_version": 1,
+                "arm_joint_names": [
+                    "shoulder_pan",
+                    "shoulder_lift",
+                    "elbow_flex",
+                    "wrist_flex",
+                    "wrist_roll",
+                ],
+                "closed_fixed_jaw_required": True,
+                "contact_required": False,
+                "pose_deg": {
+                    "shoulder_pan": -4.0,
+                    "shoulder_lift": -9.0,
+                    "elbow_flex": 12.0,
+                    "wrist_flex": 65.0,
+                    "wrist_roll": 2.0,
+                },
+            }
+        )
+    )
+
+    np.testing.assert_allclose(load_rest_pose(rest_path), [-4.0, -9.0, 12.0, 65.0, 2.0])
+
+    invalid = json.loads(rest_path.read_text())
+    invalid["contact_required"] = True
+    rest_path.write_text(json.dumps(invalid))
+    with pytest.raises(ValueError, match="closed fixed jaw"):
+        load_rest_pose(rest_path)

@@ -1,4 +1,5 @@
-"""Synthetic evidence only: exercise qualification/export without serial access."""
+"""Alignment qualification, export and shared FK replay contracts."""
+
 import copy
 import json
 from pathlib import Path
@@ -9,10 +10,16 @@ import numpy as np
 import pytest
 import yaml
 
-from so101_typing.hardware import scene_alignment as sa, deployment_bundle as bundle
-from so101_typing.hardware import fk_probe_trajectory as trajectory
-from so101_typing.hardware.so101_kinematics import JOINT_NAMES, GRIPPER_MODEL_MIN_RAD
+from so101_typing.hardware import (
+    deployment_bundle as bundle,
+    fk_probe_trajectory as trajectory,
+    run_fk_probe as runner,
+    scene_alignment as sa,
+)
+from so101_typing.hardware.so101_kinematics import GRIPPER_MODEL_MIN_RAD, JOINT_NAMES
 
+
+# Alignment qualification and export
 
 def dump(path, value):
     path.write_text(json.dumps(value, indent=2)+'\n')
@@ -324,3 +331,191 @@ def test_experimental_candidate_mode_forwards_exact_target_and_motion_opt_in(evi
 def test_experimental_execution_requires_a_calibration_pinned_candidate(manifest):
     with pytest.raises(ValueError, match='pinned calibration'):
         bundle.validate_execution_mode(manifest, experimental=True)
+
+
+# Fitted scene provenance
+
+@pytest.mark.parametrize('candidate_name,offsets', [('fit3_pose', [0., .8, -10., 1., 0.]),
+                                                   ('joint_scene', [2., .8, -10., 1., -3.])])
+def test_fitted_scene_qualifies_only_its_reserved_source_scene(evidence, candidate_name, offsets):
+    e = evidence
+    c = e.candidate['contract']
+    fitted_task = copy.deepcopy(c['task_config'])
+    fitted_task['keyboard']['position_m'][0] += .002
+    task_path = dump(e.root/'fitted-task.json', fitted_task)
+    report = {'status': 'diagnostic_only_not_approved_for_deployment',
+              'method': 'event_associated_joint_and_rigid_scene_fit',
+              'task_config': fitted_task, 'reference_task': c['task_config'],
+              'joint_order': c['joint_order'],
+              'identities': {k: c[k] for k in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256')},
+              'recordings': [{'role': 'fit', 'sha256': 'different-fit'},
+                             {'role': 'validation', 'sha256': sa.digest(e.recording)}],
+              'candidates': {candidate_name: {'offset_deg': offsets}}}
+    source = dump(e.root/'fit3.json', report)
+    data = sa.prepare(task_path, 'test_robot', e.root/'scene-candidate',
+                      mapping_report=source, mapping_candidate=candidate_name)
+    replay = json.loads(e.replay.read_text())
+    replay.update(task_config=fitted_task, joint_zero_offset_deg=offsets)
+    dump(e.replay, replay)
+    assert sa.check_replay(data['contract'], e.recording, e.replay)['presses'] == 3
+    changed = copy.deepcopy(data['contract'])
+    changed['mapping']['reference_task'] = fitted_task
+    with pytest.raises(ValueError, match='task_config'):
+        sa.check_replay(changed, e.recording, e.replay)
+    data['contract']['mapping']['reserved_recording_sha256'] = ['different']
+    with pytest.raises(ValueError, match='reserved validation'):
+        sa.check_replay(data['contract'], e.recording, e.replay)
+
+
+@pytest.mark.parametrize('invalid', [None, 'fit_overlap', 'robot', 'scene', 'incomplete', 'keys', 'jaw'])
+def test_reserve_new_capture_after_contact_fitting(evidence, invalid):
+    e = evidence
+    c = e.candidate['contract']
+    report = {'status': 'diagnostic_only_not_approved_for_deployment',
+              'method': 'contact_refined_joint_and_rigid_scene_fit',
+              'task_config': c['task_config'], 'reference_task': c['task_config'],
+              'joint_order': c['joint_order'],
+              'identities': {k: c[k] for k in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256')},
+              'recordings': [{'role': 'fit', 'sha256': 'fitting-capture'}],
+              'candidates': {'joint_scene': {'offset_deg': [0.] * 5}}}
+    recording = json.loads(e.recording.read_text())
+    if invalid == 'robot':
+        recording['robot_id'] = 'different_robot'
+    elif invalid == 'scene':
+        recording['task_config']['keyboard']['position_m'][0] += .01
+    elif invalid == 'incomplete':
+        recording['status'] = 'interrupted'
+    elif invalid == 'keys':
+        recording['events'] = recording['events'][:2]
+    elif invalid == 'jaw':
+        recording['samples'][0]['lerobot_position'][5] = 10.
+    dump(e.recording, recording)
+    if invalid == 'fit_overlap':
+        report['recordings'][0]['sha256'] = sa.digest(e.recording)
+    source = dump(e.root/'all-fit.json', report)
+    original = source.read_bytes()
+    out = e.root/'new-candidate'
+    kwargs = dict(mapping_report=source, mapping_candidate='joint_scene', validation_recordings=[e.recording])
+    if invalid:
+        with pytest.raises(ValueError):
+            sa.prepare(e.task, 'test_robot', out, **kwargs)
+        assert not out.exists()
+    else:
+        data = sa.prepare(e.task, 'test_robot', out, **kwargs)
+        assert data['status'] == 'unqualified'
+        assert data['contract']['mapping']['reserved_recording_sha256'] == [sa.digest(e.recording)]
+        assert (out/'validation-1.json').read_bytes() == e.recording.read_bytes()
+        assert sa.check_replay(data['contract'], e.recording, e.replay)['presses'] == 3
+        assert source.read_bytes() == original
+
+
+# Shared FK trajectory and physical replay
+
+@pytest.fixture
+def artifact(tmp_path):
+    task = tmp_path/"task.json"
+    task.write_text(json.dumps({"schema_version": 1, "keyboard": {
+        "position_m": [.2572, .0099, .0076366833485381445],
+        "rotation_xyzw": [0, 0, -.7079413179513058, .7062712583259836]}}))
+    path = tmp_path/"trajectory.json"
+    plan = trajectory.generate(task, path)
+    return plan, path
+
+
+def test_cartesian_press_hover_and_return(artifact):
+    plan, path = artifact
+    np.testing.assert_allclose(trajectory.tip(next(r["q_rad"] for r in plan["rows"] if r["phase"] == "press")),
+                               plan["press_xyz_b_m"], atol=2e-5)
+    np.testing.assert_allclose(trajectory.tip(next(r["q_rad"] for r in plan["rows"] if r["phase"] == "hover")),
+                               plan["hover_xyz_b_m"], atol=2e-5)
+    assert trajectory.load(path) == plan
+    with pytest.raises(FileExistsError):
+        trajectory.generate(path.with_name("task.json"), path)
+
+
+@pytest.mark.parametrize("mutation,match", [
+    (lambda p: p["rows"][40]["q_rad"].__setitem__(0, float("nan")), "finite"),
+    (lambda p: p["rows"][40]["q_rad"].__setitem__(0, .5), "rate limits"),
+    (lambda p: p["joint_zero_offset_deg"].__setitem__(2, -10), "joint_zero_offset"),
+    (lambda p: p["source_sha256"].update({"scripts/so101_homing/so101_kinematics.py": "changed"}), "source changed"),
+])
+def test_rejects_invalid_or_changed_commands(artifact, mutation, match):
+    plan, _ = artifact
+    mutation(plan)
+    with pytest.raises(ValueError, match=match):
+        trajectory.validate(plan)
+
+
+def test_hardware_requires_pass_for_exact_file(artifact):
+    plan, path = artifact
+    report = path.with_name("sim-report.json")
+    report.write_text(json.dumps({"status": "failed", "trajectory_sha256": trajectory.digest(path)}))
+    with pytest.raises(ValueError, match="not passed"):
+        runner.verified_plan(path)
+    report.write_text(json.dumps({"status": "passed", "trajectory_sha256": trajectory.digest(path)}))
+    assert runner.verified_plan(path) == plan
+    path.write_text(path.read_text()+"\n")
+    with pytest.raises(ValueError, match="not passed"):
+        runner.verified_plan(path)
+
+
+def test_keyboard_preserves_batched_edges_and_device_times(monkeypatch):
+    import sys
+    from so101_typing.hardware import policy_runtime
+    monkeypatch.setitem(sys.modules, 'evdev', SimpleNamespace(ecodes=SimpleNamespace(EV_KEY=1, KEY={})))
+    monkeypatch.setattr(policy_runtime, '_keycode_to_char', lambda: {16: ('KEY_Q', 'q')})
+    monkeypatch.setattr(policy_runtime, '_key_name_to_code', lambda _: ('KEY_ESC', 1))
+    monkeypatch.setattr(policy_runtime.select, 'select', lambda *args: ([7], [], []))
+    def event(value, timestamp):
+        return SimpleNamespace(type=1, code=16, value=value, timestamp=lambda: timestamp)
+    monitor = policy_runtime.KeyboardMonitor('fake')
+    monitor.device = SimpleNamespace(fd=7, read=lambda: [event(1, 1000.001), event(2, 1000.005),
+                                                         event(0, 1000.021), event(1, 1000.029)])
+    events, stop = monitor.poll()
+    assert not stop
+    assert [e['edge'] for e in events] == ['down', 'up', 'down']
+    assert [e['evdev_timestamp_s'] for e in events] == [1000.001, 1000.021, 1000.029]
+    assert monitor.pressed_codes == {16}
+
+
+@pytest.mark.parametrize("wrong_key", [False, True])
+@pytest.mark.parametrize('offsets', [None, [3., .7, -9.6, .5, 0.]])
+def test_hardware_replays_saved_rows_and_detects_keys(artifact, monkeypatch, wrong_key, offsets):
+    from so101_typing.hardware import robot as robot_module, policy_runtime
+    plan, path = artifact
+    plan = copy.deepcopy(plan)
+    # Test transport with a compact sequence; geometry is checked separately.
+    plan["rows"] = [{"phase": phase, "q_rad": (trajectory.RESET+[delta,0,0,0,0]).tolist()}
+                    for phase, delta in [("descend", .001), ("lift", .002), ("finished", 0.), ("finished", 0.)]]
+    sent = []
+    fake = SimpleNamespace(disconnect=lambda: None, bus=SimpleNamespace(sync_read=lambda *a, **kw: {'gripper': 0.}))
+    monkeypatch.setattr(robot_module, "connect_robot", lambda **kw: fake)
+    monkeypatch.setattr(robot_module, "prepare_closed_typing_jaw", lambda r: None)
+    offset = np.zeros(5) if offsets is None else np.array(offsets)
+    monkeypatch.setattr(robot_module, "read_arm_q_deg", lambda r: np.rad2deg(trajectory.RESET)-offset if not sent else sent[-1])
+    monkeypatch.setattr(robot_module, "send_typing_q_deg", lambda r, q: sent.append(q.copy()))
+    monkeypatch.setattr(runner.time, "sleep", lambda s: None)
+    class Keyboard:
+        pressed_codes = set()
+        device = SimpleNamespace(active_keys=lambda: [])
+        def __init__(self, path): pass
+        def __enter__(self): return self
+        def __exit__(self, *exc): pass
+        def poll(self):
+            if len(sent) in (126, 127):
+                char = "d" if wrong_key else "f"
+                return [{"char": char, "key_name": "KEY_"+char.upper(),
+                         "edge": "down" if len(sent) == 126 else "up"}], False
+            return [], False
+
+    monkeypatch.setattr(policy_runtime, "KeyboardMonitor", Keyboard)
+    args = SimpleNamespace(robot_id="test", port="fake", keyboard_device="fake")
+    if offsets is not None:
+        args.alignment_data = {'contract': {'joint_zero_offset_deg': offsets}, 'contract_sha256': 'synthetic-test-only'}
+    if wrong_key:
+        with pytest.raises(RuntimeError, match="unexpected key"):
+            runner.execute(plan, path, args, path)
+        assert len(sent) == 126
+    else:
+        assert runner.execute(plan, path, args, path) == 0
+        np.testing.assert_allclose(np.deg2rad(np.array(sent[-len(plan['rows']):])+offset), [r["q_rad"] for r in plan["rows"]], atol=1e-15)
