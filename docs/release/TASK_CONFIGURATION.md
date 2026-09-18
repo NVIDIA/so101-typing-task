@@ -1,6 +1,7 @@
 # Change keyboard placement and randomization
 
-The published fixture is the default, not a restriction on new training.
+Fresh simulation defaults to the fitted September scene. The physical-reference
+drawing is separate; neither example replaces fitting your own robot's scene.
 Choose independent task and physics configuration files:
 
 ```bash
@@ -44,7 +45,11 @@ a scene rotation. With an absolute rotation, the horizontal support plane is
 set to the transformed case's lowest point.
 
 `configs/tasks/keyboard-pose.json` demonstrates a 10 mm X shift and 2 degree yaw
-offset. The policy keeps the existing 22-element observation and five arm actions.
+change from the fitted September scene, saved as an absolute orientation.
+Task files describe overrides to the underlying asset reference, not patches on
+the launcher's default example; start from your fitted task and retain its
+`keyboard` section when adding randomization. The policy keeps the existing
+22-element observation and five arm actions.
 Its nominal target coordinates change; normalization and the joint reset reference
 stay fixed. Nominal roll/pitch are supported through the absolute quaternion;
 vertical and tilt randomization are not exposed.
@@ -54,7 +59,8 @@ vertical and tilt randomization are not exposed.
 The reset distribution accepts uniform bounds for `keyboard_x_m`, `keyboard_y_m`,
 and `keyboard_yaw_deg`, plus a nonnegative `reset_joint_noise_rad`. XY translations
 and yaw are expressed in the robot-base/world axes about the nominal fixture.
-The reference example uses +/-3 mm, +/-1 degree, and 0.005 radian reset noise.
+The randomization example retains the fitted September nominal pose and uses
++/-3 mm, +/-1 degree, and 0.005 radian reset noise.
 These are example ranges, not a claim of achieved physical robustness.
 
 The actor sees the nominal key coordinates throughout an episode. It does not

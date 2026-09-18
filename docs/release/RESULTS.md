@@ -2,7 +2,8 @@
 
 ## September calibrated-scene policy
 
-The recorded-contact workflow produced one verified physical **NEWTON** sequence.
+On a second SO-101, the recorded-contact workflow produced one verified physical
+**NEWTON** sequence with a fresh policy trained for that robot's fitted scene.
 The physical fixture stayed fixed while the joint mapping and effective simulated
 keyboard pose were fitted together. A fresh policy was trained in that scene and
 deployed with the same mapping applied to encoder reads and hardware commands.
@@ -20,16 +21,16 @@ Follow [scene calibration](REAL2SIM.md), [training](TRAINING.md) and
 
 This was one supervised experimental trial using native 25 Hz policy timing and
 15 mm clearance for two ticks. It did not complete standard alignment qualification
-and does not establish a success rate, physical A–Z coverage or other-robot transfer.
+and does not establish a success rate, physical A–Z coverage or transfer of the
+same checkpoint to another robot.
 Continuous measured-motion replay produced extra/mismatched contacts despite the
 isolated first-contact pass.
 
 The [sanitized evidence summary](calibrated_policy_result.json) pins the scene,
 offsets, checkpoint, evaluation and original-log hashes. Download the matching
-weights, scene and sanitized evidence with `./so101 download --calibrated`; see
+weights, scene and sanitized evidence with `./so101 download`; see
 [playback](../../README.md#september-calibrated-scene-example). Raw recordings and
-the operator's LeRobot calibration remain local. The historical 19k checkpoint
-remains the default download.
+the operator's LeRobot calibration remain local.
 
 ### Scene and joint mapping
 
@@ -39,8 +40,9 @@ Use the full-precision mapping report supplied with the bundle. Deployment adds
 them on encoder reads and subtracts them from model goals; PPO uses model
 coordinates and does not apply an additional conversion inside simulation.
 
-The roughly -10-degree elbow correction recurs in the historical and September
-fits. An earlier elbow-only FK comparison reduced mean absolute Z error from
+The historical and September fits both selected an approximately -10-degree
+elbow correction, with smaller positive shoulder-lift and wrist-flex corrections.
+An earlier elbow-only FK comparison reduced mean absolute Z error from
 20.01 to 7.94 mm on 22 powered presses excluded from that fit. This supports a
 substantial joint-mapping contribution to vertical reach. Earlier offsets-only
 physical attempts could reach keys but dragged or hit the space bar.
@@ -68,9 +70,14 @@ calibrated bundle.
 
 | Policy | Measured result | Scope |
 | --- | --- | --- |
-| Historical AnchorBench `model_19000.pt` | 89/100 physical six-letter trials; 78/78 reset-per-key replay contacts | Original robot, fitted scene and mat fixture; [required contract](../fixtures/reference_policy.md) |
 | Earlier public P1A `model_500.pt` | 2,048/2,048 two-letter episodes; zero wrong keys | Simulation only; 501 updates, 29 min 17 s training-loop time |
 | Earlier public Transit15 `model_549.pt` | 2,027/2,048 six-letter episodes; 3 wrong-key and 18 scrape failures | Simulation only; 50 further updates, 2 min 57 s training-loop time |
+
+The optional July AnchorBench `model_19000.pt` recorded 89/100 physical six-letter
+trials and 78/78 reset-per-key replay contacts on its original robot/fixture.
+Use `./so101 download --historical` and its separate
+[historical reference](../fixtures/reference_policy.md); it is not the setup used
+by the September release.
 
 The earlier public training used seed 1307, 4,096 environments and AnchorBench/MJWarp
 on RTX 5090. Times exclude startup/evaluation. Maximum simulated key depression was

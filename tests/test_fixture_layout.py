@@ -89,6 +89,39 @@ class FixtureTests(unittest.TestCase):
             with self.assertRaises(FileExistsError): fixture.create(out)
             self.assertEqual(before,{p.name:p.read_bytes() for p in out.iterdir()})
 
+    def test_default_draws_september_physical_reference_and_preserves_geometry_provenance(self):
+        reference = ROOT / 'configs/tasks/physical-reference-20260915.json'
+        with tempfile.TemporaryDirectory() as folder:
+            default = Path(folder) / 'default'
+            explicit = Path(folder) / 'explicit'
+            fixture.create(default)
+            fixture.create(explicit, task_config=reference)
+            self.assertEqual(load_config(default / 'task.json'), load_config(reference))
+            for name in ('task.json', 'expected-landmarks.json', 'birdseye.svg'):
+                self.assertEqual((default / name).read_bytes(), (explicit / name).read_bytes())
+            report = json.loads((default / 'measurement-report.json').read_text())
+            self.assertEqual(report['source_sha256'], self.geometry['source_sha256'])
+            self.assertEqual(report['robot_usd_sha256'], self.geometry['robot_usd_sha256'])
+            self.assertFalse(report['hardware_access'])
+            self.assertFalse(report['physical_alignment_validated'])
+
+    def test_explicit_and_measured_fixtures_do_not_depend_on_default_reference_file(self):
+        task_path = ROOT / 'configs/tasks/replay-calibrated-20260917.json'
+        task = load_config(task_path)
+        measured = fixture.landmarks(self.geometry, task)
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            measurement_path = root / 'measurements.json'
+            measurement_path.write_text(json.dumps(measured))
+            with patch.object(fixture, 'ROOT', root), \
+                 patch.object(fixture, 'load_geometry', return_value=self.geometry):
+                fixture.create(root / 'explicit', task_config=task_path)
+                fixture.create(root / 'measured', measurements=measurement_path)
+            self.assertEqual(load_config(root / 'explicit/task.json'), task)
+            recovered = json.loads((root / 'measured/expected-landmarks.json').read_text())
+            for key in fixture.LANDMARKS:
+                np.testing.assert_allclose(recovered[key], measured[key], atol=1e-10)
+
     def test_derived_cap_landmarks_match_actual_npz_geometry(self):
         asset_path=next(name for name in self.geometry['source_sha256'] if name.endswith('.npz'))
         asset=np.load(ROOT/asset_path)

@@ -17,7 +17,7 @@ See [RESULTS.md](RESULTS.md) for the tested configuration and measured results.
 ```
 
 Choose workflow 1 below to train for your own layout. No artifact download is
-required. Workflow 2 plays either released policy in its matching reference scene.
+required. Workflow 2 plays the September policy in its matching fitted scene.
 
 First startup compiles Warp kernels; the launcher retains a user-owned runtime cache.
 Runtime source changes require `./so101 build` again. See the README budget table
@@ -28,8 +28,11 @@ using `./so101 setup-hardware`.
 
 ## Workflow 1: train with your chosen configuration
 
-For physical typing, follow the [real-to-sim calibration guide](REAL2SIM.md):
-measure the starting placement, record torque-off hand-guided key presses, fit
+For physical typing, use the [September tabletop setup](../fixtures/physical_reference_20260915.md):
+clamped plastic base and secured keyboard on the same flat table, no mat, about
+130 mm front gap, parallel edges, and the base's short right straight edge aligned to
+the right Ctrl corner. Then follow the [real-to-sim calibration guide](REAL2SIM.md):
+measure your starting placement, record torque-off hand-guided key presses, fit
 the keyboard pose and joint offsets, and check first contacts with resets between
 keys. Train using its saved `output/my-scene/task.json`. The recordings calibrate
 the scene; they are not policy training demonstrations. Separate reserved replay
@@ -45,7 +48,7 @@ measured `my-fixture` or fitted `my-scene` used for physical typing:
 
 ```bash
 mkdir -p output/sim-example
-cp configs/tasks/keyboard-pose.json output/sim-example/task.json
+cp configs/tasks/replay-calibrated-20260917.json output/sim-example/task.json
 # Optionally edit this simulated pose, then inspect it.
 ./so101 fixture --task-config output/sim-example/task.json --out-dir output/sim-example-view
 ./so101 probe --task-config output/sim-example/task.json
@@ -56,6 +59,11 @@ cp configs/tasks/keyboard-pose.json output/sim-example/task.json
 These are short setup checks. Use [TRAINING.md](TRAINING.md) for the staged
 P1A-to-Transit15 recipe and training-budget limitations. Add `--plan` to simulation
 commands to inspect the launch without starting simulation or writing outputs.
+
+Without `--task-config`, `fixture` draws the measured September reference, while
+fresh `train`, `probe` and `scene` use the fitted September example. Keep the task
+file explicit for your own scene. Playback, evaluation and resumed training
+restore the checkpoint's saved configuration instead.
 
 To inspect the scene in the Newton viewer, run
 `./so101 scene --task-config output/sim-example/task.json` from an X11 desktop
@@ -68,8 +76,8 @@ complete six-joint maps. Unknown fields and invalid values are rejected.
 Sparse VBD is not exposed in this qualified interface.
 
 [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md) covers nominal keyboard XYZ/yaw,
-XY/yaw randomization and robot reset-joint noise. The benchmark physical fixture
-is a reference setup. Sampled pose perturbations are not supplied to the actor.
+XY/yaw randomization and robot reset-joint noise. Sampled pose perturbations are
+not supplied to the actor.
 
 Use the [model layout guide](../../FIXTURE_SETUP.md) and `./so101 fixture` to draw
 the scene or fit a candidate task JSON from Q/P/Z measurements. It needs only host
@@ -98,28 +106,31 @@ seed and input hashes; training saves the resolved environment and agent YAML.
 Each run also saves its console log and exit code. Compare policies with matched
 sample budgets, seeds, configurations and sequence banks.
 
-## Workflow 2: optional reference policies
+## Workflow 2: try the September policy
 
-Read [the fixture requirements](../../FIXTURE_SETUP.md) before physical use.
-The default ~19k policy assumes its trained keyboard transform and fixed jaw.
-Calibration does not compensate for a different keyboard placement.
+The default download includes `model_2498.pt`, the complete `params/` folder and
+sanitized evidence for one physical NEWTON trial on a second SO-101 after fitting
+and training for that setup. Start with simulation playback:
 
 ```bash
 ./so101 download
+bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
 ./so101 video --actuator anchorbench --stage transit15 \
-  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
-  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml
+  --checkpoint "$bundle/model_2498.pt" \
+  --env-config "$bundle/params/env.yaml" --target NEWTON
 ```
 
 Use `evaluate` for headless episodes or `play` for an interactive Newton viewer
-(X11 `DISPLAY`/`XAUTHORITY` required). The optional `--all` download includes the
-supported-model benchmark and development evidence. Verify downloaded files from the
-artifact directory with `sha256sum -c DOWNLOAD_SHA256SUMS`.
+(X11 `DISPLAY`/`XAUTHORITY` required). Verify downloaded files from the artifact
+directory with `sha256sum -c DOWNLOAD_SHA256SUMS`. Keep the complete bundle.
+`--calibrated` is an alias for the default; `--all` includes both releases and
+development evidence. The optional July checkpoint uses `--historical` and has
+its own [historical reference](../fixtures/reference_policy.md).
 
-The additional [September calibrated-scene example](../../README.md#september-calibrated-scene-example)
-is selected with `./so101 download --calibrated`. It includes `model_2498.pt`, its
-complete `params/` folder and sanitized evidence for one physical NEWTON trial.
-Its robot-specific mapping must not be substituted for your own scene calibration.
+The [September example](../../README.md#september-calibrated-scene-example) uses
+a frozen fitted scene. Its successful trial does not make the recorded mapping
+a calibration for your robot. Read [fixture setup](../../FIXTURE_SETUP.md) before
+physical use.
 
 ## Both workflows: user calibration and deployment
 
@@ -132,8 +143,6 @@ operator-enabled hardware execution. The bundle checks the trained nominal map,
 including changed keyboard geometry, against the qualified scene. Keep the same
 robot calibration throughout validation and deployment.
 
-For software-only exports without alignment evidence, only the exact historical
-19k checkpoint/environment pair selects its mapping automatically. The September
-checkpoint and new training require an explicit mapping. The downloaded reference
-mapping is not a calibration for a different robot. If fitting your setup changes
-the trained keyboard scene, return to workflow 1 and train for that scene.
+The September checkpoint and new training require your explicitly prepared
+mapping; the qualified `--alignment` file supplies it. If fitting your setup
+changes the trained keyboard scene, return to workflow 1 and train for that scene.

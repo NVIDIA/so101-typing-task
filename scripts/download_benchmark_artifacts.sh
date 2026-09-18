@@ -5,11 +5,12 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/download_benchmark_artifacts.sh [--all | --calibrated] [OUTPUT_DIR]
+  ./scripts/download_benchmark_artifacts.sh [--historical | --all | --calibrated] [OUTPUT_DIR]
 
-Defaults to the optional AnchorBench 19k checkpoint, matched environment and
-evaluation report. --calibrated selects the September 17 fitted-scene policy and
-its physical NEWTON evidence. --all includes both, plus supported development artifacts.
+Defaults to the September fitted-scene policy, matching calibration, training,
+simulation and physical NEWTON evidence. --calibrated is an explicit alias.
+--historical selects the original July AnchorBench 19k checkpoint, environment
+and evaluation. --all includes both, plus supported development artifacts.
 Downloads immutable artifacts from:
   https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark
 
@@ -24,10 +25,11 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-selection=historical
+selection=calibrated
 case "${1:-}" in
   --all) selection=all; shift ;;
   --calibrated) selection=calibrated; shift ;;
+  --historical) selection=historical; shift ;;
 esac
 [[ $# -le 1 && "${1:-}" != --* ]] || { usage >&2; exit 2; }
 
@@ -89,7 +91,7 @@ download_and_verify() {
   printf '[OK] %s\n' "$relative_path" >&2
 }
 
-# Sanitized historical benchmark and qualified short-training release.
+# Sanitized historical benchmark and September calibrated-scene release.
 # Both the immutable dataset revision above and every payload checksum are pinned.
 artifacts=(
   'README.md|11830a4f6296a84c7ce00d31898e81c4634bd0fbd0dd020a35c3746deda79a68'

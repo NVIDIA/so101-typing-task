@@ -1,9 +1,31 @@
 {
   "schema_version": 1,
+  "keyboard": {
+    "position_m": [
+      0.2595676859186883,
+      0.026287385873795737,
+      0.010914637799476334
+    ],
+    "rotation_xyzw": [
+      -0.0030013315867738564,
+      -0.003167092771073995,
+      -0.6878501661003925,
+      0.7258395900801692
+    ]
+  },
   "domain_randomization": {
-    "keyboard_x_m": [-0.003, 0.003],
-    "keyboard_y_m": [-0.003, 0.003],
-    "keyboard_yaw_deg": [-1.0, 1.0],
+    "keyboard_x_m": [
+      -0.003,
+      0.003
+    ],
+    "keyboard_y_m": [
+      -0.003,
+      0.003
+    ],
+    "keyboard_yaw_deg": [
+      -1.0,
+      1.0
+    ],
     "reset_joint_noise_rad": 0.005
   }
 }

@@ -3,6 +3,7 @@ import importlib.machinery
 import importlib.util
 import contextlib
 import io
+from itertools import combinations
 import json
 import os
 from pathlib import Path
@@ -89,6 +90,9 @@ class PublicCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'so101').write_text('archive launcher')
+            task = root / 'configs/tasks/replay-calibrated-20260917.json'
+            task.parent.mkdir(parents=True)
+            task.write_bytes((ROOT / 'configs/tasks/replay-calibrated-20260917.json').read_bytes())
             out = root / 'run'
             process = Mock(stdout=[], wait=Mock(return_value=0))
             with patch.object(cli, 'ROOT', root), patch.object(cli, 'source_fingerprint', return_value='fingerprint'), \
@@ -101,10 +105,11 @@ class PublicCliTests(unittest.TestCase):
             self.assertIsNone(saved['launcher_revision'])
             self.assertEqual(saved['source_distribution'], 'archive')
             self.assertEqual(saved['runtime_source_sha256'], 'fingerprint')
+            self.assertEqual(saved['artifacts']['task_config']['path'], str(task))
             self.assertTrue(all(call.args[0][0] == 'docker' for call in metadata.call_args_list))
 
-    def test_download_archive_requires_explicit_option(self):
-        for extra in ([], ['--all'], ['--calibrated']):
+    def test_download_forwards_default_and_explicit_selections(self):
+        for extra in ([], ['--all'], ['--calibrated'], ['--historical']):
             with patch.object(sys, 'argv', ['so101', 'download', *extra]), \
                  patch.object(cli.subprocess, 'call', return_value=0) as execute:
                 self.assertEqual(cli.main(), 0)
@@ -112,17 +117,124 @@ class PublicCliTests(unittest.TestCase):
                                  [str(ROOT / 'scripts/download_benchmark_artifacts.sh'), *extra])
 
     def test_download_rejects_conflicting_selections_before_execution(self):
-        with patch.object(sys, 'argv', ['so101', 'download', '--all', '--calibrated']), \
-             patch.object(cli.subprocess, 'call') as execute, self.assertRaises(SystemExit) as error:
-            cli.main()
-        self.assertEqual(error.exception.code, 2)
-        execute.assert_not_called()
+        for flags in combinations(('--all', '--calibrated', '--historical'), 2):
+            with self.subTest(flags=flags), \
+                 patch.object(sys, 'argv', ['so101', 'download', *flags]), \
+                 patch.object(cli.subprocess, 'call') as execute, \
+                 contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                cli.main()
+            self.assertEqual(error.exception.code, 2)
+            execute.assert_not_called()
 
     def plan(self, *args):
-        with patch.object(sys, 'argv', ['so101', *args]), patch('builtins.print') as out, patch.object(cli.subprocess, 'call') as execute:
+        with patch.object(sys, 'argv', ['so101', *args]), patch('builtins.print') as out, \
+             patch.dict(os.environ, {'DISPLAY': ':test'}), \
+             patch.object(cli.subprocess, 'call') as execute, \
+             patch.object(cli.subprocess, 'check_output') as inspect, \
+             patch.object(cli.subprocess, 'Popen') as launch:
             self.assertEqual(cli.main(), 0)
             execute.assert_not_called()
+            inspect.assert_not_called()
+            launch.assert_not_called()
             return out.call_args.args[0]
+
+    def test_fresh_training_probe_and_scene_default_to_september_fitted_task(self):
+        task = ROOT / 'configs/tasks/replay-calibrated-20260917.json'
+        for operation in ('train', 'probe', 'scene'):
+            with self.subTest(operation=operation):
+                command = self.plan(operation, '--plan')
+                self.assertIn(f'src={task},dst=/inputs/task.json,readonly', command)
+                self.assertIn('--task-config /inputs/task.json', command)
+                if operation == 'probe':
+                    self.assertIn('--reset-audit-count 3', command)
+
+    def test_explicit_task_overrides_fresh_command_default(self):
+        task = ROOT / 'configs/tasks/physical-reference-20260915.json'
+        for operation in ('train', 'probe', 'scene'):
+            with self.subTest(operation=operation):
+                command = self.plan(operation, '--task-config', str(task), '--plan')
+                self.assertIn(f'src={task},dst=/inputs/task.json,readonly', command)
+                self.assertNotIn('replay-calibrated-20260917.json', command)
+
+    def test_checkpoint_commands_preserve_historical_scene_without_sidecars(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / 'model.pt'
+            checkpoint.write_bytes(b'fixture')
+            config = root / 'params/env.yaml'
+            config.parent.mkdir()
+            config.write_text('fixture: true')
+            for operation in ('train', 'evaluate', 'play', 'video'):
+                with self.subTest(operation=operation):
+                    args = [operation, '--checkpoint', str(checkpoint), '--plan']
+                    if operation != 'train':
+                        args += ['--env-config', str(config)]
+                    command = self.plan(*args)
+                    self.assertNotIn('--task-config', command)
+                    self.assertNotIn('dst=/inputs/task.json', command)
+                    self.assertNotIn('--physics-config', command)
+
+    def test_checkpoint_sidecars_are_restored_and_explicit_task_takes_precedence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / 'model.pt'
+            checkpoint.write_bytes(b'fixture')
+            config = root / 'params/env.yaml'
+            config.parent.mkdir()
+            config.write_text('fixture: true')
+            saved_task = config.parent / 'public_task.json'
+            saved_task.write_text(json.dumps({'schema_version': 1, 'keyboard': {'yaw_offset_deg': 2}}))
+            saved_physics = config.parent / 'public_physics.json'
+            saved_physics.write_text(json.dumps({'schema_version': 1, 'solver': 'mjwarp'}))
+            explicit_task = ROOT / 'configs/tasks/physical-reference-20260915.json'
+            for operation in ('train', 'evaluate', 'play', 'video'):
+                for override in (False, True):
+                    with self.subTest(operation=operation, override=override):
+                        args = [operation, '--checkpoint', str(checkpoint), '--plan']
+                        if operation != 'train':
+                            args += ['--env-config', str(config)]
+                        if override:
+                            args += ['--task-config', str(explicit_task)]
+                        command = self.plan(*args)
+                        expected_task = explicit_task if override else saved_task
+                        self.assertIn(f'src={expected_task},dst=/inputs/task.json,readonly', command)
+                        self.assertIn(f'src={saved_physics},dst=/inputs/physics.json,readonly', command)
+                        self.assertIn('--task-config /inputs/task.json', command)
+                        self.assertIn('--physics-config /inputs/physics.json', command)
+                        self.assertNotIn('replay-calibrated-20260917.json', command)
+                        if override:
+                            self.assertNotIn(f'src={saved_task},', command)
+
+    def test_scene_zero_mapping_still_requires_explicit_matching_task(self):
+        with tempfile.TemporaryDirectory() as directory:
+            mapping = Path(directory) / 'mapping.json'
+            mapping.write_text('{}')
+            with patch.object(sys, 'argv', ['so101', 'scene', '--zero-mapping', str(mapping), '--plan']), \
+                 patch.dict(os.environ, {'DISPLAY': ':test'}), \
+                 patch.object(cli.subprocess, 'call') as execute, \
+                 contextlib.redirect_stderr(io.StringIO()) as stderr, \
+                 self.assertRaises(SystemExit) as error:
+                cli.main()
+            self.assertEqual(error.exception.code, 2)
+            self.assertIn('--zero-mapping requires the matching --task-config', stderr.getvalue())
+            execute.assert_not_called()
+            task = ROOT / 'configs/tasks/physical-reference-20260915.json'
+            command = self.plan('scene', '--zero-mapping', str(mapping), '--task-config', str(task), '--plan')
+            self.assertIn(f'src={task},dst=/inputs/task.json,readonly', command)
+
+    def test_playback_target_defaults_to_newton_and_preserves_p1a_and_explicit_targets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / 'model.pt'
+            checkpoint.write_bytes(b'fixture')
+            config = Path(directory) / 'env.yaml'
+            config.write_text('fixture: true')
+            for operation in ('play', 'video'):
+                for extra, target in (([], 'NEWTON'), (['--stage', 'p1a'], 'HE'),
+                                      (['--target', 'nvidia'], 'NVIDIA')):
+                    with self.subTest(operation=operation, target=target):
+                        command = self.plan(operation, '--checkpoint', str(checkpoint),
+                                            '--env-config', str(config), '--plan', *extra)
+                        self.assertIn(f'--target {target}', command)
 
     def test_profiles_map_to_distinct_registered_tasks(self):
         for profile, registered in cli.PROFILES.items():

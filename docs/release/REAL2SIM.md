@@ -5,8 +5,11 @@ The recordings calibrate the simulation; they are **not PPO demonstrations**.
 Keep the physical base, keyboard and fixed typing jaw unchanged during this process.
 
 For this tabletop workflow, place the plastic robot base and keyboard directly
-on the same flat table, with the letter keys within the fixed jaw's reach. Secure
-the base and keyboard. Use the documented base edges and vertices as datums to
+on the same flat table, with no mat or riser. Clamp the base and secure the keyboard.
+Start with about 130 mm front gap, parallel base/keyboard edges and the base's
+short right straight edge aligned to the bottom-right corner of right Ctrl, as shown in
+the [measured September reference](../fixtures/physical_reference_20260915.md).
+Use the documented base edges and vertices as datums to
 measure the keyboard's relative position and orientation and build the starting
 simulation scene. Preserve those measurements throughout calibration.
 
@@ -17,12 +20,9 @@ Run `./so101 setup-hardware` and `./so101 build` before the steps below.
 
 ## Why recorded-motion calibration comes before training
 
-This follows the calibration and replay approach used for the
-[historical reference policy](../fixtures/reference_policy.md),
-which achieved **89/100 physical six-letter trials**
-on the benchmark setup. That workflow selected the keyboard pose and joint offsets
-together, passed **78/78** reset-per-key replay checks, then used the frozen scene
-for training and the matching joint conversion for deployment.
+The September workflow selected the keyboard pose and joint offsets together,
+checked the recorded contacts, then trained a fresh policy in the frozen scene.
+Deployment used the matching conversion on encoder reads and hardware commands.
 
 The policy uses a fixed keyboard map without vision, so physical typing depends
 on the real and simulated robot/keyboard relationship agreeing. Matching external
@@ -50,7 +50,7 @@ scene. This is the pre-training criterion used here; it does not establish clean
 continuous replay or successful physical policy deployment. The September fit
 passed **93/93** such checks on its fitting recordings.
 
-**Physical result:** a fresh policy trained in that
+**Physical result:** on a second SO-101, a fresh policy trained in that
 jointly fitted scene completed **NEWTON** in 7.10 seconds with matching releases
 and clearance, using the fitted conversion on encoder reads and hardware goals.
 This was one supervised experimental trial; see the
@@ -58,23 +58,12 @@ This was one supervised experimental trial; see the
 
 ### What the fitted offsets mean
 
-The original benchmark and the September scene fit share a **large negative elbow
-correction, approximately -10 degrees**, with smaller positive shoulder-lift and
-wrist-flex corrections:
-
-| Mapping | Shoulder lift | Elbow flex | Wrist flex |
-| --- | ---: | ---: | ---: |
-| Historical scene used for the 89/100 result | +1.934° | -10.774° | +1.365° |
-| Selected September joint-and-keyboard fit, 93/93 replay | +1.336° | -10.150° | +1.414° |
-
-These use `q_model = q_LeRobot + offset`; hardware goals use the inverse
-subtraction. Earlier elbow-only checks reduced much of the vertical contact
-error. The recurring sign and scale support investigating a systematic
-encoder/model correspondence difference, but do not identify its mechanical
-cause or establish a universal correction. The selected joint-and-keyboard fit
-retained zero pan and wrist-roll offsets despite both being adjustable. Fit and
-validate the complete scene/mapping for each setup; the [results](RESULTS.md)
-describe the measured limits.
+Offsets use `q_model = q_LeRobot + offset`; hardware goals use the inverse
+subtraction. The September fit selected about +1.336° shoulder lift, -10.150° elbow
+flex and +1.414° wrist flex, with zero pan and wrist-roll offsets. These values
+belong to that robot and fitted scene. Fit and validate your own complete mapping;
+copying the released offsets does not calibrate another robot. The
+[results](RESULTS.md#scene-and-joint-mapping) describe the measured limits.
 
 After fitting, regenerate the bird's-eye view from the resulting `task.json`.
 The starting physical-reference drawing no longer represents the adjusted

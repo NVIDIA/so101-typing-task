@@ -40,7 +40,9 @@ A different fitted training scene requires its own policy.
 The tracked pose record is [`physical_reference_20260915.json`](physical_reference_20260915.json).
 The portable physical-reference configuration is
 [`configs/tasks/physical-reference-20260915.json`](../../configs/tasks/physical-reference-20260915.json).
-Pass it explicitly with `--task-config`.
+This is the default `./so101 fixture` drawing. Pass it explicitly with
+`--task-config` to view the physical reference in simulation; bare `./so101 scene`
+shows the separately fitted training scene.
 It uses the existing keyboard asset, tabletop height and native keyboard slope,
 parallel keyboard/base edges, and the physical landmark that the short straight
 segment on the robot base projects through the bottom-right corner of the right

@@ -6,7 +6,7 @@ Calibration is performed by the user on their own robot. It establishes encoder
 coordinates; it does not locate the keyboard or prove agreement with the simulator.
 Physical deployment needs both a joint mapping and a matching keyboard layout.
 For a new physical layout, perform this setup before the
-[pre-training measured-trajectory checks](../../FIXTURE_SETUP.md#before-policy-training-verify-the-real-scene).
+[pre-training measured-trajectory checks](../../FIXTURE_SETUP.md#record-fit-train-and-deploy).
 Reuse the validated calibration at deployment; recalibration requires rechecking
 the mapping.
 
@@ -35,21 +35,23 @@ rules; do not run the entire pipeline as root.
 
 ## Choose the physical layout
 
-[FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the supported Logitech MX
-keyboard, closed moving jaw and fixed typing tip. The historical 19k fixture used
-a mat; your own measured and calibrated layout need not. Its labelled bird's-eye
-views distinguish measured-reference placement from fitted simulation scenes.
-Fitted dimensions are not physical ruler instructions. The height schematic
-explains the measurement convention.
+[FIXTURE_SETUP.md](../../FIXTURE_SETUP.md) describes the September setup: Logitech
+MX Keys and the clamped plastic robot base directly on the same flat tabletop,
+with no mat or riser, the moving jaw closed and the fixed typing tip unchanged.
+Start with about 130 mm between the base front and nearest keyboard case edge,
+keep those edges parallel, and align the base's short right straight edge to the
+bottom-right corner of right Ctrl. The
+[measured physical reference](../fixtures/physical_reference_20260915.md) shows
+these datums separately from the fitted simulation scene. Check and save your
+own placement; fitted model coordinates are not physical ruler instructions.
 `./so101 fixture` fits a candidate XYZ/full-orientation pose and preserves the
 asset's built-in key geometry; it does not verify real-to-sim contact alignment.
 You can change the nominal keyboard position/yaw with a task JSON, retrain, and
 export that policy's geometry. You can also train over bounded XY/yaw placement
 variation and reset-joint noise. See [TASK_CONFIGURATION.md](TASK_CONFIGURATION.md).
 
-Each released checkpoint corresponds to its own fitted scene: the historical
-19k mat fixture and the September no-mat fixture are different. Moving the
-physical keyboard does not update either policy's frozen map. For your own
+The September checkpoint corresponds to its saved fitted scene. Moving the
+physical keyboard does not update the policy's frozen map. For your own
 policy, calibrate the scene using [recorded motion](REAL2SIM.md), train with its
 saved task JSON, and keep the physical fixture unchanged. The fitted scene is an
 effective model; its coordinates are not instructions to move the real keyboard.
@@ -64,16 +66,15 @@ press but does not certify contact or key release.
 
 ## Qualify alignment for physical execution
 
-Follow [the alignment workflow](ALIGNMENT.md) to freeze a direct, historical or
-measured/fitted mapping, pass reserved measured-motion replay, and collect physical
+Follow [the alignment workflow](ALIGNMENT.md) to freeze your fitted scene and
+joint mapping, pass reserved measured-motion replay, and collect physical
 Q/G/P press, release and clearance evidence. `qualification.json` binds these
 checks to the robot calibration, fixture, model and closed jaw. The qualification
 is representative alignment evidence, not a policy success guarantee.
 
 Export with `--alignment output/my-fixture/qualified/qualification.json` to make
-a physical-capable bundle. The original mapping options below still support
-software export and dry runs; they do not bypass the qualification requirement.
-Existing bundles without this evidence must be re-exported for standard physical use.
+a physical-capable bundle. A fitted mapping alone is insufficient; keep the
+reserved replay and physical contact evidence with the export.
 For an explicit supervised experiment before qualification, export with
 `--alignment-candidate` and use `deploy --experimental --execute`; see
 [the experimental command and retained checks](ALIGNMENT.md#optional-supervised-experiments).
@@ -88,14 +89,14 @@ For an explicit supervised experiment before qualification, export with
   --robot-id my_typing_robot \
   --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
-./so101 deploy output/my_typing_robot NVIDIA
+./so101 deploy output/my_typing_robot NEWTON
 ```
 
-For either released policy, substitute its downloaded checkpoint/environment
+For the released September policy, substitute its downloaded checkpoint/environment
 paths from the [README](../../README.md#workflow-2-optionally-try-a-released-checkpoint)
-and your robot's qualification for that exact trained scene. The September
-checkpoint requires an explicit mapping; only the historical 19k pair supports
-automatic mapping selection for software-only exports.
+and your robot's qualification for that exact trained scene. The `--alignment`
+file supplies the explicit mapping; the downloaded offsets do not calibrate your
+robot automatically.
 
 Use a two-letter target such as `HE` for P1A policies; Transit15 policies use six
 letters. Export and the dry run both check the local LeRobot calibration for the selected
@@ -106,9 +107,8 @@ JSONs, nominal A-Z geometry, normalization, robot ID and a generated reset targe
 Its hashes and geometry are checked before the runner can connect to hardware.
 Qualified bundles copy and revalidate the replay/probe evidence at deployment.
 New bundles record the LeRobot calibration hash and reject subsequent changes.
-Recalibration requires checking the mapping and exporting a new bundle. Legacy
-bundles still load under their explicitly recorded mapping; re-export to add this
-check. Calibration-file checks do not establish physical alignment.
+Recalibration requires checking the mapping and exporting a new bundle.
+Calibration-file checks do not establish physical alignment.
 
 To check CPU inference against saved simulator actions, record a rollout with
 `./so101 video ... --trace-policy-actions 400`, then run:
@@ -137,22 +137,17 @@ Read:    q_model = q_lerobot + offset
 Command: q_lerobot_target = q_model_target - offset
 ```
 
-For software-only exports without `--alignment`, the default
-`--encoder-convention auto` recognizes only the exact released 19k
-checkpoint/environment hashes and chooses `benchmark`. `lerobot` adds no offsets;
-it is an explicit choice for a verified direct mapping or a controlled comparison.
-The [reference-policy contract](../fixtures/reference_policy.md) records the
-historical vector. Omitting fitted offsets changes the commanded physical poses.
-Keep your robot's own LeRobot calibration and check physical/model alignment;
-these fitted values are not universal SO-101 constants.
+Omitting fitted offsets changes the commanded physical poses. Keep your robot's
+own LeRobot calibration and its matched scene/mapping report; the released values
+are not universal SO-101 constants. Qualified export uses the mapping frozen in
+your `--alignment` evidence.
 
 ### Your trained policy or measured joint mapping
 
 New training does not measure your robot's encoder-to-model correspondence.
 For physical use, pass `--alignment` and supply your checkpoint and its matching
-`params/env.yaml`. For software-only export, unknown pairs are rejected in `auto`
-mode; explicitly select `--encoder-convention lerobot`, `benchmark`, or a measured
-joint fit. These choices do not qualify the mapping for hardware.
+`params/env.yaml`. The September checkpoint and new training require an explicit
+mapping; leaving a software-only export in `auto` mode does not infer one.
 
 For independently measured offsets, the existing offline fitter accepts your
 robot ID, ordered five-joint encoder/model angles at three or more poses, and a
@@ -181,7 +176,7 @@ arrival. The typing contact is the fixed jaw; the moving jaw must be closed.
 Use a bundle exported with qualified `--alignment` evidence:
 
 ```bash
-./so101 deploy output/my_typing_robot NVIDIA --execute \
+./so101 deploy output/my_typing_robot NEWTON --execute \
   --port /dev/serial/by-id/YOUR_CONTROLLER \
   --keyboard-device /dev/input/by-id/YOUR_KEYBOARD_EVENT_DEVICE
 ```

@@ -4,6 +4,10 @@ The public entry point starts from scratch unless `--checkpoint` is supplied.
 P1A trains two-letter sequences. Transit15 trains six-letter sequences with the
 15 mm transit-clearance contract. Observation/action sizes remain 22/5.
 
+Fresh training without `--task-config` uses the fitted September example. For your
+robot, supply the task produced by its own scene fit. Resumed training restores
+the checkpoint's saved task and physics configuration.
+
 For a policy intended for hardware, first follow the
 [three-step real-to-sim guide](REAL2SIM.md): collect torque-off key presses, fit
 joint offsets and keyboard pose, and pass the reset-per-key contact check.
@@ -32,7 +36,8 @@ compiles Warp kernels; the user-owned runtime cache reuses them on later runs.
 
 The September 17 fitted-scene run used **500 P1A + 2,000 Transit15 updates**,
 passed 2,048/2,048 six-letter simulation episodes and completed one physical
-NEWTON trial. Its measured training/evaluation wall time was **2 h 38 min 21 s**
+NEWTON trial on a second SO-101 after fitting and training for that setup.
+Its measured training/evaluation wall time was **2 h 38 min 21 s**
 on an RTX 5090. The commands below use that budget with your own fitted scene.
 Evaluate your own checkpoints before continuing; this result does not guarantee
 another setup or establish a minimum training budget.
@@ -62,9 +67,7 @@ with an evaluation between them:
 
 Increase the stage budgets if your evaluations justify it. The older example of
 4,000 + 16,000 updates remains available, but is not required to demonstrate the
-pipeline. The historical 19k benchmark used different precursor checkpoints and
-specific multi-GPU runs; neither recipe automatically reproduces that result.
-The released artifact manifest records checkpoint identities. A new seed, new
+pipeline. The released artifact manifest records checkpoint identities. A new seed, new
 geometry or new precursor is a new experiment.
 RSL-RL checkpoint indices are inherited on resume; use saved iteration metadata
 and the request's additional-iteration budget rather than guessing update counts
@@ -80,7 +83,7 @@ The optional 20,000-update recipe has not been rerun in the released container.
 Memory use and wall time must be measured for the recipient's GPU.
 Reduce `--num-envs` if necessary, but record it: it changes samples per PPO update
 and therefore the training budget. The current default is 64 environments, not a
-claim that 64 reproduces the historical training setup.
+claim that 64 reproduces the measured 4,096-environment training result.
 
 ## Evaluate and compare
 
@@ -90,7 +93,7 @@ claim that 64 reproduces the historical training setup.
   --env-config /absolute/path/to/params/env.yaml --num-envs 1024 --seed 2307
 ./so101 video --actuator anchorbench --stage transit15 \
   --checkpoint /absolute/path/to/model_N.pt \
-  --env-config /absolute/path/to/params/env.yaml --target NVIDIA
+  --env-config /absolute/path/to/params/env.yaml --target NEWTON
 ```
 
 Repeat evaluation with `--seed 3307`. Review the videos for clean presses,
@@ -138,13 +141,10 @@ run ends after simulation checks. For physical deployment, follow
 [alignment qualification and export](ALIGNMENT.md) using the fitted scene/mapping
 and the same robot calibration used for recording.
 
-The optional `--prepare-deployment --robot-id YOUR_CALIBRATED_ID` only creates a
-bundle without alignment qualification and a software dry run. It requires explicit
-`--encoder-convention lerobot`, `--encoder-convention benchmark`, or
-`--joint-calibration FILE`; it does not accept the scene-fit mapping report or
-qualified alignment. Use the separate alignment/export workflow
-for those. Export is skipped if either six-letter evaluation fails the quality
-gate. Recorded videos still need visual review; scalar gates do not certify
+Use the separate alignment/export workflow for physical deployment. The
+supervisor's optional `--prepare-deployment` path only creates an unqualified
+software bundle; it does not accept the scene-fit mapping report or qualified
+alignment. Recorded videos still need visual review; scalar gates do not certify
 contact quality or sim-to-real transfer.
 
 The output directory must be new. `status.json` records current stage and terminal
@@ -155,7 +155,7 @@ output directory instead of the default timestamped location.
 
 The command above uses your fitted task; for simulation-only experiments substitute
 your example task JSON. `--physics-config FILE` optionally supplies MJWarp
-overrides. Without these options it uses the default reference configuration.
+overrides. Keep `--task-config` explicit for your fitted physical scene.
 Both files are validated before creating the output directory, copied into its
 `inputs/` directory, and used for both training stages. Editing the original files
 later does not change the running experiment. `status.json` records the original

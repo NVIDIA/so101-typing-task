@@ -194,7 +194,6 @@ def create(out_dir, measurements=None, task_config=None):
     report = {'mode': 'reference-model', 'hardware_access': False, 'physical_alignment_validated': False,
               'limits': 'Rigid keyboard placement from model geometry. Three landmarks set XYZ and full orientation; '
                         'this does not measure joint offsets or verify physical contacts.'}
-    task = {'schema_version': 1, 'keyboard': {'position_m': geometry['reference_position_m'], 'yaw_offset_deg': 0.0}}
     if measurements:
         measured = json.loads(Path(measurements).read_text())
         task, details = fit(geometry, measured)
@@ -202,6 +201,9 @@ def create(out_dir, measurements=None, task_config=None):
     elif task_config:
         task = load_config(task_config)
         report['mode'] = 'configured-model'
+    else:
+        task = load_config(ROOT / 'configs/tasks/physical-reference-20260915.json')
+        report['mode'] = 'physical-reference-model'
     report.update(datum_m=geometry['datum_m'], source_sha256=geometry['source_sha256'],
                   robot_usd_sha256=geometry['robot_usd_sha256'], task=task)
     svg = drawing(geometry, task)

@@ -32,21 +32,13 @@ Support the arm: this disables torque and leaves it off. Keep the jaw closed and
 record at least Q, G and P, including release and clearance between presses.
 Use the printed recording path below. Keep the fitted task and mapping unchanged.
 
-For the released 19k checkpoint, `configs/tasks/reference-fixture.json` selects
-its original nominal simulation scene. Use that file consistently in place of
-both task paths (`output/my-fixture/task.json` and `output/my-scene/task.json`)
-in the recording, replay and FK commands when testing that fixture. Prepare the
-historical candidate shown in step 2 instead of fitting a new keyboard pose.
-This file does not assert that your physical setup matches the historical model.
-If matching your setup requires a different simulated keyboard pose, use workflow 1
-and train for that fitted scene; the 19k policy's map stays frozen.
-
-The September `model_2498.pt` has a different trained scene, preserved in
+The released September `model_2498.pt` uses the trained scene preserved in
 `configs/tasks/replay-calibrated-20260917.json` and its downloaded `params/`.
 Physical use requires your robot's mapping qualified against that scene. Its
-published fit documents the original robot; it is not transferable calibration
-or an automatically selected mapping. For a new setup, the record/fit/train route
-is the normal workflow.
+published fit documents the robot used for that trial; it is not transferable calibration
+or an automatically selected mapping. For a new setup, follow record/fit/train
+and qualify your resulting scene. Do not move the physical keyboard to match an
+effective fitted model correction.
 
 ## 2. Prepare an unqualified mapping
 
@@ -69,24 +61,11 @@ Advanced `fit4` and `fit3_pose` reports can instead use their matching task and
 candidate name; omit `--validation-recording` if the report already reserves
 the capture. Never reuse a capture that influenced the final fit as validation.
 
-Alternatively replace the mapping-report, mapping-candidate and
-validation-recording arguments with exactly one of:
-
-- `--encoder-convention lerobot` for the direct encoder/model comparison.
-- `--encoder-convention benchmark` for an explicit historical-offset comparison.
-- `--joint-calibration output/joint-fit.json` for independently measured joint correspondence.
-
-For the optional 19k policy, this explicit historical comparison replaces the
-fitted-report preparation command above; choose one, using a new output directory:
-
-```bash
-./so101 alignment prepare --robot-id my_typing_robot \
-  --task-config configs/tasks/reference-fixture.json \
-  --encoder-convention benchmark --out-dir output/my-fixture/alignment
-```
-
-Use your own LeRobot calibration. The historical offsets remain a candidate until
-your reserved replay and physical probes pass; they are not universal constants.
+For an independently measured joint mapping, replace the mapping-report,
+mapping-candidate and validation-recording arguments with
+`--joint-calibration output/joint-fit.json`. A direct encoder/model comparison
+can instead use `--encoder-convention lerobot`. Both alternatives still require
+the reserved replay and physical probes below.
 
 The output `alignment.json` is **unqualified**. Preparing it freezes offsets and
 identities; it does not approve physical deployment. The recording-based path
@@ -99,7 +78,7 @@ capture above. Reserving it is not a passing replay or physical result.
 ## 3. Replay reserved measured motion in simulation
 
 Replay using the prepared candidate. This uses the same frozen offsets for
-direct, historical, independently measured and recording-fitted mappings:
+recording-fitted, independently measured and direct mappings:
 
 ```bash
 ./scripts/scene_check.sh replay --recording /absolute/path/to/validation/recording.json \
@@ -184,11 +163,11 @@ Use the evaluated policy trained with this same nominal task configuration:
   --env-config /absolute/path/to/params/env.yaml --robot-id my_typing_robot \
   --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
-./so101 deploy output/my_typing_robot NVIDIA
+./so101 deploy output/my_typing_robot NEWTON
 ```
 
-For either released checkpoint, use its downloaded checkpoint/environment paths
-and alignment evidence for that exact trained scene.
+For the released September checkpoint, use its downloaded checkpoint/environment
+paths and your alignment evidence for that exact trained scene.
 Export checks the trained nominal key map, keyboard pose, reset and offsets
 against the qualified scene. It copies all qualification evidence into the
 bundle, so later checks do not depend on the original recording directories.
@@ -201,7 +180,7 @@ candidate instead.
 After reviewing the dry run, the operator runs the qualified policy explicitly:
 
 ```bash
-./so101 deploy output/my_typing_robot NVIDIA --execute \
+./so101 deploy output/my_typing_robot NEWTON --execute \
   --port /dev/serial/by-id/YOUR_CONTROLLER \
   --keyboard-device /dev/input/by-id/YOUR_KEYBOARD-event-kbd
 ```
@@ -258,7 +237,7 @@ joint limits, keyboard feedback, wrong-key stops and timeouts. Logs identify an
 unqualified experiment;
 the command neither changes calibration nor creates passing alignment evidence.
 
-To compare the policy without any fitted or historical offsets, prepare the
+To compare the policy without fitted offsets, prepare the
 same checkpoint with ``--encoder-convention lerobot`` and use the same explicit
 ``--experimental`` flag. The resulting log is labelled
 ``experimental_direct_lerobot``.

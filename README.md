@@ -42,6 +42,14 @@ Warp kernels; later runs reuse the cache.
 The policy uses a fixed keyboard map. Keep the real base, keyboard and typing jaw
 fixed throughout calibration, training and deployment.
 
+Use the September tabletop setup: clamp the plastic robot base and secure the
+keyboard directly on the same flat table, with **no mat or riser**. Start with
+about **130 mm** between the base's front face and the nearest keyboard case
+edge, keep those edges parallel, and align the base's short right straight edge with
+the bottom-right corner of the right Ctrl key. The
+[measured September reference](docs/fixtures/physical_reference_20260915.md)
+shows the datums and drawing. Measure your own placement before fitting it.
+
 1. [Set up and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot.
 2. [Measure the fixture](FIXTURE_SETUP.md) and save the starting layout as `output/my-fixture/task.json`.
 3. [Record and fit the scene](docs/release/REAL2SIM.md): hand-guide key presses with torque off, fit joint offsets and the simulated keyboard pose, then check the recorded contacts. Keep `output/my-scene/task.json` and `mapping-report.json` together.
@@ -70,6 +78,11 @@ without hardware, use the [simulation-only quickstart](docs/release/QUICKSTART.m
 Choose `anchorbench` or `usd` actuators; both use Newton MJWarp. See
 [task and physics configuration](docs/release/TASK_CONFIGURATION.md) for custom layouts and randomization.
 
+With no task file, `fixture` draws the measured September reference; fresh
+`train`, `probe` and `scene` commands use the fitted September simulation example.
+Pass your own fitted `--task-config` for physical training. Playback, evaluation
+and resumed training use the checkpoint's saved configuration.
+
 After the six-letter stage, evaluate the saved checkpoint and inspect a rollout:
 
 ```bash
@@ -78,7 +91,7 @@ After the six-letter stage, evaluate the saved checkpoint and inspect a rollout:
   --env-config /absolute/path/to/params/env.yaml --num-envs 1024
 ./so101 video --actuator anchorbench --stage transit15 \
   --checkpoint /absolute/path/to/model_N.pt \
-  --env-config /absolute/path/to/params/env.yaml --target NVIDIA
+  --env-config /absolute/path/to/params/env.yaml --target NEWTON
 ```
 
 The launcher prints checkpoint and environment paths. Keep the full `params/`
@@ -87,33 +100,24 @@ Runs and videos are written under `output/`.
 
 ## Workflow 2: optionally try a released checkpoint
 
-Each policy comes with its matching scene and environment. Simulation playback
-needs no physical robot.
-
-| Download | Policy and fixture | Physical evidence |
-| --- | --- | --- |
-| `./so101 download` | Historical `model_19000.pt`; original fitted scene and 4.44 mm keyboard mat | 89/100 six-letter trials on the original robot/fixture |
-| `./so101 download --calibrated` | `model_2498.pt`; September fitted scene, no mat | One successful NEWTON trial |
-
-The default historical checkpoint uses the [original fixture and joint mapping](docs/fixtures/reference_policy.md):
-
-```bash
-./so101 download
-./so101 video --actuator anchorbench --stage transit15 \
-  --checkpoint .artifacts/so101-keyboard-typing-benchmark/checkpoints/mjwarp-anchorbench-19k/model_19000.pt \
-  --env-config .artifacts/so101-keyboard-typing-benchmark/configs/mjwarp-anchorbench-19k.env.yaml
-```
+The default download is the September `model_2498.pt`, its matching fitted scene,
+environment and evidence. Simulation playback needs no physical robot.
 
 ### September calibrated-scene example
 
-This checkpoint used the clamped robot base and keyboard directly on the same
-flat tabletop, with a roughly 130 mm front gap and the right-side base edge
-aligned to the right Ctrl key. See the [physical fixture and fitted simulation pose](docs/fixtures/physical_reference_20260915.md)
-for measurements and bird's-eye views. The real fixture stayed fixed while the
-simulation pose and joint mapping were fitted from recorded contacts.
+On a second SO-101, the record/fit/train workflow produced one successful physical
+**NEWTON** trial with this checkpoint. The real fixture stayed fixed while the
+simulation pose and joint mapping were fitted from recorded contacts. This is one
+supervised trial, not a reliability benchmark or a transfer test of the same
+policy between robots. See the [measured results](docs/release/RESULTS.md).
+
+The [physical fixture and fitted simulation pose](docs/fixtures/physical_reference_20260915.md)
+have separate drawings. Use the measured reference to place the hardware and the
+saved fitted task for this policy's simulation; do not move the keyboard by the
+model's fitted correction.
 
 ```bash
-./so101 download --calibrated
+./so101 download
 bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
 ./so101 video --actuator anchorbench --stage transit15 \
   --checkpoint "$bundle/model_2498.pt" \
@@ -121,8 +125,9 @@ bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
 ```
 
 Downloads verify pinned checksums. Keep the complete bundle, including `params/`.
-`./so101 download --all` additionally fetches the supported development artifacts.
-See [measured results](docs/release/RESULTS.md) for evaluation and physical evidence.
+`--calibrated` remains an alias for the default download. `--all` fetches both
+releases and the supported development artifacts. The July checkpoint remains
+available with `--historical`; see its [historical reference](docs/fixtures/reference_policy.md).
 
 For physical use, calibrate your own robot and verify its alignment against the
 chosen policy's scene. The released offsets are setup-specific. If your fitted
@@ -142,7 +147,7 @@ checkpoint and run the deployment dry run:
   --robot-id my_typing_robot \
   --alignment output/my-fixture/qualified/qualification.json \
   --out-dir output/my_typing_robot
-./so101 deploy output/my_typing_robot NVIDIA
+./so101 deploy output/my_typing_robot NEWTON
 ```
 
 For a released policy, substitute its checkpoint and matching environment paths.
@@ -159,7 +164,7 @@ The alignment guide also documents [supervised candidate tests](docs/release/ALI
 | `./scripts/real2sim.sh record` / `fit` | Record hand-guided contacts and fit the scene/mapping |
 | `./so101 fixture` / `scene` / `probe` | Draw, view and check a simulation scene |
 | `./so101 train` / `evaluate` / `video` | Train a policy, measure performance and inspect rollouts |
-| `./so101 download` | Download matched reference policies and evidence |
+| `./so101 download` | Download the September policy, matching scene and evidence |
 | `./so101 setup-hardware` / `alignment` | Prepare the hardware environment and alignment evidence |
 | `./so101 prepare-deployment` / `deploy` | Export, dry-run and execute a policy |
 
