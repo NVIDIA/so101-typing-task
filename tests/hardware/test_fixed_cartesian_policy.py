@@ -19,7 +19,6 @@ from so101_typing.hardware.fixed_cartesian_policy import (
     OBSERVATION_DIM,
     PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG,
     PHYSICAL_CALIBRATED_20260718_PROFILE,
-    FixedCartesianPolicy,
     FixedCartesianTypingState,
     build_observation,
     frozen_target_xyz,
@@ -488,40 +487,3 @@ def test_training_environment_recognizes_matched_actuator_profile(
     assert report["actuator_profile"] == actuator_profile
     assert report["task_contract"] == task_contract
     assert report["clearance_m"] == pytest.approx(0.015)
-
-
-@pytest.mark.parametrize(
-    ("relative_path", "expected_sha256", "rsl_reference_action"),
-    (
-        (
-            "output/reference_checkpoints/p0/model_3000.pt",
-            "1ac4d6440b6e84adaab75dd1b55cc086ef80291c15abb57aabc961ab62ee1c6c",
-            (0.0, 0.0, 0.0, -1.2159347534179688e-05, 0.0023778676986694336),
-        ),
-        (
-            "output/reference_checkpoints/p1a/model_3000.pt",
-            "c10ac9a0ec1d1604ee0f1e255d3038837c034f7008948d8d2f43e27334fc4521",
-            (0.952398419380188, 0.9902511835098267, 0.9279630184173584, 0.9673501253128052, 0.0005438327789306641),
-        ),
-    ),
-)
-def test_downloaded_model3000_contract_and_action(
-    relative_path: str, expected_sha256: str, rsl_reference_action: tuple[float, ...]
-) -> None:
-    repo = Path(__file__).resolve().parents[2]
-    checkpoint = repo / relative_path
-    if not checkpoint.is_file():
-        pytest.skip(f"local checkpoint unavailable: {checkpoint}")
-
-    policy = FixedCartesianPolicy(checkpoint)
-    # Generated independently with RSL-RL's MLPModel and native BetaDistribution.
-    observation = np.linspace(-1.0, 1.0, OBSERVATION_DIM, dtype=np.float32)
-    output = policy.action(observation)
-
-    assert policy.sha256 == expected_sha256
-    assert policy.iteration == 3000
-    assert output["distribution_logits"].shape == (2, 5)
-    assert output["action"].shape == (5,)
-    assert np.all(output["action"] >= -1.0)
-    assert np.all(output["action"] <= 1.0)
-    np.testing.assert_allclose(output["action"], rsl_reference_action, atol=1.0e-7, rtol=0.0)

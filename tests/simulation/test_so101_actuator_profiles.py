@@ -3,12 +3,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Regression lock for the SO-101 workshop AnchorBench A/B actuator fit."""
+"""Regression checks for SO-101 actuator profiles and legacy compatibility."""
 
 from isaaclab_tasks.core.dexsuite.config.so101.SO101.actuator_profiles import actuator_profile_manifest
 
 
-def test_anchorbench_profile_matches_workshop_ab_fit() -> None:
+def test_anchorbench_profile_matches_published_fit() -> None:
     profile = actuator_profile_manifest("anchorbench")
 
     assert profile["fit_id"] == "04_multiseed_seed42_camera_6p53mm_ACTIVE"
