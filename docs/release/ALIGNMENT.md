@@ -10,7 +10,7 @@ is the setup procedure.
 
 ## 1. Freeze the scene and reserve a recording
 
-Follow [fixture setup](../../FIXTURE_SETUP.md): measure the keyboard relative to
+Follow the [fixture measurement guide](TASK_CONFIGURATION.md#measure-your-fixture): measure the keyboard relative to
 the plastic robot base, save `output/my-fixture/task.json`, and record measured
 key presses with the moving jaw closed. Use a separate capture for validation.
 Cover A–Z where possible; qualification requires at least Q, G and P, complete

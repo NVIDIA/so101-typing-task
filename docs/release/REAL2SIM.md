@@ -8,13 +8,13 @@ For this tabletop workflow, place the plastic robot base and keyboard directly
 on the same flat table, with no mat or riser. Clamp the base and secure the keyboard.
 Start with about 130 mm front gap, parallel base/keyboard edges and the base's
 short right straight edge aligned to the bottom-right corner of right Ctrl, as shown in
-the [measured September reference](../fixtures/physical_reference_20260915.md).
+the [September physical setup](../../FIXTURE_SETUP.md).
 Use the documented base edges and vertices as datums to
 measure the keyboard's relative position and orientation and build the starting
 simulation scene. Preserve those measurements throughout calibration.
 
 First complete [LeRobot setup/calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
-for your robot and [measure the starting layout](../../FIXTURE_SETUP.md), saving
+for your robot and [measure the starting layout](TASK_CONFIGURATION.md#measure-your-fixture), saving
 `output/my-fixture/task.json`. Use the supported keyboard and fixed-jaw geometry.
 Run `./so101 setup-hardware` and `./so101 build` before the steps below.
 
@@ -68,7 +68,7 @@ smaller positive shoulder-lift and wrist-flex corrections.
 
 After fitting, regenerate the bird's-eye view from the resulting `task.json`.
 The starting physical-reference drawing no longer represents the adjusted
-simulation scene. See the [labelled views](../../FIXTURE_SETUP.md) and
+simulation scene. See the
 [physical-reference versus fitted-scene comparison](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene).
 
 ## 1. Collect two or three hand-guided recordings

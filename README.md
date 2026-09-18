@@ -62,11 +62,11 @@ keyboard directly on the same flat table, with **no mat or riser**. Start with
 about **130 mm** between the base's front face and the nearest keyboard case
 edge, keep those edges parallel, and align the base's short right straight edge with
 the bottom-right corner of the right Ctrl key. The
-[measured September reference](docs/fixtures/physical_reference_20260915.md)
-shows the datums and drawing. Measure your own placement before fitting it.
+[September physical setup](FIXTURE_SETUP.md)
+shows the placement checks and drawing. Measure your own placement before fitting it.
 
 1. [Set up and calibrate your robot](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate) with LeRobot.
-2. [Measure the fixture](FIXTURE_SETUP.md) and save the starting layout as `output/my-fixture/task.json`.
+2. [Measure the fixture](docs/release/TASK_CONFIGURATION.md#measure-your-fixture) and save the starting layout as `output/my-fixture/task.json`.
 3. [Record and fit the scene](docs/release/REAL2SIM.md): hand-guide key presses with torque off, fit joint offsets and the simulated keyboard pose, then check the recorded contacts. Keep `output/my-scene/task.json` and `mapping-report.json` together.
 4. [Train and evaluate](docs/release/TRAINING.md) in the fitted scene: two-letter P1A, then six-letter Transit15.
 5. [Qualify alignment](docs/release/ALIGNMENT.md) with reserved recordings and physical Q/G/P checks using the same mapping.
@@ -188,7 +188,7 @@ Use `./so101 COMMAND --help` or `./scripts/real2sim.sh record --help` for option
 ## Documentation
 
 - [Quickstart](docs/release/QUICKSTART.md)
-- [Fixture measurements and drawings](FIXTURE_SETUP.md) · [Scene calibration](docs/release/REAL2SIM.md)
+- [Physical setup](FIXTURE_SETUP.md) · [Scene calibration](docs/release/REAL2SIM.md)
 - [Training](docs/release/TRAINING.md) · [Task and physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) · [Alignment](docs/release/ALIGNMENT.md)
 - [Artifacts and evaluation evidence](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)

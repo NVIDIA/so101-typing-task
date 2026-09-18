@@ -28,7 +28,7 @@ using `./so101 setup-hardware`.
 
 ## Workflow 1: train with your chosen configuration
 
-For physical typing, use the [September tabletop setup](../fixtures/physical_reference_20260915.md):
+For physical typing, use the [September tabletop setup](../../FIXTURE_SETUP.md):
 clamped plastic base and secured keyboard on the same flat table, no mat, about
 130 mm front gap, parallel edges, and the base's short right straight edge aligned to
 the right Ctrl corner. Then follow the [real-to-sim calibration guide](REAL2SIM.md):
@@ -79,7 +79,7 @@ Sparse VBD is not exposed in this qualified interface.
 XY/yaw randomization and robot reset-joint noise. Sampled pose perturbations are
 not supplied to the actor.
 
-Use the [model layout guide](../../FIXTURE_SETUP.md) and `./so101 fixture` to draw
+Use the [fixture measurement guide](TASK_CONFIGURATION.md#measure-your-fixture) and `./so101 fixture` to draw
 the scene or fit a candidate task JSON from Q/P/Z measurements. It needs only host
 Python 3.10+. Its fitted reference geometry is not a verified physical setup template;
 robot joint alignment and physical contacts need independent checks.

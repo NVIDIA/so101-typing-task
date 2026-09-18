@@ -31,7 +31,7 @@ document this repository's tested runtime, hardware and commands.
 | --- | --- |
 | `README.md` | Install, train/evaluate, optional reference checkpoint, export/deploy |
 | `so101` | Main simulation, artifact, alignment and deployment CLI |
-| [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | Physical datums, measurements, drawings and a starting scene |
+| [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | September physical placement and released checkpoint |
 | [scripts/real2sim.sh](../scripts/real2sim.sh) | `record`: torque-off encoder/key-event capture; `fit`: optimize scene/offsets and check per-key Newton contacts |
 | `configs/` | Task, physics and evaluation examples |
 | `source/so101_typing/tasks/` | Simulator tasks, robot/keyboard assets and actuator profiles |

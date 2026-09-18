@@ -6,7 +6,7 @@ Calibration is performed by the user on their own robot. It establishes encoder
 coordinates; it does not locate the keyboard or prove agreement with the simulator.
 Physical deployment needs both a joint mapping and a matching keyboard layout.
 For a new physical layout, perform this setup before the
-[pre-training measured-trajectory checks](../../FIXTURE_SETUP.md#record-fit-train-and-deploy).
+[pre-training measured-trajectory checks](REAL2SIM.md).
 Reuse the validated calibration at deployment; recalibration requires rechecking
 the mapping.
 

@@ -15,18 +15,70 @@ These short runs test setup. Increase the training budget for a learned policy.
 Use `./so101 probe --task-config FILE` to check reset stability, commanded action
 limits, and key-map alignment over several resets before training.
 
-## Physical measurements to a candidate model pose
+## Measure your fixture
 
-Use the [bird’s-eye fixture guide](../../FIXTURE_SETUP.md) to identify the plastic
-base datum and measure Q/P/Z keycap rim centres in millimetres. The host-only
-`./so101 fixture --measurements FILE --out-dir NEW_DIR` command fits the supported
-XYZ translation and full orientation and writes `task.json`, a drawing and a
-measurement report. Measured tilt replaces the reference scene's fitted tilt;
-the asset's own key geometry stays intact. This produces
-a candidate simulation layout, not a validated physical setup. It does not
-measure the robot, calibrate encoders or validate contact alignment.
-`./so101 fixture --task-config FILE --out-dir NEW_DIR` draws an existing nominal
-configuration. Both commands work before the Docker image is built.
+Use the [September placement guide](../../FIXTURE_SETUP.md) for the reference
+layout. For a setup arranged to that reference, save a starting estimate:
+
+```bash
+./so101 fixture --out-dir output/my-fixture
+```
+
+This writes `task.json`, `birdseye.svg`, predicted landmarks and a blank measurement
+form. Check the drawing against your physical placement before recording contacts.
+
+For a **different placement**, instead measure released Q, P and Z keycap rim
+centres. The helper uses the repository's MX Keys keyboard and `base_so101_v2`
+plastic base; a different keyboard, base or jaw needs matching asset geometry.
+
+Datum **D** is the intersection of the plastic base's keyboard-facing flat face,
+left/right symmetry plane and flat underside plane. Use a straightedge and square
+to establish these lines. Looking from behind the robot toward the keyboard:
+
+| Axis | Measurement from D, in millimetres |
+| --- | --- |
+| X | Forward toward the keyboard, perpendicular to the base front face |
+| Y | Left is positive; right is negative |
+| Z | Up from the plastic base underside plane |
+
+![Base underside height datum](../fixtures/height-datum.svg)
+
+Measure the centre of each keycap outline at its **released top rim**, not the
+recessed bowl or printed letter. If a clamp plate raises the base, subtract that
+height from tabletop-to-keycap measurements. The converter handles D's CAD offset;
+enter ruler measurements rather than robot-origin coordinates.
+
+```bash
+./so101 fixture --out-dir output/measurement-form
+cp output/measurement-form/measurement-template.json output/my-measurements.json
+```
+
+Edit `output/my-measurements.json`, replacing every `null` with the measured
+Q/P/Z X/Y/Z coordinates in millimetres. Then fit and inspect the layout:
+
+```bash
+./so101 fixture --measurements output/my-measurements.json --out-dir output/my-fixture
+./so101 scene --task-config output/my-fixture/task.json
+```
+
+Use a new output directory for each fit. The helper fits XYZ translation and full
+orientation while preserving the asset's native key slope. A maximum landmark
+residual above 1 mm rejects the fit; check units, signs and rim locations. This
+checks measurement consistency, not physical typing accuracy.
+
+Both approaches produce a **starting reference**. Continue with
+[recorded-contact scene calibration](REAL2SIM.md) before training. Keep the measured
+reference separate from the resulting fitted `output/my-scene/task.json` and its
+mapping report. Draw the fitted scene with:
+
+```bash
+./so101 fixture --task-config output/my-scene/task.json --out-dir output/my-scene-view
+```
+
+The fixture helper runs on host Python before Docker is built; `scene` needs the
+simulator image. Drawings show nominal model geometry, omit the arm and clamp,
+and are not printable alignment templates. The
+[geometry manifest](../fixtures/model_geometry.json) pins the source assets.
 
 ## Nominal pose
 
