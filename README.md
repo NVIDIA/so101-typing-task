@@ -166,6 +166,9 @@ checkpoint and run the deployment dry run:
 ```
 
 For a released policy, substitute its checkpoint and matching environment paths.
+`--alignment` supplies the fitted joint offsets; the exported runner automatically
+adds them to encoder readings and subtracts them from model goals. See the
+[offset convention](docs/release/HARDWARE_PREPARATION.md#joint-offsets-matching-the-simulated-scene-to-irl).
 The dry run checks the bundle and local calibration without connecting to the
 robot. Follow [operator-run deployment](docs/release/HARDWARE_PREPARATION.md#operator-run-deployment)
 for the physical `--execute` command, controller port and keyboard device.

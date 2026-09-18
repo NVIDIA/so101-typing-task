@@ -34,7 +34,8 @@ bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
   --env-config "$bundle/params/env.yaml" --target NEWTON
 ```
 
-Keep the checkpoint, matching `params/` folder and calibration files together.
+Keep the checkpoint, matching `params/` folder and fitted
+[joint-offset mapping](docs/release/HARDWARE_PREPARATION.md#joint-offsets-matching-the-simulated-scene-to-irl) together.
 For physical use, complete your robot's own [LeRobot calibration](docs/release/HARDWARE_PREPARATION.md#install-and-calibrate)
 and [alignment/deployment checks](docs/release/ALIGNMENT.md).
 
