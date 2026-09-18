@@ -98,9 +98,11 @@ yaw files use zero robot reset noise. Compare the same checkpoint, seed, episode
 count and target-bank hash against the zero-offset control. This tests combined
 XY/yaw tolerance; it does not isolate each axis or measure hardware robustness.
 
-Measured results are in [RESULTS.md](RESULTS.md). Changing actuator physics is a
-separate experiment; the matched evaluator continues to reject physics-contract
-mismatches.
+The [archived placement reports](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark/tree/44d8ad43e2619e0d6e89528fea07f887de93678e/evaluation)
+(`public-transit15-placement-{zero,1mm,3mm}.json`, included by `./so101 download --all`)
+cover the earlier `model_549.pt`, not the September policy. Changing actuator
+physics is a separate experiment; the matched evaluator continues to reject
+physics-contract mismatches.
 
 ## Reproduce and deploy
 

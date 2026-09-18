@@ -2,120 +2,61 @@
 
 ## September calibrated-scene policy
 
-On a second SO-101, the recorded-contact workflow produced one verified physical
-**NEWTON** sequence with a fresh policy trained for that robot's fitted scene.
-The physical fixture stayed fixed while the joint mapping and effective simulated
-keyboard pose were fitted together. A fresh policy was trained in that scene and
-deployed with the same mapping applied to encoder reads and hardware commands.
-Follow [scene calibration](REAL2SIM.md), [training](TRAINING.md) and
-[alignment/deployment](ALIGNMENT.md) to apply this workflow to your setup.
+On a second SO-101, the [record/fit/train workflow](REAL2SIM.md) produced one
+verified physical **NEWTON** sequence. The real fixture stayed fixed while the
+simulated keyboard pose and joint mapping were fitted together; a fresh policy
+was trained in that scene and deployed with the same mapping.
 
 | Evidence | Result |
 | --- | --- |
-| Scene calibration | 93/93 correct first contacts with resets between keys; 60 powered and 33 hand-guided contacts, all used for fitting |
+| Scene calibration | 93/93 correct first contacts with resets between keys; all contacts used for fitting |
 | Training | 500 P1A + 2,000 Transit15 updates; `model_2498.pt`, seed 1307 |
-| Pipeline wall time, including evaluation/video | 2 h 38 min 21 s on RTX 5090, 4,096 environments, AnchorBench/MJWarp/CUDA graphs |
+| Pipeline wall time, including evaluation/video | About 2 h 38 min on RTX 5090, 4,096 environments, AnchorBench/MJWarp/CUDA graphs |
 | Strict six-letter simulation | 2,048/2,048 over seeds 2307 and 3307; zero wrong keys |
-| Physical trial | NEWTON in 7.10 s; six down/up pairs and six model-FK clearance transitions; exact match |
-| CPU inference parity | Eight saved simulator actions matched within the declared `1e-5` tolerance |
+| Physical trial | NEWTON in 7.10 s; six down/up pairs and six model-FK clearance transitions |
 
-This was one supervised experimental trial using native 25 Hz policy timing and
-15 mm clearance for two ticks. It did not complete standard alignment qualification
-and does not establish a success rate, physical A–Z coverage or transfer of the
-same checkpoint to another robot.
-Continuous measured-motion replay produced extra/mismatched contacts despite the
-isolated first-contact pass.
+The physical result is **one supervised experimental trial**, not a measured
+success rate, physical A–Z test or transfer test of the same checkpoint between
+robots. It used 25 Hz control and model-FK clearance of 15 mm for two ticks;
+standard [alignment qualification](ALIGNMENT.md) was not completed.
 
-The [sanitized evidence summary](calibrated_policy_result.json) pins the scene,
-offsets, checkpoint, evaluation and original-log hashes. Download the matching
-weights, scene and sanitized evidence with `./so101 download`; see
-[playback](../../README.md#september-calibrated-scene-example). Raw recordings and
-the operator's LeRobot calibration remain local.
+The 93-contact pass measures fitting performance, not held-out validation.
+Continuous measured-motion replay still produced extra/mismatched contacts.
+Simulated key depression reached about 1.35 times nominal travel, so strict typing
+success does not establish accurate contact mechanics or independently measured
+physical clearance.
 
 ### Scene and joint mapping
 
-The selected offsets, in shoulder-pan / shoulder-lift / elbow-flex / wrist-flex /
-wrist-roll order, are approximately **[0, +1.336, -10.150, +1.414, 0] degrees**.
-Use the full-precision mapping report supplied with the bundle. Deployment adds
-them on encoder reads and subtracts them from model goals; PPO uses model
-coordinates and does not apply an additional conversion inside simulation.
-
-The historical and September fits both selected an approximately -10-degree
-elbow correction, with smaller positive shoulder-lift and wrist-flex corrections.
-An earlier elbow-only FK comparison reduced mean absolute Z error from
-20.01 to 7.94 mm on 22 powered presses excluded from that fit. This supports a
-substantial joint-mapping contribution to vertical reach. Earlier offsets-only
-physical attempts could reach keys but dragged or hit the space bar.
-
-The successful result used the **combined fitted scene, mapping and newly trained
-policy**. The simulation keyboard shifted -1.068 mm X, +12.226 mm Y and +3.278 mm Z,
-with +3.135 degrees yaw and -0.500 degrees pitch relative to the measured-reference
-model. These are model corrections, not instructions to move the real keyboard.
-See the [physical-reference and fitted-scene comparison](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene)
-for drawings and measurement directions.
+Both the July and September fits selected an approximately **-10-degree elbow
+correction**, with smaller positive shoulder-lift and wrist-flex corrections.
+The successful September trial used the **combined fitted scene, mapping and new
+policy**; the individual contributions were not isolated.
 
 We suspect an encoder-to-model mapping or simulated robot/contact-geometry
-discrepancy; its exact cause remains unresolved. The fit is an effective correction,
-not proof of a mechanical fault, a misplaced physical keyboard or universal joint
-zeros. These comparisons do not isolate each component's contribution to success.
+discrepancy; its exact cause remains unresolved. The fitted parameters are
+setup-specific corrections, not universal joint zeros or instructions to move the
+real keyboard. See the [mapping convention](REAL2SIM.md#what-the-fitted-offsets-mean)
+and [physical-reference versus fitted-scene comparison](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene)
+for the values and drawings.
 
-Simulation key depression reached approximately 1.35 times nominal travel for this
-policy. Strict typing success checks events, release and clearance; it does not
-establish accurate contact mechanics or independently measured physical clearance.
+## Historical reference
 
-## Other released results
+The optional July AnchorBench `model_19000.pt` recorded **89/100 physical six-letter
+trials** and 78/78 reset-per-key replay contacts on its original robot and
+mat-supported fixture. Its scene and mapping are separate from September's.
+See the [historical checkpoint](../fixtures/reference_policy.md) for download and
+playback instructions.
 
-Keep these checkpoints and their matched scenes separate from the September
-calibrated bundle.
+## Evidence
 
-| Policy | Measured result | Scope |
-| --- | --- | --- |
-| Earlier public P1A `model_500.pt` | 2,048/2,048 two-letter episodes; zero wrong keys | Simulation only; 501 updates, 29 min 17 s training-loop time |
-| Earlier public Transit15 `model_549.pt` | 2,027/2,048 six-letter episodes; 3 wrong-key and 18 scrape failures | Simulation only; 50 further updates, 2 min 57 s training-loop time |
-
-The optional July AnchorBench `model_19000.pt` recorded 89/100 physical six-letter
-trials and 78/78 reset-per-key replay contacts on its original robot/fixture.
-Use `./so101 download --historical` and its separate
-[historical reference](../fixtures/reference_policy.md); it is not the setup used
-by the September release.
-
-The earlier public training used seed 1307, 4,096 environments and AnchorBench/MJWarp
-on RTX 5090. Times exclude startup/evaluation. Maximum simulated key depression was
-1.579 times nominal travel for its six-letter policy. The checkpoint names are
-iteration labels, not cumulative update counts.
-
-### Placement tolerance example
-
-For the earlier `model_549.pt` policy, keep the actor's map fixed and uniformly
-perturb the actual keyboard at reset. The same 1,024-sequence bank and seed 2307
-produced:
-
-| Keyboard perturbation | Strict successes | Wrong-key episodes |
-| --- | ---: | ---: |
-| None | 1,013/1,024 (98.93%) | 1 |
-| X/Y each ±1 mm; yaw ±0.25° | 1,011/1,024 (98.73%) | 5 |
-| X/Y each ±3 mm; yaw ±1° | 862/1,024 (84.18%) | 156 |
-
-This is one policy/seed, with zero robot-reset noise. It does not establish
-physical tolerance, tolerance of the September policy or robustness to different
-actuator physics. Use `--perturbation-config` as described in
-[task configuration](TASK_CONFIGURATION.md) to measure your policy.
-
-## Tested configuration and evidence
-
-Software checks used Linux, an RTX 5090 with 32 GB and the pinned Docker runtime.
-A clean source snapshot passed host tests, source/link checks and offline command
-checks. The container built successfully. These checks used the development
-workstation and its caches.
-
-The released September bundle was downloaded anonymously, passed its checksums
-and completed 64/64 strict simulation episodes plus a NEWTON video. A fresh
-hardware Python environment passed export and an experimental deployment dry run
-with the recorded calibration and mapping. The [artifact revision](artifact_revision.json)
-pins the published files; [development checks](../DEVELOPMENT.md) provide the
-software verification commands.
+`./so101 download` fetches the September checkpoint, matching scene and sanitized
+evidence with pinned checksums. The [result summary](calibrated_policy_result.json)
+records the mapping, evaluations and source-log hashes; the
+[artifact revision](artifact_revision.json) identifies the published files.
+Raw recordings and the operator's LeRobot calibration remain local.
 
 The [artifact dataset](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
-contains matched environments, evaluation reports, videos, timing records and
-inference-parity evidence. The downloader pins a revision and checksums; its
-`--all` option includes the supported older development checkpoints above.
+contains evaluation reports, videos, timing, inference-parity checks and earlier
+development results. For software verification commands, see
+[development checks](../DEVELOPMENT.md).
