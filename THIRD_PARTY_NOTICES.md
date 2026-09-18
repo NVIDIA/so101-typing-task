@@ -19,26 +19,22 @@ its scope and source snapshot are recorded in [runtime/README.md](runtime/README
 
 ## SO-101 robot assets
 
-The meshes and `.part` files in `source/so101_typing/tasks/SO101/assets/`,
-the `so101_new_calib` URDF/MJCF descriptions,
-`joints_properties.xml`, `scene.xml`, and the upstream portions of that
-directory's README come from
+The original SO-101 meshes, Onshape metadata and URDF/MJCF sources are available at
 [TheRobotStudio/SO-ARM100, `Simulation/SO101`](https://github.com/TheRobotStudio/SO-ARM100/tree/eecbe3e0a9ebb23e25ad7b2759b03884c6660903/Simulation/SO101).
 The SO-101 design is credited upstream to The Robot Studio in collaboration
 with Hugging Face. These assets are licensed under
 [Apache License 2.0](licenses/Apache-2.0.txt).
 
-The bundled mesh, `.part`, URDF, and XML files match that upstream revision.
-The README has local usage changes. The typing runtime uses the separately
-downloaded, pinned USD described below.
+The typing runtime uses the separately downloaded, pinned assembled USD described
+below. The original model source archive is not bundled in this repository.
 
 The robot description's upstream attribution to
 [Open Duck Mini](https://github.com/apirrone/Open_Duck_Mini) for STS3215 motor
-properties is retained. Open Duck Mini's
+properties is retained here. Open Duck Mini's
 [license](https://github.com/apirrone/Open_Duck_Mini/blob/b23317a485b3cec7d8417f352478778b3475173c/LICENSE)
 is also Apache-2.0; the same full license text is included above. The
-`onshape-to-robot` generator and the motor-gain reference remain credited in
-the model README and XML comments.
+[`onshape-to-robot`](https://github.com/Rhoban/onshape-to-robot) generator and
+motor-gain references are documented in the upstream model sources.
 
 ## Logitech MX Keys visual asset
 
@@ -89,7 +85,7 @@ The Docker build downloads `robot_assets/so101_no_camera_new_calib.usd` from
 [`nvidia/Anchor-Lab` revision `647edd5787cd764cdc041103ad282dc59214d919`](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/647edd5787cd764cdc041103ad282dc59214d919).
 The pinned dataset card declares Apache-2.0. The SO-ARM100 attribution above
 also identifies the underlying robot design. This USD is downloaded during
-the build; the bundled model sources are listed above.
+the build; the original model sources are linked above.
 
 Checkpoints and evaluation bundles fetched by
 `scripts/download_benchmark_artifacts.sh` are published separately in

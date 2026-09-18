@@ -190,7 +190,7 @@ Use `./so101 COMMAND --help` or `./scripts/real2sim.sh record --help` for option
 
 ## Documentation
 
-- [Quickstart](docs/release/QUICKSTART.md)
+- [Simulation quickstart](docs/release/QUICKSTART.md)
 - [Physical setup](FIXTURE_SETUP.md) · [Scene calibration](docs/release/REAL2SIM.md)
 - [Training](docs/release/TRAINING.md) · [Task and physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) · [Alignment](docs/release/ALIGNMENT.md)

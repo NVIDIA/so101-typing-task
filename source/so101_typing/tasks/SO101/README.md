@@ -1,20 +1,12 @@
-# SO-101 robot model sources
+# SO-101 robot configuration
 
-For robot setup, training and deployment, follow the [main guide](../../../../README.md).
-The typing runtime loads the pinned robot USD selected by `SO101_ROBOT_USD` in
-`docker/typing-public.Dockerfile`. The local URDF, MJCF and meshes preserve the
-upstream model sources.
+The simulator loads one assembled SO-101 USD, downloaded and checksum-verified
+by [the Docker build](../../../../docker/typing-public.Dockerfile).
+`SO101_ROBOT_USD` selects that asset; `so101_cfg.py` and `actuator_profiles.py`
+configure the robot and its drives.
 
-`scene.xml` loads `so101_new_calib.xml`, whose virtual joint zeros are at the
-middle of each joint's range. Editing these source files does not switch the
-runtime asset or calibrate the physical robot. Use the documented
-[LeRobot calibration and scene-fitting workflow](../../../../docs/release/HARDWARE_PREPARATION.md).
-LeRobot reports the gripper as 0–100 percent; the deployment adapter converts
-that value to the model's angular joint coordinates.
-
-The robot descriptions were generated from Onshape using
-[onshape-to-robot](https://github.com/Rhoban/onshape-to-robot), with relative mesh
-paths and base collision meshes removed. STS3215 motor properties are adapted
-from [Open Duck Mini](https://github.com/apirrone/Open_Duck_Mini).
-See [third-party attribution](../../../../THIRD_PARTY_NOTICES.md#so-101-robot-assets)
-for the original robot design, upstream source and Apache-2.0 license.
+The original part meshes, Onshape metadata and URDF/MJCF sources are available
+at the pinned [upstream model revision](https://github.com/TheRobotStudio/SO-ARM100/tree/eecbe3e0a9ebb23e25ad7b2759b03884c6660903/Simulation/SO101).
+See [third-party attribution](../../../../THIRD_PARTY_NOTICES.md#so-101-robot-assets).
+For robot setup and deployment, follow
+[hardware preparation](../../../../docs/release/HARDWARE_PREPARATION.md).

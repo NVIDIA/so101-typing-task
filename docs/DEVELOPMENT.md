@@ -34,7 +34,7 @@ document this repository's tested runtime, hardware and commands.
 | [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | September physical placement and released checkpoint |
 | [scripts/real2sim.sh](../scripts/real2sim.sh) | `record`: torque-off encoder/key-event capture; `fit`: optimize scene/offsets and check per-key Newton contacts |
 | `configs/` | Task, physics and evaluation examples |
-| `source/so101_typing/tasks/` | Simulator tasks, robot/keyboard assets and actuator profiles |
+| `source/so101_typing/tasks/` | Simulator tasks, robot configuration, keyboard assets and actuator profiles |
 | `source/so101_typing/hardware/` | Recording, scene fitting, alignment, FK probes and deployment |
 | `docs/release/` | Supported commands, requirements and measured results |
 | `docs/fixtures/` | Geometry, drawings, physical reference and released-policy fixture contracts |
