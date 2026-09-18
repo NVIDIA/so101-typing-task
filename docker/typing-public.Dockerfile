@@ -19,7 +19,12 @@ RUN echo 'c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462  /opt
 RUN chmod 644 /opt/so101/assets/so101.usd
 ENV SO101_ROBOT_USD=/opt/so101/assets/so101.usd
 # Preserve the published Isaac Lab namespace while keeping project code together.
-RUN rm -rf /workspace/isaaclab/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101 /workspace/isaaclab/scripts/so101_homing
+# Drop deprecated per-framework launchers supplied by the ancestor; the unified
+# launchers dispatch to train_rsl_rl.py and play_rsl_rl.py instead.
+RUN rm -rf /workspace/isaaclab/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101 \
+    /workspace/isaaclab/scripts/so101_homing \
+    /workspace/isaaclab/scripts/reinforcement_learning/rsl_rl/train.py \
+    /workspace/isaaclab/scripts/reinforcement_learning/rsl_rl/play.py
 COPY source/ /workspace/isaaclab/source/
 COPY scripts/ /workspace/isaaclab/scripts/
 COPY pyproject.toml /workspace/isaaclab/pyproject.toml

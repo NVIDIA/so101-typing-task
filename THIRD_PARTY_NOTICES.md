@@ -20,7 +20,7 @@ its scope and source snapshot are recorded in [runtime/README.md](runtime/README
 ## SO-101 robot assets
 
 The meshes and `.part` files in `source/so101_typing/tasks/SO101/assets/`,
-the `so101_new_calib` and `so101_old_calib` URDF/MJCF descriptions,
+the `so101_new_calib` URDF/MJCF descriptions,
 `joints_properties.xml`, `scene.xml`, and the upstream portions of that
 directory's README come from
 [TheRobotStudio/SO-ARM100, `Simulation/SO101`](https://github.com/TheRobotStudio/SO-ARM100/tree/eecbe3e0a9ebb23e25ad7b2759b03884c6660903/Simulation/SO101).
