@@ -192,7 +192,6 @@ accessible. Begin with controlled validation and stop on unexpected motion or a
 wrong key. The runner enforces measured reset arrival and strict press/release
 judging. Logs are written to the bundle's `runs/` directory.
 
-Software preparation and dry runs have been tested, and the September fitted-scene
-policy completed one physical NEWTON trial in experimental mode. [Remaining
-release work](STATUS.md#physical-deployment-follow-up) includes reserved replay,
-full Q/G/P qualification, repeated physical reliability and independent reproduction.
+Keep the robot calibration, fixed jaw and physical fixture unchanged after
+alignment. Recalibration, moving the fixture or replacing the jaw requires new
+alignment checks before deployment.

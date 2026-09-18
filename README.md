@@ -5,11 +5,10 @@ and export it for deployment with your robot's calibration and a verified joint
 mapping. The September fitted-scene policy completed one physical **NEWTON**
 trial; the historical ~19k policy achieved 89/100 six-letter trials on its original
 fixture. Both are available for simulation playback. For your own physical setup,
-start with workflow 1; complete reproduction by another user remains unverified.
+start with workflow 1.
 
 This repository covers physical setup and scene calibration, policy training and
-evaluation, and hardware deployment. Investigation notes and experimental tools
-are kept outside the distributed workflow.
+evaluation, and hardware deployment.
 
 [Watch the historical typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4)
 in the [Anchor-Lab media collection](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/main/media).
@@ -21,9 +20,9 @@ host Python 3, and `curl` or `wget` for artifact downloads. Hardware setup
 additionally requires `uv`; install it before
 `./so101 setup-hardware` ([uv installation](https://docs.astral.sh/uv/getting-started/installation/)).
 The pinned container supplies Isaac Lab, Newton and RSL-RL.
-The tested GPU is an RTX 5090 with 32 GB; other GPUs and minimum requirements
-remain to be qualified. Runtime dependencies and benchmark artifacts are publicly
-available. No additional source checkout or cluster account is required.
+The tested GPU is an RTX 5090 with 32 GB. Runtime dependencies and benchmark
+artifacts are publicly available. No additional source checkout or cluster
+account is required.
 This NVIDIA-dev repository has Internal visibility: cloning requires access through
 NVIDIA's GitHub enterprise. Runtime and artifact downloads are publicly available.
 
@@ -237,12 +236,6 @@ robot's LeRobot calibration and verify physical/model alignment before motion.
 - [Recorded-motion scene calibration](docs/release/REAL2SIM.md)
 - [Training](docs/release/TRAINING.md) and [task/physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md), [alignment qualification](docs/release/ALIGNMENT.md) and [reference fixture](FIXTURE_SETUP.md)
-- [Measured results](docs/release/RESULTS.md), [validation status](docs/release/STATUS.md) and [independent reproduction record](docs/release/REPRODUCTION.md)
+- [Measured results and tested configuration](docs/release/RESULTS.md)
 - [Benchmark artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark) and [runtime provenance](runtime/README.md)
 - [Development and release checks](docs/DEVELOPMENT.md)
-
-Software execution and deployment dry runs have been tested locally. A policy
-trained after recorded-contact scene fitting completed one physical NEWTON trial
-on the new development robot. Repeated reliability and reproduction on another
-user's machine/SO-101 remain unverified. Earlier development-training measurements
-are retained separately in the validation archive.

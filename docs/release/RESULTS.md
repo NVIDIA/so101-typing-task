@@ -21,9 +21,8 @@ Follow [scene calibration](REAL2SIM.md), [training](TRAINING.md) and
 This was one supervised experimental trial using native 25 Hz policy timing and
 15 mm clearance for two ticks. It did not complete standard alignment qualification
 and does not establish a success rate, physical A–Z coverage or other-robot transfer.
-Fresh reserved replay, full physical Q/G/P checks, repeated reliability and
-independent-user reproduction remain pending. Continuous measured-motion replay
-still produces extra/mismatched contacts despite the isolated first-contact pass.
+Continuous measured-motion replay produced extra/mismatched contacts despite the
+isolated first-contact pass.
 
 The [sanitized evidence summary](calibrated_policy_result.json) pins the scene,
 offsets, checkpoint, evaluation and original-log hashes. Download the matching
@@ -95,13 +94,21 @@ physical tolerance, tolerance of the September policy or robustness to different
 actuator physics. Use `--perturbation-config` as described in
 [task configuration](TASK_CONFIGURATION.md) to measure your policy.
 
-## Evidence and reproduction
+## Tested configuration and evidence
+
+Software checks used Linux, an RTX 5090 with 32 GB and the pinned Docker runtime.
+A clean source snapshot passed host tests, source/link checks and offline command
+checks. The container built successfully. These checks used the development
+workstation and its caches.
+
+The released September bundle was downloaded anonymously, passed its checksums
+and completed 64/64 strict simulation episodes plus a NEWTON video. A fresh
+hardware Python environment passed export and an experimental deployment dry run
+with the recorded calibration and mapping. The [artifact revision](artifact_revision.json)
+pins the published files; [development checks](../DEVELOPMENT.md) provide the
+software verification commands.
 
 The [artifact dataset](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
 contains matched environments, evaluation reports, videos, timing records and
 inference-parity evidence. The downloader pins a revision and checksums; its
 `--all` option includes the supported older development checkpoints above.
-
-[Validation status](STATUS.md) distinguishes local software checks from remaining
-physical qualification. Use the [reproduction checklist](REPRODUCTION.md) on
-another machine and SO-101 before claiming independent end-to-end reproduction.

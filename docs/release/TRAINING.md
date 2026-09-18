@@ -110,7 +110,7 @@ folder with each policy for replay and deployment export.
 The launcher prints host paths after each run: the latest saved checkpoint and
 matching environment for training, or the evaluation report and video when
 produced. Use these paths in place of the examples' `/absolute/path/to/...`
-placeholders. The latest checkpoint still needs evaluation before deployment.
+placeholders. Evaluate the saved checkpoint before deployment.
 
 ## Supervise the staged run
 

@@ -8,7 +8,7 @@ Use Linux x86-64, an NVIDIA GPU, Docker with NVIDIA Container Toolkit and host
 Python 3. Building uses the pinned NVIDIA Isaac Lab image and its applicable
 license terms. Runtime dependencies are public, and no additional source checkout
 or cluster account is required. Simulation does not receive robot devices.
-See [STATUS.md](STATUS.md) for measured validation.
+See [RESULTS.md](RESULTS.md) for the tested configuration and measured results.
 
 ## Build
 
@@ -137,6 +137,3 @@ For software-only exports without alignment evidence, only the exact historical
 checkpoint and new training require an explicit mapping. The downloaded reference
 mapping is not a calibration for a different robot. If fitting your setup changes
 the trained keyboard scene, return to workflow 1 and train for that scene.
-
-This software path has been tested locally. A new-user physical reproduction on
-a second SO-101 remains pending.

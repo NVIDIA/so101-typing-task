@@ -53,9 +53,8 @@ passed **93/93** such checks on its fitting recordings.
 **Physical result:** a fresh policy trained in that
 jointly fitted scene completed **NEWTON** in 7.10 seconds with matching releases
 and clearance, using the fitted conversion on encoder reads and hardware goals.
-This was one supervised experimental trial; the
-[results](RESULTS.md) distinguish
-the demonstrated workflow from remaining reliability and alignment qualification.
+This was one supervised experimental trial; see the
+[measured results and evidence](RESULTS.md).
 
 ### What the fitted offsets mean
 

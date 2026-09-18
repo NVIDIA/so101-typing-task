@@ -30,7 +30,7 @@ real arm trajectories describe the same motion and contacts in that fixed scene.
 training or imitation learning.** An unexplained failure to reproduce those
 contacts is a reason to resolve the model/mapping before task training.
 The [calibration rationale](docs/release/REAL2SIM.md#why-recorded-motion-calibration-comes-before-training)
-explains the remaining discrepancy and why the effective keyboard pose and
+explains the observed discrepancy and why the effective keyboard pose and
 joint offsets are fitted together while the physical fixture stays fixed.
 
 | Step | Work | Evidence before proceeding |
@@ -44,9 +44,9 @@ joint offsets are fitted together while the physical fixture stays fixed.
 
 The September fitted scene passed 93/93 per-key contacts and supported one
 [physical NEWTON trial](docs/release/RESULTS.md).
-The fit reproduces observed contacts; its separate
-[deployment qualification](docs/release/ALIGNMENT.md) still needs fresh reserved
-replay and physical Q/G/P evidence. Simulation-only setup checks can run earlier.
+For your setup, use [alignment qualification](docs/release/ALIGNMENT.md) to check
+reserved recordings and physical Q/G/P contacts before deployment.
+Simulation-only setup checks can run earlier.
 
 | Bird's-eye view | What it represents |
 | --- | --- |
@@ -227,7 +227,7 @@ Its CAD yaw is not a physical squareness reading. Measured fits replace this
 orientation; legacy relative-yaw task files retain it. See
 [task configuration](docs/release/TASK_CONFIGURATION.md).
 
-## Next steps
+## Train and deploy with the fitted scene
 
 Use the measured `task.json` with the [record → fit → train workflow](docs/release/REAL2SIM.md).
 Use [alignment qualification](docs/release/ALIGNMENT.md) for reserved-recording

@@ -14,8 +14,10 @@ The normal user entry points are `./so101` for simulation/deployment and
 `./scripts/real2sim.sh record|fit` for measured-motion scene calibration. Other
 scripts implement or verify these workflows.
 
-Document the current procedure, result and limitation. Keep clock times, live
-progress updates and session chronology in run logs or local notes. Include
+Document the current procedure, result and limitation. Keep project follow-up
+lists, internal status reports, clock times and session chronology in ignored
+local notes or run logs. User-facing guides explain how to run the workflow and
+what the published evidence demonstrates. Include
 elapsed runtimes when they help users plan, and keep dates or hashes that identify
 a calibration or release. Link to one detailed result instead of repeating it
 throughout the setup guides.
@@ -28,7 +30,7 @@ throughout the setup guides.
 | [scripts/real2sim.sh](../scripts/real2sim.sh) | `record`: torque-off encoder/key-event capture; `fit`: optimize scene/offsets and check per-key Newton contacts |
 | `configs/` | Task, physics and evaluation examples |
 | `source/` | Isaac Lab task implementation and robot/keyboard assets |
-| `docs/release/` | Supported commands, requirements, results and remaining qualification |
+| `docs/release/` | Supported commands, requirements and measured results |
 | `docs/fixtures/` | Geometry, drawings, physical reference and released-policy fixture contracts |
 | `scripts/` | Portable tools with explicit hardware/scene inputs |
 | `tests/` | Host checks; deployment unit tests also live under `scripts/so101_homing/test/` |
@@ -72,6 +74,7 @@ source fingerprint. Test an extracted source snapshot without `output/`,
 and source checks. A cached build on this workstation is not an independent
 installation. Keep running training jobs on their frozen source/image snapshots.
 
-Before publication, update [STATUS.md](release/STATUS.md) with measured checks,
-review the diff, and inspect the exact source archive. Green host CI does not
-establish physical alignment, contact accuracy or second-robot typing.
+Record published measurements in [RESULTS.md](release/RESULTS.md), review the diff,
+and inspect the exact source archive. Keep detailed check logs in ignored outputs.
+Green host CI does not establish physical alignment, contact accuracy or
+second-robot typing.
