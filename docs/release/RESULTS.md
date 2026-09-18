@@ -1,133 +1,107 @@
 # Physical and simulation results
 
-## September 17: fitted-scene policy types NEWTON physically
+## September calibrated-scene policy
 
-The recorded-contact workflow now has a verified physical result on the new
-development robot. The selected scene passed 93/93 reset-per-key fitting contacts;
-a fresh policy was trained in that scene and deployed with its matching offsets.
+The recorded-contact workflow produced one verified physical **NEWTON** sequence.
+The physical fixture stayed fixed while the joint mapping and effective simulated
+keyboard pose were fitted together. A fresh policy was trained in that scene and
+deployed with the same mapping applied to encoder reads and hardware commands.
+Follow [scene calibration](REAL2SIM.md), [training](TRAINING.md) and
+[alignment/deployment](ALIGNMENT.md) to apply this workflow to your setup.
 
 | Evidence | Result |
 | --- | --- |
-| Training | 500 P1A + 2,000 Transit15 updates; `model_2498.pt` |
+| Scene calibration | 93/93 correct first contacts with resets between keys; 60 powered and 33 hand-guided contacts, all used for fitting |
+| Training | 500 P1A + 2,000 Transit15 updates; `model_2498.pt`, seed 1307 |
 | Pipeline wall time, including evaluation/video | 2 h 38 min 21 s on RTX 5090, 4,096 environments, AnchorBench/MJWarp/CUDA graphs |
 | Strict six-letter simulation | 2,048/2,048 over seeds 2307 and 3307; zero wrong keys |
-| September physical trial | NEWTON in 7.099 s; six down/up pairs and six clearance transitions; exact match |
+| Physical trial | NEWTON in 7.10 s; six down/up pairs and six model-FK clearance transitions; exact match |
+| CPU inference parity | Eight saved simulator actions matched within the declared `1e-5` tolerance |
 
-This was one supervised experimental trial, with original 15 mm clearance and
-native policy timing. The root encoder/model or contact-geometry discrepancy is
-still unresolved; the fitted correction made this workflow usable. Repeated
-reliability, reserved replay, full Q/G/P qualification and independent-user
-reproduction remain pending. The [complete case study](../experiments/physical_typing_success_20260917.md) and
-[sanitized evidence summary](../experiments/physical_typing_success_20260917.json)
-pin the exact scene, offsets, checkpoint and log. Download the matching weights,
-scene and sanitized evidence with `./so101 download --calibrated`; see the
-[playback command](../../README.md#september-calibrated-scene-example).
-Raw recordings and the operator's calibration remain local. The historical
-checkpoint remains the default download.
+This was one supervised experimental trial using native 25 Hz policy timing and
+15 mm clearance for two ticks. It did not complete standard alignment qualification
+and does not establish a success rate, physical A–Z coverage or other-robot transfer.
+Fresh reserved replay, full physical Q/G/P checks, repeated reliability and
+independent-user reproduction remain pending. Continuous measured-motion replay
+still produces extra/mismatched contacts despite the isolated first-contact pass.
 
-The [joint-mapping and placement findings](../experiments/physical_typing_success_20260917.md#relative-contribution-of-joint-mapping-and-keyboard-placement)
-record the elbow-only vertical-error reduction and the paired scene correction.
-Joint mapping substantially affected vertical reach; the demonstrated physical
-result used the combined fitted scene and mapping, with cause still unresolved.
+The [sanitized evidence summary](calibrated_policy_result.json) pins the scene,
+offsets, checkpoint, evaluation and original-log hashes. Download the matching
+weights, scene and sanitized evidence with `./so101 download --calibrated`; see
+[playback](../../README.md#september-calibrated-scene-example). Raw recordings and
+the operator's LeRobot calibration remain local. The historical 19k checkpoint
+remains the default download.
 
-## September 10: earlier public pipeline qualification
+### Scene and joint mapping
 
-This earlier short-budget AnchorBench policy learned six-letter typing after a
-short continuation. It is a separate simulation-qualified demonstration, with
-remaining contact failures and no physical validation for that checkpoint.
-That training run was stopped. Its evidence and published artifacts follow.
+The selected offsets, in shoulder-pan / shoulder-lift / elbow-flex / wrist-flex /
+wrist-roll order, are approximately **[0, +1.336, -10.150, +1.414, 0] degrees**.
+Use the full-precision mapping report supplied with the bundle. Deployment adds
+them on encoder reads and subtracts them from model goals; PPO uses model
+coordinates and does not apply an additional conversion inside simulation.
 
-### Learning and timing
+The roughly -10-degree elbow correction recurs in the historical and September
+fits. An earlier elbow-only FK comparison reduced mean absolute Z error from
+20.01 to 7.94 mm on 22 powered presses excluded from that fit. This supports a
+substantial joint-mapping contribution to vertical reach. Earlier offsets-only
+physical attempts could reach keys but dragged or hit the space bar.
 
-| Stage | Completed PPO updates | Strict evaluation | Wrong-key failures | Training-loop time |
-| --- | ---: | ---: | ---: | ---: |
-| P1A, two letters | 501 | 2,048 / 2,048 (100%) | 0 | 29 min 17 s |
-| Transit15, six letters | 50 additional | 2,027 / 2,048 (98.97%) | 3 | 2 min 57 s |
+The successful result used the **combined fitted scene, mapping and newly trained
+policy**. The simulation keyboard shifted -1.068 mm X, +12.226 mm Y and +3.278 mm Z,
+with +3.135 degrees yaw and -0.500 degrees pitch relative to the measured-reference
+model. These are model corrections, not instructions to move the real keyboard.
+See the [physical-reference and fitted-scene comparison](../fixtures/physical_reference_20260915.md#physical-reference-versus-fitted-training-scene)
+for drawings and measurement directions.
 
-Both use seed 1307, 4096 environments, Newton MJWarp and an RTX 5090 with 32 GB.
-Evaluation uses 1024 episodes each at seeds 2307 and 3307. Six-letter results are
-1013/1024 and 1014/1024; the other 18 failures are scrape terminations.
-There are no excessive-contact terminations in these evaluations.
-The training-loop total is **32 min 14 s**, excluding container/kernel startup,
-evaluation and prior smoke experiments. These are measured local timings, not a
-minimum-GPU promise or a multi-seed learning comparison.
+We suspect an encoder-to-model mapping or simulated robot/contact-geometry
+discrepancy; its exact cause remains unresolved. The fit is an effective correction,
+not proof of a mechanical fault, a misplaced physical keyboard or universal joint
+zeros. These comparisons do not isolate each component's contribution to success.
 
-The P1A file is `model_500.pt`: the log records iterations 0 through 500, or 501
-updates. Resume inherits iteration 500 and executes 50 further updates through
-549. Thus `model_549.pt` represents 551 cumulative updates, not 549 or 550.
-The dataset includes per-iteration timing CSVs and runtime/image identities.
+Simulation key depression reached approximately 1.35 times nominal travel for this
+policy. Strict typing success checks events, release and clearance; it does not
+establish accurate contact mechanics or independently measured physical clearance.
 
-### Fixed-policy placement tolerance
+## Other released results
 
-The six-letter checkpoint, nominal actor map, seed 2307 and 1024-sequence bank
-are identical across these tests. Offsets are sampled uniformly at reset.
+Keep these checkpoints and their matched scenes separate from the September
+calibrated bundle.
 
-| Actual keyboard perturbation | Strict successes | Rate | Wrong-key episodes |
-| --- | ---: | ---: | ---: |
-| Zero-offset control | 1013 / 1024 | 98.93% | 1 |
-| X and Y each +/-1 mm; yaw +/-0.25 degrees | 1011 / 1024 | 98.73% | 5 |
-| X and Y each +/-3 mm; yaw +/-1 degree | 862 / 1024 | 84.18% | 156 |
+| Policy | Measured result | Scope |
+| --- | --- | --- |
+| Historical AnchorBench `model_19000.pt` | 89/100 physical six-letter trials; 78/78 reset-per-key replay contacts | Original robot, fitted scene and mat fixture; [required contract](../fixtures/reference_policy.md) |
+| Earlier public P1A `model_500.pt` | 2,048/2,048 two-letter episodes; zero wrong keys | Simulation only; 501 updates, 29 min 17 s training-loop time |
+| Earlier public Transit15 `model_549.pt` | 2,027/2,048 six-letter episodes; 3 wrong-key and 18 scrape failures | Simulation only; 50 further updates, 2 min 57 s training-loop time |
 
-Robot reset noise is zero. The zero-offset result matches the original evaluation.
-The wider range clearly reduces performance. This is one policy and one seed,
-with combined XY/yaw variation; it is neither a guarantee for every placement
-nor evidence of physical robustness or robustness to different actuator physics.
-Run these tests with `--perturbation-config`; see [task configuration](TASK_CONFIGURATION.md).
+The earlier public training used seed 1307, 4,096 environments and AnchorBench/MJWarp
+on RTX 5090. Times exclude startup/evaluation. Maximum simulated key depression was
+1.579 times nominal travel for its six-letter policy. The checkpoint names are
+iteration labels, not cumulative update counts.
 
-### Rollout and deployment review
+### Placement tolerance example
 
-P1A HE, AZ and QZ recordings pass strict event judging. The six-letter NVIDIA
-recording passes with six down/up/clearance cycles. Sampled frames near key-down
-and clearance show approach, contact and withdrawal; obvious tunnelling or
-teleportation during typing was not observed. The final frame resets the robot
-after episode termination. The evaluator now retains the terminal event before
-that reset. Rendering alone cannot establish contact forces or hardware safety;
-the batch scrape failures above remain part of the result.
+For the earlier `model_549.pt` policy, keep the actor's map fixed and uniformly
+perturb the actual keyboard at reset. The same 1,024-sequence bank and seed 2307
+produced:
 
-The reports also record peak key depression of **1.579 times nominal joint
-travel** for the six-letter policy (P1A: 1.540). The key joints therefore exceed
-their nominal travel range in this simulator. Strict typing success does not
-reject this overtravel, and zero excessive-contact terminations does not prove
-physically accurate contact. Key-stop compliance, solver penetration and contact
-forces need further qualification before interpreting simulation success as
-physical readiness. No physics parameters or success thresholds were changed to
-hide this finding.
+| Keyboard perturbation | Strict successes | Wrong-key episodes |
+| --- | ---: | ---: |
+| None | 1,013/1,024 (98.93%) | 1 |
+| X/Y each ±1 mm; yaw ±0.25° | 1,011/1,024 (98.73%) | 5 |
+| X/Y each ±3 mm; yaw ±1° | 862/1,024 (84.18%) | 156 |
 
-Key events come from simulated key-joint travel with hysteresis and dwell,
-not tip proximity alone. Strict success requires exact text and matching counts
-of key-down, key-up and clearance, without failure terminations. Transit15 uses
-15 mm clearance for two control ticks.
+This is one policy/seed, with zero robot-reset noise. It does not establish
+physical tolerance, tolerance of the September policy or robustness to different
+actuator physics. Use `--perturbation-config` as described in
+[task configuration](TASK_CONFIGURATION.md) to measure your policy.
 
-The standard-LeRobot deployment bundle passes software validation. Its CPU actor
-matches 261 recorded simulator action vectors with maximum absolute error
-**1.3113e-6** (tolerance 1e-5), including saved normalization and Beta mean output.
-This checks inference parity; calibration, fixture alignment and physical typing
-still require the operator and the actual robot.
+## Evidence and reproduction
 
-### Published evidence
+The [artifact dataset](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
+contains matched environments, evaluation reports, videos, timing records and
+inference-parity evidence. The downloader pins a revision and checksums; its
+`--all` option includes the supported older development checkpoints above.
 
-The [dataset](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
-contains `checkpoints/public-p1a-seed1307/`,
-`checkpoints/public-transit15-seed1307/`, matched `params/`, full evaluation JSONs,
-videos, placement configurations, actor-parity evidence and training timing CSVs.
-`manifest.json` maps the artifacts. `SHA256SUMS` uses relative paths and covers all
-release files except itself and Hugging Face's Git attributes/cache metadata.
-The repository downloader pins an immutable dataset revision and explicit hashes.
-
-The older fixed-fixture physical benchmark remains separate from these new
-simulation results. Metadata cleanup preserves its checkpoint bytes and numeric
-results; unpublished raw-log locations are labelled as unavailable. Previous
-dataset revisions remain historical records.
-
-## Remaining reproduction evidence
-
-Host tests, Newton contract tests, container execution and CPU deployment checks
-are local software evidence. A clean-checkout test on this workstation is not an
-independent installation. Follow [REPRODUCTION.md](REPRODUCTION.md) on another
-machine and SO-101 before claiming complete new-user physical reproduction.
-
-A fresh checkout with new Python environments passed public download/audit,
-cached container build, GPU probe, one-update training, 64/64 released-policy
-episodes, hardware setup, export, dry run and CPU parity. The dataset includes
-`evaluation/fresh-checkout-software-validation.json`. Caches and the same GPU
-were reused; independent-machine and recipient hardware validation remain pending.
+[Validation status](STATUS.md) distinguishes local software checks from remaining
+physical qualification. Use the [reproduction checklist](REPRODUCTION.md) on
+another machine and SO-101 before claiming independent end-to-end reproduction.

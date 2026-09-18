@@ -1,4 +1,4 @@
-# SO-101 keyboard typing: train and deploy
+# SO-101 keyboard typing: setup, training and deployment
 
 Train an SO-101 typing policy in Newton for your keyboard placement, evaluate it,
 and export it for deployment with your robot's calibration and a verified joint
@@ -6,6 +6,10 @@ mapping. The September fitted-scene policy completed one physical **NEWTON**
 trial; the historical ~19k policy achieved 89/100 six-letter trials on its original
 fixture. Both are available for simulation playback. For your own physical setup,
 start with workflow 1; complete reproduction by another user remains unverified.
+
+This repository covers physical setup and scene calibration, policy training and
+evaluation, and hardware deployment. Investigation notes and experimental tools
+are kept outside the distributed workflow.
 
 [Watch the historical typing timelapse](https://huggingface.co/datasets/nvidia/Anchor-Lab/blob/main/media/typing_abc_common7500_timelapse_hud_3x.mp4)
 in the [Anchor-Lab media collection](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/main/media).
@@ -121,10 +125,9 @@ mat. Its 89/100 physical six-letter result was measured on the original benchmar
 robot/fixture; it is not a new-robot success guarantee.
 
 The scene's joint mapping and keyboard pose were calibrated from recorded IRL
-contacts and then frozen in the matching environment YAML. The [historical
-provenance record](docs/fixtures/historical_offset_provenance_20260718.md)
-documents the measured contacts, the rejected diagnostic fits, the locked
-contract, and its 78/78 direct replay gate. The [historical model drawing](docs/fixtures/reference-birdseye.svg)
+contacts and then frozen in the matching environment YAML. The [reference-policy
+contract](docs/fixtures/reference_policy.md) records the required fixture and
+mapping. The [historical model drawing](docs/fixtures/reference-birdseye.svg)
 shows that frozen scene; its dimensions are not physical ruler instructions.
 Physical use needs alignment checks, and moving the real keyboard does not update
 the policy's frozen map.
@@ -181,7 +184,7 @@ bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
 Keep the complete `params/` directory: `public_task.json` restores the fitted scene.
 This command produces a simulation video. For another physical setup, use your own
 calibration and scene fitting; the reference mapping is evidence, not a transferable
-robot calibration. See the [physical result and limitations](docs/experiments/physical_typing_success_20260917.md).
+robot calibration. See the [physical result and limitations](docs/release/RESULTS.md).
 
 ## Both workflows: qualify alignment and deploy
 
@@ -230,13 +233,13 @@ robot's LeRobot calibration and verify physical/model alignment before motion.
 
 ## Documentation and validation
 
-- [September 17 physical NEWTON result and how it was achieved](docs/experiments/physical_typing_success_20260917.md)
 - [Detailed quickstart](docs/release/QUICKSTART.md)
+- [Recorded-motion scene calibration](docs/release/REAL2SIM.md)
 - [Training](docs/release/TRAINING.md) and [task/physics configuration](docs/release/TASK_CONFIGURATION.md)
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md), [alignment qualification](docs/release/ALIGNMENT.md) and [reference fixture](FIXTURE_SETUP.md)
-- [Software validation status](docs/release/STATUS.md) and [independent reproduction record](docs/release/REPRODUCTION.md)
+- [Measured results](docs/release/RESULTS.md), [validation status](docs/release/STATUS.md) and [independent reproduction record](docs/release/REPRODUCTION.md)
 - [Benchmark artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark) and [runtime provenance](runtime/README.md)
-- [Development and release checks](docs/DEVELOPMENT.md); [dated investigation records](docs/experiments/README.md)
+- [Development and release checks](docs/DEVELOPMENT.md)
 
 Software execution and deployment dry runs have been tested locally. A policy
 trained after recorded-contact scene fitting completed one physical NEWTON trial

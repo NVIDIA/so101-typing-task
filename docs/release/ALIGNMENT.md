@@ -4,14 +4,13 @@ This workflow records which robot calibration, keyboard placement and joint
 mapping passed measured-motion replay and physical Q/G/P contact checks.
 It does not qualify policy performance or prove every key in the workspace.
 The current development robot's fitted mapping has **not** passed this gate.
-It has completed [one physical NEWTON policy trial](../experiments/physical_typing_success_20260917.md)
+It has completed [one physical NEWTON policy trial](RESULTS.md)
 in the explicit experimental mode; that result does not supply the missing
 reserved replay or complete Q/G/P qualification evidence.
 
 All `alignment` commands are offline. FK and policy `--execute` commands move
 hardware. Standard [LeRobot calibration](HARDWARE_PREPARATION.md#install-and-calibrate)
-remains the setup procedure; automatic endpoint calibration is an optional,
-unfinished experiment.
+is the setup procedure.
 
 ## 1. Freeze the scene and reserve a recording
 

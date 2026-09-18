@@ -2,7 +2,7 @@
 
 For the normal collect → calibrate → train workflow, use the
 [short real-to-sim guide](docs/release/REAL2SIM.md) and `scripts/real2sim.sh`.
-This page provides the measurement details and advanced diagnostics.
+This page provides the measurement details and scene-drawing commands.
 
 For training on your own layout, start with your own base-to-keyboard measurements.
 To reproduce the released September NEWTON example, use its
@@ -43,7 +43,7 @@ joint offsets are fitted together while the physical fixture stays fixed.
 | 6. Verify and deploy physically | Check new recordings and policy-free Q/G/P hover/press/release commands using the same inverse mapping, then follow deployment qualification. | Independent contact/tracking/clearance evidence and the matching scene, policy and mapping. Simulation contact fitting alone does not prove physical policy performance. |
 
 The September fitted scene passed 93/93 per-key contacts and supported one
-[physical NEWTON trial](docs/experiments/physical_typing_success_20260917.md).
+[physical NEWTON trial](docs/release/RESULTS.md).
 The fit reproduces observed contacts; its separate
 [deployment qualification](docs/release/ALIGNMENT.md) still needs fresh reserved
 replay and physical Q/G/P evidence. Simulation-only setup checks can run earlier.
@@ -230,6 +230,5 @@ orientation; legacy relative-yaw task files retain it. See
 ## Next steps
 
 Use the measured `task.json` with the [record → fit → train workflow](docs/release/REAL2SIM.md).
-For lower-level replay, alternative fitting methods and single-key probes, see
-[advanced scene diagnostics](docs/experiments/scene_diagnostics.md). The dated
-[investigation records](docs/experiments/README.md) preserve experimental results.
+Use [alignment qualification](docs/release/ALIGNMENT.md) for reserved-recording
+replay and physical Q/G/P probes before deployment.

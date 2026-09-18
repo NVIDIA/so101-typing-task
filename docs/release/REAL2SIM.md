@@ -17,8 +17,9 @@ Run `./so101 setup-hardware` and `./so101 build` before the steps below.
 
 ## Why recorded-motion calibration comes before training
 
-This follows the [original calibration and replay workflow](../fixtures/historical_offset_provenance_20260718.md#original-recorded-trajectory-workflow)
-used for the AnchorBench policy that achieved **89/100 physical six-letter trials**
+This follows the calibration and replay approach used for the
+[historical reference policy](../fixtures/reference_policy.md),
+which achieved **89/100 physical six-letter trials**
 on the benchmark setup. That workflow selected the keyboard pose and joint offsets
 together, passed **78/78** reset-per-key replay checks, then used the frozen scene
 for training and the matching joint conversion for deployment.
@@ -27,7 +28,7 @@ The policy uses a fixed keyboard map without vision, so physical typing depends
 on the real and simulated robot/keyboard relationship agreeing. Matching external
 datums is the starting point; recorded key presses test that correspondence.
 
-As of **September 17, 2026**, measured placement and checked asset dimensions
+Measured placement and checked asset dimensions
 appeared consistent, but replaying measured real joint trajectories still produced
 different contacts in simulation. **We suspect a discrepancy in the encoder-to-model
 mapping or simulated robot/contact geometry, but have not isolated its exact cause.**
@@ -53,29 +54,28 @@ passed **93/93** such checks on its fitting recordings.
 jointly fitted scene completed **NEWTON** in 7.10 seconds with matching releases
 and clearance, using the fitted conversion on encoder reads and hardware goals.
 This was one supervised experimental trial; the
-[full record](../experiments/physical_typing_success_20260917.md) distinguishes
+[results](RESULTS.md) distinguish
 the demonstrated workflow from remaining reliability and alignment qualification.
 
-### Recurring joint-offset trend — September 17, 2026
+### What the fitted offsets mean
 
-The original benchmark and the September fits share a **large negative elbow
+The original benchmark and the September scene fit share a **large negative elbow
 correction, approximately -10 degrees**, with smaller positive shoulder-lift and
 wrist-flex corrections:
 
 | Mapping | Shoulder lift | Elbow flex | Wrist flex |
 | --- | ---: | ---: | ---: |
 | Historical scene used for the 89/100 result | +1.934° | -10.774° | +1.365° |
-| Earlier September four-joint fit, keyboard pose fixed | +0.749° | -9.613° | +0.540° |
 | Selected September joint-and-keyboard fit, 93/93 replay | +1.336° | -10.150° | +1.414° |
 
 These use `q_model = q_LeRobot + offset`; hardware goals use the inverse
 subtraction. Earlier elbow-only checks reduced much of the vertical contact
 error. The recurring sign and scale support investigating a systematic
 encoder/model correspondence difference, but do not identify its mechanical
-cause or establish a universal correction. The earlier fixed-keyboard fit also
-needed a pan offset; the selected joint-and-keyboard fit retained zero pan and
-wrist-roll offsets. Fit and validate the complete scene/mapping for each setup.
-See the [comparison and measured limits](../experiments/scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits).
+cause or establish a universal correction. The selected joint-and-keyboard fit
+retained zero pan and wrist-roll offsets despite both being adjustable. Fit and
+validate the complete scene/mapping for each setup; the [results](RESULTS.md)
+describe the measured limits.
 
 After fitting, regenerate the bird's-eye view from the resulting `task.json`.
 The starting physical-reference drawing no longer represents the adjusted
@@ -153,8 +153,3 @@ are not fed into PPO. Simulation already uses model joint coordinates: retain th
 offsets for encoder reads and inverse hardware commands, rather than adding them
 again inside training. Keep the same physical fixture for deployment and perform
 the separate [physical alignment checks](ALIGNMENT.md) before policy execution.
-
-The [September 16 example](../experiments/scene_calibration_20260917.md) passed
-93/93 per-key contacts. Its selected shoulder-pan and wrist-roll offsets were
-both zero despite being adjustable. That is a result for that fit, not a rule
-that those joints never need correction.

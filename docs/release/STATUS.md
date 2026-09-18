@@ -16,8 +16,7 @@ qualification and independent-user reproduction remain pending.
 | Historical benchmark | 78/78 per-key replay contacts and 89/100 physical six-letter policy trials on the original setup |
 
 The September and historical policies use different fitted scenes and mappings.
-See [results](RESULTS.md), the [physical case study](../experiments/physical_typing_success_20260917.md)
-and [historical provenance](../fixtures/historical_offset_provenance_20260718.md).
+See [results](RESULTS.md) and the [reference-policy contract](../fixtures/reference_policy.md).
 Neither result establishes universal offsets or guarantees another robot's success.
 
 ## Software verification
@@ -48,7 +47,6 @@ independent physical reproduction. Historical run identities remain in
 | Measure physical reliability | More sequences and repeated trials, retaining every failure as well as successes |
 | Reproduce independently | Another user/machine/SO-101 completes the [documented workflow](REPRODUCTION.md) |
 | Measure robustness | Placement and physics variation tested for the selected policy; physical tolerance remains unmeasured |
-| Isolate the model discrepancy | Independent physical link-pose measurements to distinguish encoder conventions from robot/contact geometry |
 
 The selected fit passes isolated first-contact checks, but continuous measured
 replay still has extra/mismatched contacts. Its successful physical policy trial
@@ -59,8 +57,7 @@ or its explicitly labelled supervised experimental route.
 Joint offsets and the effective keyboard pose compensate for the observed
 mismatch; the underlying cause remains unresolved. Simulation key travel also
 exceeds nominal travel in some rollouts, so strict typing success does not prove
-accurate contact mechanics. The automatic-calibration experiment remains paused
-and has not installed a replacement calibration.
+accurate contact mechanics.
 
 Keep the robot calibration, fixed jaw and physical fixture unchanged after
 validation. Recalibration, a fixture move or jaw replacement requires renewed

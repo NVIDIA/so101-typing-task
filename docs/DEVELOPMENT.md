@@ -1,17 +1,18 @@
 # Development and release checks
 
 `NVIDIA-dev/so101-keyboard-typing-internal` is the canonical development repository,
-with Internal visibility for NVIDIA's GitHub enterprise. The previous
-`NVIDIA-dev/so101-keyboard-typing` repository remains private and is retained
-unchanged. The older `VigneshBhavan/so101-keyboard-task-public` repository is the
-September 11 public snapshot. Maintain workflow fixes in the internal repository;
-publishing externally is a separate step.
+with Internal visibility for NVIDIA's GitHub enterprise.
 
 ## Where things belong
 
+Keep this repository focused on **setup, training and deployment**. Scene
+calibration, evaluation, alignment checks and concise release evidence support
+those workflows. Keep research diaries, one-off investigations, benchmark-session
+orchestration and media production in a separate workspace or ignored `local/`.
+
 The normal user entry points are `./so101` for simulation/deployment and
 `./scripts/real2sim.sh record|fit` for measured-motion scene calibration. Other
-scripts implement these commands or support explicitly labelled diagnostics.
+scripts implement or verify these workflows.
 
 Document the current procedure, result and limitation. Keep clock times, live
 progress updates and session chronology in run logs or local notes. Include
@@ -28,18 +29,16 @@ throughout the setup guides.
 | `configs/` | Task, physics and evaluation examples |
 | `source/` | Isaac Lab task implementation and robot/keyboard assets |
 | `docs/release/` | Supported commands, requirements, results and remaining qualification |
-| `docs/fixtures/` | Geometry, drawings, dated fixture and historical checkpoint provenance |
-| [docs/experiments/](experiments/README.md) | Dated investigations and advanced diagnostics; not required setup instructions |
+| `docs/fixtures/` | Geometry, drawings, physical reference and released-policy fixture contracts |
 | `scripts/` | Portable tools with explicit hardware/scene inputs |
-| `tests/` | Host checks; historical helper tests also live under `scripts/so101_homing/test/` |
+| `tests/` | Host checks; deployment unit tests also live under `scripts/so101_homing/test/` |
 | `docker/`, `runtime/` | Pinned simulator build, dependency locks and runtime patch |
 | `output/`, `.artifacts/`, `local/` | Ignored runs, downloaded weights and workstation shortcuts; excluded from Docker |
 
 Raw recordings, camera captures and original fit reports remain local. Selected
 sanitized reports and physical-run evidence are published with the calibrated
-checkpoint. Investigation notes distinguish local artifact identifiers from
-downloadable evidence. Preserve original hashes and files; do not rewrite old
-evidence to match new code.
+checkpoint. Preserve original hashes and files; do not rewrite old evidence to
+match new code.
 Portable source must not depend on a particular user's home, serial number or
 an existing `output/` directory. Keep machine shortcuts in `local/`.
 Use generic device placeholders in instructions and synthetic identifiers in

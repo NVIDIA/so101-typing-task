@@ -36,7 +36,7 @@ NEWTON trial. Its measured training/evaluation wall time was **2 h 38 min 21 s**
 on an RTX 5090. The commands below use that budget with your own fitted scene.
 Evaluate your own checkpoints before continuing; this result does not guarantee
 another setup or establish a minimum training budget.
-See the [exact checkpoint and evidence](../experiments/physical_typing_success_20260917.md).
+See the [checkpoint results and evidence](RESULTS.md).
 
 After the real-to-sim fit produces `output/my-scene/task.json`, run the two stages
 with an evaluation between them:

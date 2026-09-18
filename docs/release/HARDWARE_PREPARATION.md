@@ -125,21 +125,14 @@ hardware or establish encoder alignment.
 
 ### Joint offsets: matching the simulated scene to IRL
 
-The dated convention and fixed-jaw mapping are recorded in
-[encoder/model mapping (2026-09-15)](../experiments/encoder_model_mapping_20260915.md).
-
-The July 18 scene was calibrated against timestamped powered physical key
-presses: A–Z, three times each. The final joint-angle mapping and keyboard pose
-form one frozen real-to-sim scene contract, validated by direct Newton replay of
-the measured trajectories (78/78 contacts). The archived diagnostic least-squares
-candidates were rejected on held-out geometry; they are not the source of the
-released vector. See the [historical offset provenance](../fixtures/historical_offset_provenance_20260718.md)
-for the full evidence chain. The offsets are separate from LeRobot motor
-calibration. Deployment applies the same mapping in both directions:
+The [record-and-fit workflow](REAL2SIM.md) selects a joint mapping and an effective
+keyboard pose together. Preserve both with the trained policy. These offsets
+are separate from LeRobot motor calibration: they convert measured encoder
+coordinates to the model's joint coordinates, and convert model goals back to
+hardware coordinates. Deployment applies the same mapping in both directions:
 
 ```text
 Joint order: shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll
-Offsets (degrees): [0, +1.9336272481, -10.7735791533, +1.3647648917, 0]
 Read:    q_model = q_lerobot + offset
 Command: q_lerobot_target = q_model_target - offset
 ```
@@ -148,7 +141,8 @@ For software-only exports without `--alignment`, the default
 `--encoder-convention auto` recognizes only the exact released 19k
 checkpoint/environment hashes and chooses `benchmark`. `lerobot` adds no offsets;
 it is an explicit choice for a verified direct mapping or a controlled comparison.
-Omitting the fitted offsets changes the benchmark policy's commanded physical poses.
+The [reference-policy contract](../fixtures/reference_policy.md) records the
+historical vector. Omitting fitted offsets changes the commanded physical poses.
 Keep your robot's own LeRobot calibration and check physical/model alignment;
 these fitted values are not universal SO-101 constants.
 
