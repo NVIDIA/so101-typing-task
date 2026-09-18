@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from scripts.so101_homing.joint_calibration import fit, load
-from scripts.so101_homing.constants import ARM_JOINT_NAMES
+from so101_typing.hardware.joint_calibration import fit, load
+from so101_typing.hardware.constants import ARM_JOINT_NAMES
 
 
 class JointCalibrationTests(unittest.TestCase):

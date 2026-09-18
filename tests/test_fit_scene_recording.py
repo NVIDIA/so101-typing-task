@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from scripts.so101_homing import fit_scene_recording as fit
+from so101_typing.hardware import fit_scene_recording as fit
 
 
 def test_recovers_xy_yaw_without_using_target_height():
@@ -61,8 +61,8 @@ def test_held_out_observations_cannot_change_training_fit(tmp_path, monkeypatch)
 
 def test_offset_contact_fk_matches_replay_without_mutating_recording():
     import copy
-    from scripts.so101_homing.scene_check import replay_joint_positions
-    from scripts.so101_homing.so101_kinematics import site_position, FIXED_JAW_TYPING_TIP_SITE_POS
+    from so101_typing.hardware.scene_check import replay_joint_positions
+    from so101_typing.hardware.so101_kinematics import site_position, FIXED_JAW_TYPING_TIP_SITE_POS
     recording = {"task_config": {},
                  "samples": [{"time_s": t, "q_model_rad": [.1,-.2,.3,1.,.05,0.]}
                              for t in (0., .02, .04, .06)],

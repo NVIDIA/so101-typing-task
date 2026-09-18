@@ -4,7 +4,7 @@ import copy
 import numpy as np
 import pytest
 
-from scripts.so101_homing import calibrate_scene as cs
+from so101_typing.hardware import calibrate_scene as cs
 
 
 @pytest.mark.parametrize('pan,roll', [(False, False), (True, False), (False, True), (True, True)])

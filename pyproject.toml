@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "so101-typing"
+version = "0.1.0"
+description = "SO-101 keyboard scene calibration, policy training and deployment"
+requires-python = ">=3.10"
+
+# Install editable from this checkout. Runtime dependencies are pinned separately
+# in runtime/hardware.lock and docker/typing-public.Dockerfile.
+[tool.setuptools]
+packages = ["so101_typing", "so101_typing.hardware"]
+# Map only our package, so editable installation does not shadow Isaac Lab's
+# own packages with their outer project directories under source/.
+package-dir = {so101_typing = "source/so101_typing"}
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# These require the Isaac Lab container; run tests/simulation explicitly there.
+norecursedirs = [".*", "build", "dist", "simulation"]

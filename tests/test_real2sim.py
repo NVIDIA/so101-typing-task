@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.so101_homing import real2sim as workflow
+from so101_typing.hardware import real2sim as workflow
 
 
 @pytest.mark.parametrize('change', ['wrong_key', 'multiple', 'missing', 'empty', 'wrong_count'])
@@ -29,7 +29,7 @@ def test_preserves_reference_and_only_prints_training_on_pass(tmp_path, monkeypa
     original = copy.deepcopy(records)
     monkeypatch.setattr(workflow, 'calibrate', lambda *a, **k: None)
     def refinement(command, **kwargs):
-        assert command[1:3] == ['-m', 'scripts.so101_homing.refine_scene_contacts']
+        assert command[1:3] == ['-m', 'so101_typing.hardware.refine_scene_contacts']
         folder = Path(command[command.index('--out-dir')+1]); folder.mkdir()
         result = {'contacts': [{'key': 'Q'}], 'best': {'total': 1,
                   'correct_first_contacts': int(passed), 'first_keys': ['Q' if passed else 'P']}}

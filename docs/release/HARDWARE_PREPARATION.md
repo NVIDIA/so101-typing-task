@@ -56,7 +56,7 @@ effective model; its coordinates are not instructions to move the real keyboard.
 Any placement variation needs separate evaluation.
 
 For an FK sanity check, compute the fixed typing-tip position with
-`scripts/so101_homing/so101_kinematics.py` and compare it with the selected
+`source/so101_typing/hardware/so101_kinematics.py` and compare it with the selected
 letter's `letter_xyz_b_m` in the matching environment. The two values share the
 robot-base frame when the task configuration, base datum, fixed tip and
 encoder-to-model mapping are the same. Agreement is necessary for a physical
@@ -114,7 +114,7 @@ To check CPU inference against saved simulator actions, record a rollout with
 `./so101 video ... --trace-policy-actions 400`, then run:
 
 ```bash
-.venv-hardware/bin/python -m scripts.so101_homing.check_actor_parity \
+.venv-hardware/bin/python -m so101_typing.hardware.check_actor_parity \
   --checkpoint output/my_typing_robot/checkpoint.pt \
   --report /absolute/path/to/video/evaluation.json
 ```
@@ -159,14 +159,14 @@ robot ID, ordered five-joint encoder/model angles at three or more poses, and a
 measurement reference for each pose:
 
 ```bash
-.venv-hardware/bin/python -m scripts.so101_homing.joint_calibration \
+.venv-hardware/bin/python -m so101_typing.hardware.joint_calibration \
   output/pose-measurements.json --out output/joint-fit.json
 ./so101 prepare-deployment --checkpoint /absolute/path/to/model_N.pt \
   --env-config /absolute/path/to/params/env.yaml --robot-id my_typing_robot \
   --joint-calibration output/joint-fit.json --out-dir output/my-trained-policy
 ```
 
-See [the fitter's input fields](../../scripts/so101_homing/joint_calibration.py).
+See [the fitter's input fields](../../source/so101_typing/hardware/joint_calibration.py).
 This is an advanced measurement path, not automatic physical calibration. Export
 copies and hashes the fit evidence and uses the offsets for both feedback and
 commands, including the reset. It does not change the trained keyboard map.

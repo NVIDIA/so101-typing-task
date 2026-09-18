@@ -19,9 +19,14 @@ STAGES = {'p1a': 'P1A', 'transit15': 'P1D-Transit15'}
 
 def source_fingerprint():
     digest = hashlib.sha256()
+    digest.update(b'pyproject.toml\0' + (ROOT / 'pyproject.toml').read_bytes())
     for directory in ('source', 'scripts', 'runtime', 'docker'):
         for path in sorted((ROOT / directory).rglob('*')):
-            if path.is_file() and '__pycache__' not in path.parts and path.suffix != '.pyc':
+            if '__pycache__' in path.parts or any(part.endswith('.egg-info') for part in path.parts):
+                continue
+            if path.is_symlink():
+                digest.update(str(path.relative_to(ROOT)).encode() + b'\0symlink\0' + os.readlink(path).encode())
+            elif path.is_file() and path.suffix != '.pyc':
                 digest.update(str(path.relative_to(ROOT)).encode() + b'\0')
                 digest.update(path.read_bytes())
     return digest.hexdigest()
@@ -54,7 +59,7 @@ def main():
         python = os.environ.get('SO101_LEROBOT_PYTHON', str(ROOT / '.venv-hardware/bin/python'))
         if not Path(python).is_file():
             raise SystemExit('run ./so101 setup-hardware first or set SO101_LEROBOT_PYTHON')
-        return subprocess.call([python, '-m', 'scripts.so101_homing.scene_alignment', *sys.argv[2:]], cwd=ROOT)
+        return subprocess.call([python, '-m', 'so101_typing.hardware.scene_alignment', *sys.argv[2:]], cwd=ROOT)
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
     sub.add_parser('build', help='build the public runtime (requires Docker)')
@@ -137,7 +142,7 @@ def main():
         if not Path(python).is_file():
             parser.error('run ./so101 setup-hardware first or set SO101_LEROBOT_PYTHON to its absolute Python path')
         if args.command == 'prepare-deployment':
-            command = [python, '-m', 'scripts.so101_homing.deployment_bundle', '--checkpoint', str(args.checkpoint.resolve()),
+            command = [python, '-m', 'so101_typing.hardware.deployment_bundle', '--checkpoint', str(args.checkpoint.resolve()),
                        '--env-config', str(args.env_config.resolve()), '--robot-id', args.robot_id,
                        '--out-dir', str(args.out_dir.resolve())]
             if args.alignment:
@@ -149,7 +154,7 @@ def main():
             else:
                 command += ['--encoder-convention', args.encoder_convention]
         else:
-            command = [python, '-m', 'scripts.so101_homing.deploy_bundle', str(args.bundle.resolve()), args.target]
+            command = [python, '-m', 'so101_typing.hardware.deploy_bundle', str(args.bundle.resolve()), args.target]
             if args.execute: command += ['--execute']
             if args.experimental: command += ['--experimental']
             if args.experimental_clearance_m is not None: command += ['--experimental-clearance-m', str(args.experimental_clearance_m)]

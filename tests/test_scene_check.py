@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from scripts.so101_homing import scene_check
-from scripts.so101_homing.so101_kinematics import JOINT_NAMES
+from so101_typing.hardware import scene_check
+from so101_typing.hardware.so101_kinematics import JOINT_NAMES
 
 
 class ReadBus:
@@ -214,7 +214,7 @@ def test_mapping_cli_rejects_invalid_flag_combinations(monkeypatch, flags):
 
 
 def test_mapping_launcher_mounts_readonly_preserves_task_and_refuses_overwrite(diagnostic_mapping, monkeypatch):
-    from scripts.so101_homing import run_fk_probe
+    from so101_typing.hardware import run_fk_probe
     recording, task, _, mapping_path = diagnostic_mapping
     task_path = mapping_path.parent/"task-input.json"
     task_path.write_text(json.dumps(task, separators=(",", ":")))

@@ -121,7 +121,7 @@ def _assert_matching_runner_recipe(candidate, reference) -> None:
 
 
 def test_contact_probe_keeps_measured_newton_compliance_bounded() -> None:
-    repo_root = Path(__file__).resolve().parents[4]
+    repo_root = Path(__file__).resolve().parents[2]
     probe_source = (repo_root / "scripts/reinforcement_learning/rsl_rl/probe_so101_fixed_cartesian.py").read_text()
     assert '"--contact-max-depression-fraction"' in probe_source
     assert "default=1.30" in probe_source

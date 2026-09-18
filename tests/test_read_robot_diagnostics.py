@@ -1,7 +1,7 @@
 """The diagnostic must remain read-only, including its failure cleanup."""
 from dataclasses import dataclass, asdict
 import unittest
-from scripts.so101_homing.read_robot_diagnostics import snapshot
+from so101_typing.hardware.read_robot_diagnostics import snapshot
 
 
 @dataclass

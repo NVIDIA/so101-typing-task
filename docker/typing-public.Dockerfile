@@ -18,8 +18,14 @@ ADD https://huggingface.co/datasets/nvidia/Anchor-Lab/resolve/647edd5787cd764cdc
 RUN echo 'c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462  /opt/so101/assets/so101.usd' | sha256sum -c -
 RUN chmod 644 /opt/so101/assets/so101.usd
 ENV SO101_ROBOT_USD=/opt/so101/assets/so101.usd
+# Preserve the published Isaac Lab namespace while keeping project code together.
+RUN rm -rf /workspace/isaaclab/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101 /workspace/isaaclab/scripts/so101_homing
 COPY source/ /workspace/isaaclab/source/
 COPY scripts/ /workspace/isaaclab/scripts/
+COPY pyproject.toml /workspace/isaaclab/pyproject.toml
+COPY LICENSE THIRD_PARTY_NOTICES.md /workspace/isaaclab/
+COPY licenses/ /workspace/isaaclab/licenses/
+RUN ./isaaclab.sh -p -m pip install --no-deps --no-build-isolation --editable .
 ENV ACCEPT_EULA=Y NO_NUCLEUS=Y OMNI_KIT_ALLOW_ROOT=1 PYTHONUNBUFFERED=1
 ARG SOURCE_SHA256
 LABEL org.so101.source-sha256=${SOURCE_SHA256}

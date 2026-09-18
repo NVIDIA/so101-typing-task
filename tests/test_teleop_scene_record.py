@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from scripts.so101_homing import teleop_scene_record as recorder
+from so101_typing.hardware import teleop_scene_record as recorder
 
 
 @dataclass

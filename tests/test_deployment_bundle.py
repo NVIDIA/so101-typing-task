@@ -10,15 +10,15 @@ import types
 from dataclasses import make_dataclass
 from unittest.mock import patch
 import yaml
-from scripts.so101_homing.constants import ARM_JOINT_NAMES
-from scripts.so101_homing.fixed_cartesian_policy import JOINT_RATE_LIMITS_RAD_S
-from scripts.so101_homing.deployment_bundle import profile_from_environment, sha256, validate_manifest
-from scripts.so101_homing import deployment_bundle, joint_calibration
+from so101_typing.hardware.constants import ARM_JOINT_NAMES
+from so101_typing.hardware.fixed_cartesian_policy import JOINT_RATE_LIMITS_RAD_S
+from so101_typing.hardware.deployment_bundle import profile_from_environment, sha256, validate_manifest
+from so101_typing.hardware import deployment_bundle, joint_calibration
 
 
 class DeploymentBundleTests(unittest.TestCase):
     def test_missing_calibration_stops_export_before_writing_bundle(self):
-        from scripts.so101_homing import deployment_bundle
+        from so101_typing.hardware import deployment_bundle
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory) / 'bundle'
             with patch.object(deployment_bundle, 'require_calibration', side_effect=FileNotFoundError('calibrate first')), \
@@ -29,7 +29,7 @@ class DeploymentBundleTests(unittest.TestCase):
             self.assertFalse(out.exists())
 
     def test_missing_calibration_stops_dry_run_before_runner(self):
-        from scripts.so101_homing import deploy_bundle
+        from so101_typing.hardware import deploy_bundle
         with tempfile.TemporaryDirectory() as directory:
             (Path(directory) / 'deployment.json').write_text(json.dumps({'robot_id': 'missing'}))
             with patch('sys.argv', ['deploy_bundle', directory, 'NVIDIA']), \
@@ -41,7 +41,7 @@ class DeploymentBundleTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_malformed_bundle_is_rejected_without_runner_or_traceback(self):
-        from scripts.so101_homing import deploy_bundle
+        from so101_typing.hardware import deploy_bundle
         with tempfile.TemporaryDirectory() as directory:
             manifest = Path(directory) / 'deployment.json'
             for contents in (None, '{broken', '[]', '{}'):
@@ -57,7 +57,7 @@ class DeploymentBundleTests(unittest.TestCase):
                 run.assert_not_called()
 
     def test_calibration_checks_numeric_fields_and_ranges_offline(self):
-        from scripts.so101_homing import robot
+        from so101_typing.hardware import robot
         motors = types.ModuleType('lerobot.motors')
         motors.MotorCalibration = make_dataclass('MotorCalibration',
             [('id', int), ('drive_mode', int), ('homing_offset', int), ('range_min', int), ('range_max', int)])
@@ -78,7 +78,7 @@ class DeploymentBundleTests(unittest.TestCase):
                         robot.require_calibration('robot')
 
     def test_calibration_lookup_lists_available_ids_without_hardware(self):
-        from scripts.so101_homing import robot
+        from so101_typing.hardware import robot
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'another_robot.json').write_text('{}')
@@ -122,7 +122,7 @@ class DeploymentBundleTests(unittest.TestCase):
             with self.assertRaises(ValueError):validate_manifest(manifest,cp,env,'robot')
 
     def test_execute_requires_explicit_user_devices_before_loading_bundle(self):
-        from scripts.so101_homing import deploy_bundle
+        from so101_typing.hardware import deploy_bundle
         with patch('sys.argv', ['deploy_bundle', '/nonexistent', 'HE', '--execute']), \
              patch.object(deploy_bundle.subprocess, 'call') as run, self.assertRaises(SystemExit) as error:
             deploy_bundle.main()

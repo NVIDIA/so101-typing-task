@@ -12,12 +12,12 @@ import torch
 
 from isaaclab.app import add_launcher_args, launch_simulation
 from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from scripts.so101_homing.fk_probe_trajectory import TASK, digest, load, tip
+from so101_typing.hardware.fk_probe_trajectory import TASK, digest, load, tip
 from public_task import apply_config
 
 parser = argparse.ArgumentParser(description=__doc__)

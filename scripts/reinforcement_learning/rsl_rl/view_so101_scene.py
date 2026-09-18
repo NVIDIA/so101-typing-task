@@ -11,7 +11,7 @@ import time
 import gymnasium as gym
 import torch
 from isaaclab.app import add_launcher_args, launch_simulation
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 from public_task import apply_config, load_config

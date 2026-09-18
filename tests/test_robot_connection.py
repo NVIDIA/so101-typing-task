@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts.so101_homing import robot as module
+from so101_typing.hardware import robot as module
 
 
 def setup_connection(monkeypatch, *, calibrated=True, read_error=False):

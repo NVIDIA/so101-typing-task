@@ -176,7 +176,7 @@ def audit(task_path, fit_path, validation_paths, out_dir, *, sampling="interval_
     for candidate in candidates.values():
         candidate["fit"] = score(presses[0], candidate["offset_deg"])
         candidate["validation"] = [score(p, candidate["offset_deg"]) for p in presses[1:]]
-    dependencies = (Path(__file__), ROOT/"scripts/so101_homing/so101_kinematics.py",
+    dependencies = (ROOT/"scripts/so101_homing/audit_scene_mapping.py", ROOT/"scripts/so101_homing/so101_kinematics.py",
                     ROOT/"scripts/so101_homing/fit_scene_recording.py", ROOT/"scripts/fixture_layout.py",
                     ROOT/"scripts/reinforcement_learning/rsl_rl/public_task.py")
     report = {"schema_version": 1, "created_at_utc": datetime.now(timezone.utc).isoformat(),

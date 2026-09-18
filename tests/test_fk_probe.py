@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from scripts.so101_homing import fk_probe_trajectory as trajectory
-from scripts.so101_homing import run_fk_probe as runner
+from so101_typing.hardware import fk_probe_trajectory as trajectory
+from so101_typing.hardware import run_fk_probe as runner
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def test_hardware_requires_pass_for_exact_file(artifact):
 
 def test_keyboard_preserves_batched_edges_and_device_times(monkeypatch):
     import sys
-    from scripts.so101_homing import policy_runtime
+    from so101_typing.hardware import policy_runtime
     monkeypatch.setitem(sys.modules, 'evdev', SimpleNamespace(ecodes=SimpleNamespace(EV_KEY=1, KEY={})))
     monkeypatch.setattr(policy_runtime, '_keycode_to_char', lambda: {16: ('KEY_Q', 'q')})
     monkeypatch.setattr(policy_runtime, '_key_name_to_code', lambda _: ('KEY_ESC', 1))
@@ -81,7 +81,7 @@ def test_keyboard_preserves_batched_edges_and_device_times(monkeypatch):
 @pytest.mark.parametrize("wrong_key", [False, True])
 @pytest.mark.parametrize('offsets', [None, [3., .7, -9.6, .5, 0.]])
 def test_hardware_replays_saved_rows_and_detects_keys(artifact, monkeypatch, wrong_key, offsets):
-    from scripts.so101_homing import robot as robot_module, policy_runtime
+    from so101_typing.hardware import robot as robot_module, policy_runtime
     plan, path = artifact
     plan = copy.deepcopy(plan)
     # Test transport with a compact sequence; geometry is checked separately.

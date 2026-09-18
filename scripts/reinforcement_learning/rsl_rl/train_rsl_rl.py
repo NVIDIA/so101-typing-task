@@ -35,7 +35,7 @@ from common import (
 )
 from packaging import version
 
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 
 logger = logging.getLogger(__name__)
 

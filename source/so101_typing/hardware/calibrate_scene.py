@@ -235,7 +235,7 @@ def main():
             replays = []
             for row in report['recordings']:
                 folder = row['folder']
-                command = [sys.executable, '-m', 'scripts.so101_homing.scene_check', 'replay', '--headless',
+                command = [sys.executable, '-m', 'so101_typing.hardware.scene_check', 'replay', '--headless',
                     '--recording', str((args.out_dir/folder/'recording.json').resolve()),
                     '--replay-task-config', str((args.out_dir/'task.json').resolve()),
                     '--mapping-report', str((args.out_dir/'mapping-report.json').resolve()),

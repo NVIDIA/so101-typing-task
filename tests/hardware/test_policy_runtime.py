@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scripts.so101_homing.policy_runtime import KeyboardMonitor, PressGate, load_rest_pose
+from so101_typing.hardware.policy_runtime import KeyboardMonitor, PressGate, load_rest_pose
 
 
 def test_press_gate_rejects_overlapping_key_down_edges() -> None:

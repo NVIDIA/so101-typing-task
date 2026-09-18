@@ -37,7 +37,7 @@ def main():
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
         p.error(str(error))
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
-    command=[sys.executable,'-m','scripts.so101_homing.run_fixed_cartesian_policy_handoff',
+    command=[sys.executable,'-m','so101_typing.hardware.run_fixed_cartesian_policy_handoff',
              '--deployment-config',str(bundle/'deployment.json'),'--checkpoint',str(bundle/'checkpoint.pt'),
              '--env-config',str(bundle/'env.yaml'),'--rest-pose',str(bundle/'rest_pose.json'),
              '--stage',data['stage'],'--id',data['robot_id'],'--target',a.target,

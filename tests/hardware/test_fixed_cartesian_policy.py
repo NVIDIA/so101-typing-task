@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scripts.so101_homing.fixed_cartesian_policy import (
+from so101_typing.hardware.fixed_cartesian_policy import (
     ACTION_DIM,
     CLEARANCE_M,
     CONTROL_DT_S,
@@ -28,8 +28,8 @@ from scripts.so101_homing.fixed_cartesian_policy import (
     lerobot_position_to_profile_model_rad,
     profile_model_rad_to_lerobot_position,
 )
-from scripts.so101_homing.policy_runtime import PolicyContractError
-from scripts.so101_homing.run_fixed_cartesian_policy_handoff import (
+from so101_typing.hardware.policy_runtime import PolicyContractError
+from so101_typing.hardware.run_fixed_cartesian_policy_handoff import (
     _model_goal_to_arm_q_deg,
     _move_to_fixed_reset,
     _move_to_fixed_reset_with_retries,
@@ -39,7 +39,7 @@ from scripts.so101_homing.run_fixed_cartesian_policy_handoff import (
     _validate_rest_pose,
     _validated_training_environment,
 )
-from scripts.so101_homing.so101_kinematics import GRIPPER_MODEL_MIN_RAD
+from so101_typing.hardware.so101_kinematics import GRIPPER_MODEL_MIN_RAD
 
 
 def _synthetic_state() -> dict[str, np.ndarray]:
@@ -249,11 +249,11 @@ def test_fixed_reset_records_initial_and_final_error(monkeypatch: pytest.MonkeyP
     moves: list[np.ndarray] = []
 
     monkeypatch.setattr(
-        "scripts.so101_homing.run_fixed_cartesian_policy_handoff.read_arm_q_deg",
+        "so101_typing.hardware.run_fixed_cartesian_policy_handoff.read_arm_q_deg",
         lambda _robot: next(readings),
     )
     monkeypatch.setattr(
-        "scripts.so101_homing.run_fixed_cartesian_policy_handoff.smooth_move_arm",
+        "so101_typing.hardware.run_fixed_cartesian_policy_handoff.smooth_move_arm",
         lambda _robot, q_deg, **_kwargs: moves.append(np.asarray(q_deg)),
     )
 
@@ -285,11 +285,11 @@ def test_fixed_reset_retries_until_model_handoff_passes(monkeypatch: pytest.Monk
     off_reset_q[0] += np.deg2rad(1.0)
     policy_start_readings = iter((off_reset_q, reset_q))
     monkeypatch.setattr(
-        "scripts.so101_homing.run_fixed_cartesian_policy_handoff._move_to_fixed_reset",
+        "so101_typing.hardware.run_fixed_cartesian_policy_handoff._move_to_fixed_reset",
         lambda *_args, **_kwargs: next(attempts),
     )
     monkeypatch.setattr(
-        "scripts.so101_homing.run_fixed_cartesian_policy_handoff._read_closed_typing_q_rad",
+        "so101_typing.hardware.run_fixed_cartesian_policy_handoff._read_closed_typing_q_rad",
         lambda *_args, **_kwargs: next(policy_start_readings),
     )
 
@@ -508,7 +508,7 @@ def test_training_environment_recognizes_matched_actuator_profile(
 def test_downloaded_model3000_contract_and_action(
     relative_path: str, expected_sha256: str, rsl_reference_action: tuple[float, ...]
 ) -> None:
-    repo = Path(__file__).resolve().parents[3]
+    repo = Path(__file__).resolve().parents[2]
     checkpoint = repo / relative_path
     if not checkpoint.is_file():
         pytest.skip(f"local checkpoint unavailable: {checkpoint}")

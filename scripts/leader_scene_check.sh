@@ -49,5 +49,5 @@ if [[ "$mode" == calibrate ]]; then
 fi
 flag="--$mode"
 [[ "$mode" != record ]] || flag="--execute"
-exec "$python_bin" -m scripts.so101_homing.teleop_scene_record \
+exec "$python_bin" -m so101_typing.hardware.teleop_scene_record \
   --leader-port "$leader_port" --leader-id "$leader_id" --port "$follower_port" "${extra[@]}" "$flag"

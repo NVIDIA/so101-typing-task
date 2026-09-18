@@ -33,7 +33,7 @@ from isaaclab_rl.rsl_rl import (
 )
 from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 from isaaclab_tasks.utils import (
     get_checkpoint_path,
     setup_preset_cli,

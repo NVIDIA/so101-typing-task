@@ -173,3 +173,4 @@ Use `./so101 COMMAND --help` or `./scripts/real2sim.sh record --help` for option
 - [Hardware preparation](docs/release/HARDWARE_PREPARATION.md) · [Alignment](docs/release/ALIGNMENT.md)
 - [Results](docs/release/RESULTS.md) · [Artifacts](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
 - [Runtime provenance](runtime/README.md) · [Development checks](docs/DEVELOPMENT.md)
+- [License](LICENSE) · [Third-party attribution](THIRD_PARTY_NOTICES.md)

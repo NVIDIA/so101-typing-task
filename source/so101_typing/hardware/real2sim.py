@@ -67,7 +67,7 @@ def run(paths, records, out, rounds):
         calibrate(reference, paths[0], [], out/'all-joint-fit', additional_fit_paths=paths[1:],
                   fit_pan=True, fit_roll=True, free_yaw=True, tilt=True)
         print('Refining all five offsets and keyboard pose with Newton per-key resets; log: '+str(out/'refinement.log'), flush=True)
-        command = [sys.executable, '-m', 'scripts.so101_homing.refine_scene_contacts',
+        command = [sys.executable, '-m', 'so101_typing.hardware.refine_scene_contacts',
                    '--seed-report', str(out/'initial-fit/mapping-report.json'),
                    '--seed-report', str(out/'all-joint-fit/mapping-report.json'),
                    '--out-dir', str(out/'refined'), '--rounds', str(rounds)]

@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 import yaml
 
-from scripts.so101_homing import scene_alignment as sa, deployment_bundle as bundle
-from scripts.so101_homing import fk_probe_trajectory as trajectory
-from scripts.so101_homing.so101_kinematics import JOINT_NAMES, GRIPPER_MODEL_MIN_RAD
+from so101_typing.hardware import scene_alignment as sa, deployment_bundle as bundle
+from so101_typing.hardware import fk_probe_trajectory as trajectory
+from so101_typing.hardware.so101_kinematics import JOINT_NAMES, GRIPPER_MODEL_MIN_RAD
 
 
 def dump(path, value):
@@ -260,7 +260,7 @@ def test_experimental_fit_without_reserved_data_cannot_qualify(evidence, monkeyp
 
 
 def test_one_candidate_routes_identically_to_measured_pose_replay(evidence, monkeypatch):
-    from scripts.so101_homing import scene_check, run_fk_probe
+    from so101_typing.hardware import scene_check, run_fk_probe
     e = evidence
     captured = {}
     def simulate(path, **kwargs):
@@ -281,7 +281,7 @@ def test_one_candidate_routes_identically_to_measured_pose_replay(evidence, monk
 
 
 def test_unqualified_execute_does_not_launch_runner(monkeypatch, tmp_path):
-    from scripts.so101_homing import deploy_bundle
+    from so101_typing.hardware import deploy_bundle
     dump(tmp_path/'deployment.json', {'robot_id': 'test_robot'})
     monkeypatch.setattr(deploy_bundle, 'validate_manifest', lambda *a: (None, {'robot_id': 'test_robot', 'encoder_convention': 'lerobot', 'actuator_profile': 'anchorbench', 'alignment_qualified': True}))
     monkeypatch.setattr(deploy_bundle, 'require_calibration', lambda *_: None)
@@ -294,7 +294,7 @@ def test_unqualified_execute_does_not_launch_runner(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize('execute', [False, True])
 def test_experimental_candidate_mode_forwards_exact_target_and_motion_opt_in(evidence, monkeypatch, execute):
-    from scripts.so101_homing import deploy_bundle
+    from so101_typing.hardware import deploy_bundle
     e = evidence
     export(e, e.alignment, monkeypatch, candidate=True)
     monkeypatch.setattr(deploy_bundle, 'require_calibration', lambda *_: e.calibration)

@@ -7,4 +7,4 @@ if [[ "${1:-}" == replay ]]; then
   if [[ -z "${XAUTHORITY:-}" && -f "$authority" ]]; then export XAUTHORITY="$authority"; fi
 fi
 exec "${SO101_LEROBOT_PYTHON:-$repo_root/.venv-hardware/bin/python}" \
-  -m scripts.so101_homing.scene_check "$@"
+  -m so101_typing.hardware.scene_check "$@"

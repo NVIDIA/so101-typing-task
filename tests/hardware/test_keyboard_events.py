@@ -3,10 +3,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from scripts.so101_homing.keyboard_events import (
+from so101_typing.hardware.keyboard_events import (
     CapturedSession,
     KeyEvent,
     _normalize_key_name,

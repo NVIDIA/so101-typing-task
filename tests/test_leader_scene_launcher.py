@@ -47,7 +47,7 @@ def test_modes_explicitly_route_to_recorder(launcher, mode, flag):
     run, log, follower, leader = launcher
     assert run(mode).returncode == 0
     argv = json.loads(log.read_text())
-    assert argv[:2] == ['-m', 'scripts.so101_homing.teleop_scene_record']
+    assert argv[:2] == ['-m', 'so101_typing.hardware.teleop_scene_record']
     assert argv[argv.index('--leader-port')+1] == str(leader)
     assert argv[argv.index('--port')+1] == str(follower)
     assert argv[-1] == flag

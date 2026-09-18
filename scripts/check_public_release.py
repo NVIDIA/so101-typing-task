@@ -26,10 +26,10 @@ def source_files():
             cwd=ROOT).decode().split('\0')
         return [(ROOT / name, name) for name in sorted(set(names)) if name]
     # Source archives must not accidentally query a parent checkout or scan run outputs.
-    ignored = {'.git', '.artifacts', 'output', 'logs', 'local', '.venv-hardware', '__pycache__', '.pytest_cache'}
+    ignored = {'.git', '.artifacts', 'output', 'logs', 'local', '.venv-hardware', '__pycache__', '.pytest_cache', 'build', 'dist'}
     files = []
     for directory, subdirectories, names in os.walk(ROOT):
-        subdirectories[:] = [name for name in subdirectories if name not in ignored]
+        subdirectories[:] = [name for name in subdirectories if name not in ignored and not name.endswith('.egg-info')]
         for name in names:
             path = Path(directory) / name
             files.append((path, str(path.relative_to(ROOT))))

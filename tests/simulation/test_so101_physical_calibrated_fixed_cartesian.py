@@ -38,7 +38,7 @@ from isaaclab_tasks.core.dexsuite.config.so101.physical_calibrated_20260718_env_
     SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianP1AEnvCfg,
 )
 
-from scripts.so101_homing.fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_PROFILE
+from so101_typing.hardware.fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_PROFILE
 
 
 def test_dated_tasks_are_registered_without_old_namespaces() -> None:
@@ -129,7 +129,7 @@ def test_calibrated_target_table_statistics_and_hash_are_frozen() -> None:
 def test_powered_contact_source_dataset_is_committed_and_hash_locked() -> None:
     dataset = (
         Path(__file__).parents[2]
-        / "isaaclab_tasks/core/dexsuite/config/so101/keyboards/data/mx_keys"
+        / "source/so101_typing/tasks/keyboards/data/mx_keys"
         / "powered_az_repeated_contact_dataset_20260718.json"
     )
 
@@ -142,7 +142,7 @@ def test_powered_contact_source_dataset_is_committed_and_hash_locked() -> None:
 def test_powered_contact_trace_archive_is_complete_and_hash_locked() -> None:
     archive_path = (
         Path(__file__).parents[2]
-        / "isaaclab_tasks/core/dexsuite/config/so101/keyboards/data/mx_keys"
+        / "source/so101_typing/tasks/keyboards/data/mx_keys"
         / "powered_az_probe_traces_20260718.npz"
     )
     expected_members = {f"rep_{repetition:02d}_{letter}" for repetition in range(1, 4) for letter in FROZEN_LETTERS}

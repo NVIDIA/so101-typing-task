@@ -14,14 +14,14 @@ import gymnasium as gym
 import numpy as np
 import torch
 from isaaclab.app import add_launcher_args, launch_simulation
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from scripts.so101_homing.scene_check import load_alignment_candidate, load_mapping_candidate, load_recording, replay_joint_positions
-from scripts.so101_homing.fk_probe_trajectory import TASK, digest
-from scripts.so101_homing.so101_kinematics import JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, site_position
+from so101_typing.hardware.scene_check import load_alignment_candidate, load_mapping_candidate, load_recording, replay_joint_positions
+from so101_typing.hardware.fk_probe_trajectory import TASK, digest
+from so101_typing.hardware.so101_kinematics import JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, site_position
 from public_task import apply_config, load_config
 
 parser = argparse.ArgumentParser(description=__doc__)

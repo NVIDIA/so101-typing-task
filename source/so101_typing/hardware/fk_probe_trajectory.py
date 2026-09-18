@@ -12,7 +12,7 @@ from .so101_kinematics import (
     GRIPPER_MODEL_MIN_RAD, site_position, site_position_jacobian,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 DT = 0.04
 RESET = np.array([-.08285519086390664, -.13809964128766555, .020637904096827316,
                   1.1561739160158462, .03759170696603171])

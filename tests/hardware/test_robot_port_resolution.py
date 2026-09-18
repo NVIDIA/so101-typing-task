@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from scripts.so101_homing import robot
+from so101_typing.hardware import robot
 
 
 def test_resolve_robot_port_requires_explicit_port_when_multiple_controllers(

@@ -5,8 +5,8 @@ import json
 import numpy as np
 import pytest
 
-from scripts.so101_homing import audit_scene_mapping as audit
-from scripts.so101_homing.so101_kinematics import site_position, FIXED_JAW_TYPING_TIP_SITE_POS
+from so101_typing.hardware import audit_scene_mapping as audit
+from so101_typing.hardware.so101_kinematics import site_position, FIXED_JAW_TYPING_TIP_SITE_POS
 
 
 def synthetic_presses(offsets, seed=4, count=12):

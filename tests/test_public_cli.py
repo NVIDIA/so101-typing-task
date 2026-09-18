@@ -19,6 +19,27 @@ loader.exec_module(cli)
 
 
 class PublicCliTests(unittest.TestCase):
+    def test_runtime_fingerprint_ignores_install_metadata_but_tracks_compatibility_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'pyproject.toml').write_text('[project]\nname = "example"\n')
+            (root / 'source').mkdir()
+            (root / 'source' / 'module.py').write_text('value = 1\n')
+            alias = root / 'source' / 'compat'
+            alias.symlink_to('target-one', target_is_directory=True)
+            with patch.object(cli, 'ROOT', root):
+                baseline = cli.source_fingerprint()
+                metadata = root / 'source' / 'example.egg-info'
+                metadata.mkdir()
+                (metadata / 'PKG-INFO').write_text('Generated install metadata')
+                self.assertEqual(cli.source_fingerprint(), baseline)
+                alias.unlink()
+                alias.symlink_to('target-two', target_is_directory=True)
+                self.assertNotEqual(cli.source_fingerprint(), baseline)
+                baseline = cli.source_fingerprint()
+                (root / 'source' / 'module.py').write_text('value = 2\n')
+                self.assertNotEqual(cli.source_fingerprint(), baseline)
+
     def test_export_defaults_to_auto_and_passes_measured_mapping_without_override(self):
         args = ['so101', 'prepare-deployment', '--checkpoint', 'model.pt', '--env-config', 'env.yaml',
                 '--robot-id', 'robot', '--out-dir', 'bundle']

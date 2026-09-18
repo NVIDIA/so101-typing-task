@@ -5,7 +5,7 @@ import json
 import pytest
 
 from test_scene_alignment import evidence, dump
-from scripts.so101_homing import scene_alignment as sa
+from so101_typing.hardware import scene_alignment as sa
 
 
 @pytest.mark.parametrize('candidate_name,offsets', [('fit3_pose', [0., .8, -10., 1., 0.]),

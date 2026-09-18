@@ -34,13 +34,26 @@ document this repository's tested runtime, hardware and commands.
 | [FIXTURE_SETUP.md](../FIXTURE_SETUP.md) | Physical datums, measurements, drawings and a starting scene |
 | [scripts/real2sim.sh](../scripts/real2sim.sh) | `record`: torque-off encoder/key-event capture; `fit`: optimize scene/offsets and check per-key Newton contacts |
 | `configs/` | Task, physics and evaluation examples |
-| `source/` | Isaac Lab task implementation and robot/keyboard assets |
+| `source/so101_typing/tasks/` | Simulator tasks, robot/keyboard assets and actuator profiles |
+| `source/so101_typing/hardware/` | Recording, scene fitting, alignment, FK probes and deployment |
 | `docs/release/` | Supported commands, requirements and measured results |
 | `docs/fixtures/` | Geometry, drawings, physical reference and released-policy fixture contracts |
 | `scripts/` | Portable tools with explicit hardware/scene inputs |
-| `tests/` | Host checks; deployment unit tests also live under `scripts/so101_homing/test/` |
+| `tests/`, `tests/hardware/` | CLI, calibration and deployment checks without hardware |
+| `tests/simulation/` | Task contract checks requiring the simulator runtime |
 | `docker/`, `runtime/` | Pinned simulator build, dependency locks and runtime patch |
 | `output/`, `.artifacts/`, `local/` | Ignored runs, downloaded weights and workstation shortcuts; excluded from Docker |
+
+The Python project is installed editable by `./so101 setup-hardware` and inside
+the simulator image. Dependencies stay pinned in the runtime files. Use the
+checkout and supported launchers; this is not a standalone wheel distribution.
+
+Simulator modules retain the `isaaclab_tasks.core.dexsuite.config.so101` namespace
+through a relative compatibility link. Saved environment configurations and
+recording hashes refer to that namespace and asset location. Import tasks through
+Isaac Lab, not `so101_typing.tasks`, to avoid registering the same tasks twice.
+The `scripts/so101_homing` compatibility link keeps older commands and recorded
+kinematics hashes valid; current hardware imports use `so101_typing.hardware`.
 
 Raw recordings, camera captures and original fit reports remain local. Selected
 sanitized reports and physical-run evidence are published with the calibrated
@@ -61,11 +74,15 @@ hardware environment unchanged.
 
 ```bash
 python3 -m pip install pytest==8.4.2 pytest-subtests==0.14.2 numpy==2.3.1 scipy==1.17.0 PyYAML==6.0.2
+python3 -m pip install --no-deps --editable .
 python3 scripts/check_public_release.py
 python3 -m compileall -q scripts source
-python3 -m pytest -q tests scripts/so101_homing/test
+python3 -m pytest -q tests
 git diff --check
 ```
+
+Host pytest skips `tests/simulation/`. Run that directory explicitly with the
+Isaac Lab Python runtime when checking simulator contracts.
 
 The source check includes tracked **and new
 untracked** files and rejects local Markdown links absent from the distributed

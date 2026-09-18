@@ -49,7 +49,7 @@ from isaaclab.utils.math import quat_apply, quat_apply_inverse, skew_symmetric_m
 
 from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
 
-import isaaclab_tasks  # noqa: F401
+import isaaclab_tasks.core.dexsuite.config.so101  # noqa: F401 -- register the typing tasks
 from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 

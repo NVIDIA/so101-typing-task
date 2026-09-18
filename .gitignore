@@ -11,3 +11,6 @@ __pycache__/
 
 # Isolated deployment Python environment.
 .venv-hardware/
+*.egg-info/
+build/
+dist/
