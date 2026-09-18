@@ -192,6 +192,11 @@ accessible. Begin with controlled validation and stop on unexpected motion or a
 wrong key. The runner enforces measured reset arrival and strict press/release
 judging. Logs are written to the bundle's `runs/` directory.
 
+During policy execution, press **Esc on the selected typing keyboard** to request
+a controlled stop. The runner then attempts its configured return-to-rest motion
+before releasing keyboard capture. Motor torque remains enabled after exit.
+For an immediate motion stop, switch off motor power; be ready to support the arm.
+
 Keep the robot calibration, fixed jaw and physical fixture unchanged after
 alignment. Recalibration, moving the fixture or replacing the jaw requires new
 alignment checks before deployment.
