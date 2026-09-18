@@ -41,9 +41,9 @@ keeping the historical values as an explicit benchmark option for this setup;
 it does not authorize copying them to another SO-101 or replacing the robot's
 native LeRobot calibration.
 
-## Simulation versus hardware boundary (2026-09-15 local / 2026-09-16 UTC)
+## Simulation versus hardware boundary
 
-On 2026-09-15 local time, the policy-free FK trajectories for Q, G, and P were
+The policy-free FK trajectories for Q, G, and P were
 generated from the earlier photo candidate and passed the Newton MJWarp simulation
 gate. Those reports use model-space joint commands with
 `joint_zero_offset_deg = [0, 0, 0, 0, 0]`. This is the correct simulator
@@ -59,7 +59,7 @@ The exact Q/G/P trajectories have not been used to certify direct hardware
 replay. The historical-offset mode remains an explicit hardware diagnostic for
 this robot and fixture.
 
-## Real-trajectory replay result (2026-09-16 UTC)
+## Real-trajectory replay result
 
 The three real Q/G/P recordings were replayed through the earlier candidate with
 prescribed robot poses. Direct conversion produced unrelated contacts (A,
@@ -73,7 +73,7 @@ the latest frozen placement. Keep the dated Ctrl-aligned reference fixed while
 investigating the encoder/model mapping; do not move the keyboard to improve the
 score.
 
-## Recheck against the actual frozen reference — 2026-09-16 UTC
+## Recheck against the actual frozen reference
 
 A fresh CPU-only comparison uses
 `configs/tasks/physical-reference-20260915.json` (SHA-256 `3690b63ec8711698bbe3af39f4ae9236c1c5715e0fd9880bcce6a36121d62feb`),

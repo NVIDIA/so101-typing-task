@@ -44,7 +44,7 @@ The historical values from the 2026-07-18 physical-calibrated profile are:
 | wrist_flex | 1.3647648917 |
 | wrist_roll | 0.0000000000 |
 
-Yes, these are the same angles used by the earlier 19k benchmark checkpoint.
+These are the angles used by the historical 19k benchmark checkpoint.
 They are applied only when the explicit benchmark/physical-calibrated profile is
 selected. Hardware commands use the inverse:
 
@@ -66,7 +66,7 @@ model goals directly as raw LeRobot commands can leave the *physical arm* above
 the key. The deployment adapter must apply the inverse conversion on writes; do
 not infer physical motion direction from an unconverted FK residual.
 
-## Shoulder-pan correction — 2026-09-16, documented 15:20 PDT / 22:20 UTC
+## Shoulder-pan correction
 
 The historical correction changes three motors: shoulder lift, elbow flex and
 wrist flex. Shoulder pan and wrist roll have zero offsets. The sixth motor moves
@@ -121,7 +121,7 @@ runtime for both mappings. Historical offsets passed **78/78** first contacts;
 adding the current **+3.128876938° pan** passed **0/78** (69 wrong first contacts,
 9 with no first contact). Mean horizontal FK error at recorded key-down poses
 increased from **2.76 to 13.55 mm**. The candidate was used unchanged, without
-refitting. Exact run timestamps, commands and per-probe evidence are in the
+refitting. Commands, hashes and per-probe evidence are in the
 transfer report (local artifact: `output/fixture-photos-20260915/pan-transfer-july-20260916/README.md`).
 
 The added pan value therefore does not transfer to the historical capture setup.
@@ -135,9 +135,8 @@ release, clearance and physical deployment were not tested.
 
 ## Fully new four-joint fit and transfer — 2026-09-16
 
-The operator clarified that transfer should use all four newly fitted offsets.
-The earlier experiment above held three historical values fixed and added pan;
-it is a different experiment. A new joint fit frees pan, lift, elbow and wrist
+This experiment fits all four offsets together, unlike the historical-plus-pan
+comparison above. It frees pan, lift, elbow and wrist
 flex together on the original 27 current-robot fit presses. No July recordings
 enter optimization; wrist-roll offset remains zero and keyboard/model geometry
 stays frozen. The resulting vector, in pan/lift/elbow/wrist flex/roll order, is:
@@ -186,8 +185,7 @@ measured mechanical zero errors. The large negative elbow value is nevertheless
 repeatable: the historical mapping used -10.77 degrees and this fit found
 -9.61 degrees.
 
-Relationship summary documented **2026-09-16, 16:03 PDT / 23:03 UTC**:
-both the historical and newly fitted mappings have a large negative elbow
+Both the historical and newly fitted mappings have a large negative elbow
 correction and smaller positive lift/wrist-flex corrections. The elbow correction
 alone reduces much of the height discrepancy; the current robot also benefits
 from about **+3.13 degrees of shoulder pan** to correct horizontal direction.
@@ -276,7 +274,7 @@ Independent physical link landmarks at several measured poses would distinguish
 an arm-coordinate discrepancy from keyboard geometry; hold the scene fixed while
 making that comparison.
 
-### Concrete suspect: two definitions of arm zero — 2026-09-16 17:25 PDT
+### Concrete suspect: two definitions of arm zero
 
 The installed LeRobot degree normalization subtracts the midpoint of each motor's
 calibrated `range_min`/`range_max`, then scales encoder counts to degrees:
@@ -310,10 +308,6 @@ It stays open until closed. `--zero-pose lerobot-fit` selects the fitted predict
 at startup; the normal `view_frozen_scene.sh` still shows the original reset pose.
 To establish the physical zero alignment, compare independently observed link
 poses against encoder readings; switching these model views alone cannot do that.
-
-Viewer verification on 2026-09-16: switched through all three buttons in the live
-Newton window. The report (local artifact: `output/zero-conventions-20260916/fit-toggle/scene.json`)
-records zero physics steps and unchanged keyboard/base; the 11 CLI tests passed.
 
 Four-joint fit and current-data checks (local artifact: `output/fixture-photos-20260915/mapping-collection-20260916/analysis-20260916T220434/four-joint-results/README.md`)
 and full-vector July replay (local artifact: `output/fixture-photos-20260915/four-joint-transfer-july-20260916/README.md`)

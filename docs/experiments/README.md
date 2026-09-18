@@ -12,7 +12,7 @@ scene-validation test. That report lists the selected keyboard pose and joint
 offsets. Both recordings were used for fitting. Continuous replay is an additional
 diagnostic and still fails; it was not part of the original per-key criterion.
 The measured September 15 reference is preserved separately from this effective
-simulation scene. On September 17 at 14:36 PDT, a fresh policy trained on this
+simulation scene. A fresh policy trained on this
 fit completed [physical NEWTON typing](physical_typing_success_20260917.md) in
 7.10 seconds, including release and clearance. This is one successful sequence;
 broader reliability and the full alignment qualification remain unmeasured.
@@ -24,18 +24,16 @@ identify a mechanical cause or transfer automatically between robots.
 The reserved torque-off recording matched 32/33 intended simulated contacts
 with an additional `9` contact and a missed N; the candidate remains diagnostic.
 
-As of **2026-09-16 18:09 PDT**, the automatic elbow endpoint experiment is paused
-at the operator's request. No complete min/max comparison was accepted and no
-new calibration was installed. The measured velocity/position-mode encoder
-difference is a controller-mode detail, not a new model offset. Hardware work
-requires resuming with the operator; repository checks do not move the robot.
+The automatic elbow endpoint experiment remains paused. No complete min/max
+comparison was accepted and no new calibration was installed. Standard setup
+uses LeRobot calibration; see the investigation summary for the unresolved cause.
 
 | Record | Contents |
 | --- | --- |
 | [First physical NEWTON success](physical_typing_success_20260917.md) | End-to-end solution, exact policy/scene/mapping, training time and verified physical events |
 | [Advanced scene diagnostics](scene_diagnostics.md) | Lower-level recording/replay, joint/pose fitting alternatives and single-key probes |
 | [Selected September scene fit](scene_calibration_20260917.md) | Recorded-contact optimization, selected pose/offsets and limits of the 93/93 result |
-| [Mapping plan](mapping_plan_20260916.md) | Ordered investigation, reserved-data results and paused automatic-calibration experiment |
+| [Mapping investigation](mapping_plan_20260916.md) | Root-cause findings, evidence limits and remaining experiments |
 | [Encoder/model correspondence](encoder_model_mapping_20260915.md) | Direct, historical and current mapping comparisons and zero-convention hypothesis |
 | [Initial diagnostic](encoder_model_mapping_diagnostic_20260915.md) | Earlier recording and geometry audit |
 | [Pre-contact Q/G/P checks](new_robot_precontact_probe_20260916.md) | Policy-free simulation and physical-test boundaries |

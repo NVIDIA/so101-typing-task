@@ -13,6 +13,12 @@ The normal user entry points are `./so101` for simulation/deployment and
 `./scripts/real2sim.sh record|fit` for measured-motion scene calibration. Other
 scripts implement these commands or support explicitly labelled diagnostics.
 
+Document the current procedure, result and limitation. Keep clock times, live
+progress updates and session chronology in run logs or local notes. Include
+elapsed runtimes when they help users plan, and keep dates or hashes that identify
+a calibration or release. Link to one detailed result instead of repeating it
+throughout the setup guides.
+
 | Location | Purpose |
 | --- | --- |
 | `README.md` | Install, train/evaluate, optional reference checkpoint, export/deploy |

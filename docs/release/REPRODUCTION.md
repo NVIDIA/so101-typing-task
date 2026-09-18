@@ -56,6 +56,6 @@ successful clips. Keep new-robot results separate from the historical benchmark.
 
 A local clean-checkout test is useful software evidence but does not fill this
 independent-recipient record or establish physical success on another SO-101.
-The [September 17 release audit](STATUS.md#calibrated-policy-release-verification--2026-09-17-pdt)
-records the latest clean-source installation, download, simulation and export
-checks separately from that pending independent reproduction.
+The [software verification summary](STATUS.md#software-verification) records
+clean-source, download, simulation and export checks separately from the pending
+independent reproduction.

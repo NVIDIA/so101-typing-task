@@ -49,7 +49,7 @@ scene. This is the pre-training criterion used here; it does not establish clean
 continuous replay or successful physical policy deployment. The September fit
 passed **93/93** such checks on its fitting recordings.
 
-**Physical result, September 17 at 14:36 PDT:** a fresh policy trained in that
+**Physical result:** a fresh policy trained in that
 jointly fitted scene completed **NEWTON** in 7.10 seconds with matching releases
 and clearance, using the fitted conversion on encoder reads and hardware goals.
 This was one supervised experimental trial; the

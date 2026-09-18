@@ -42,42 +42,11 @@ joint offsets are fitted together while the physical fixture stays fixed.
 | 5. Train | Use the passing fit's task JSON and evaluate early. Keep the fitted mapping for deployment. | Saved training scene and policy evaluation. The recordings are calibration evidence, not PPO demonstrations. |
 | 6. Verify and deploy physically | Check new recordings and policy-free Q/G/P hover/press/release commands using the same inverse mapping, then follow deployment qualification. | Independent contact/tracking/clearance evidence and the matching scene, policy and mapping. Simulation contact fitting alone does not prove physical policy performance. |
 
-Choose contact/position tolerances from key geometry and measurement uncertainty
-before inspecting validation results. The steps above are a documented workflow;
-the training CLI does not enforce them. Simulation-only installation checks can
-run earlier, but do not qualify a physical setup.
-
-**Current result, 2026-09-17:** the September 16 recordings pass **93/93 first-key
-contacts with a reset between keys**, using a jointly refined keyboard pose and
-joint mapping. This matches the original type of scene-validation test. See the
-[selected pose and offsets](docs/experiments/scene_calibration_20260917.md).
-A fresh policy trained in this scene completed one
-[physical NEWTON trial](docs/experiments/physical_typing_success_20260917.md)
-at 14:36 PDT, including release and clearance, with the matching joint conversion.
-Continuous replay is an additional diagnostic; it was not part of that original
-criterion. Physical deployment qualification below is a separate step.
-
-**Earlier limitation, 2026-09-17:** fitting joint offsets with the September
-placement fixed did not achieve reliable physical typing. The historical 89%
-benchmark used both an effective keyboard pose and joint offsets; it was not
-proof of literal tabletop reconstruction. This motivated the
-[joint-and-scene fit](docs/experiments/scene_calibration_20260917.md) used by the
-successful NEWTON policy. Preserve the measured placement as the reference;
-disclose the effective-model correction separately. Validation on fresh recordings
-excluded from fitting remains outstanding for this selected fit.
-
-The [original recorded-trajectory workflow](docs/fixtures/historical_offset_provenance_20260718.md#original-recorded-trajectory-workflow)
-describes how contact recordings, fixed-jaw FK, joint corrections and a rigid
-keyboard pose were used before training. Its faithful application to the
-September 16 recordings is implemented in the [short workflow](docs/release/REAL2SIM.md)
-and passes the original 93/93 per-key criterion.
-
-Use [the alignment qualification workflow](docs/release/ALIGNMENT.md) to freeze
-one mapping, replay reserved measurements, test Q/G/P physically and export the
-passing evidence. Standard physical policy execution requires that evidence; the
-alignment guide also documents explicit supervised candidate experiments. The
-September scene's per-key calibration passed; its separate physical deployment
-qualification remains outstanding. See [the investigation status](docs/experiments/README.md).
+The September fitted scene passed 93/93 per-key contacts and supported one
+[physical NEWTON trial](docs/experiments/physical_typing_success_20260917.md).
+The fit reproduces observed contacts; its separate
+[deployment qualification](docs/release/ALIGNMENT.md) still needs fresh reserved
+replay and physical Q/G/P evidence. Simulation-only setup checks can run earlier.
 
 | Bird's-eye view | What it represents |
 | --- | --- |
@@ -90,14 +59,6 @@ gives the September 17 XYZ and orientation in the simulated robot-base frame.
 The real base and keyboard remained frozen; the simulated pose was adjusted to
 fit the recorded real contacts. The September 15 physical-reference view above
 continues to describe the measured physical placement.
-
-**Unresolved discrepancy, September 17, 2026:** physical datums and checked asset
-dimensions appeared consistent, but direct replay of measured real joint angles
-still produced different key contacts in simulation. We suspect the
-**encoder-to-model mapping or simulated robot/contact geometry; the exact cause
-has not been isolated**. Fitting offsets and keyboard pose compensates for this
-discrepancy; it does not prove the fitted scene is geometrically identical to the
-real setup. See the [calibration rationale](docs/release/REAL2SIM.md#why-recorded-motion-calibration-comes-before-training).
 
 ![September 17 fitted simulation scene; not physical ruler targets](docs/fixtures/replay-calibrated-birdseye-20260917.svg)
 

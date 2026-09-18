@@ -1,6 +1,6 @@
 # First physical NEWTON success on the September fitted scene
 
-On **September 17, 2026 at 14:36:50 PDT / 21:36:50 UTC**, the new development
+On **September 17, 2026**, the new development
 SO-101 completed **NEWTON** using the learned typing policy. The hardware log
 contains six correct key-down/up pairs, followed by the required clearance after
 each letter, and ends with `exact_match: true` and `stop_reason: target_complete`.
@@ -35,7 +35,7 @@ were the cause. The fit did not replace the robot's LeRobot calibration.
 
 ### Relative contribution of joint mapping and keyboard placement
 
-Interpretation recorded **September 17, 2026**. Joint mapping appears to be a
+Joint mapping appears to be a
 major contributor to the vertical reach problem. In the earlier
 [powered-recording FK comparison](scene_calibration_20260917.md#recurring-trend-across-historical-and-september-fits),
 the historical elbow offset alone reduced mean absolute Z error from
@@ -130,9 +130,9 @@ calibration, jaw and fixture. They are not universal SO-101 constants.
 
 ## Training and simulation evidence
 
-Training and evaluation ran **10:45:44–13:24:04 PDT**, totaling **2 h 38 min 21 s**
-including container startup, evaluations and videos. Measured training-stage wall
-times were **32 min 7 s** for P1A and **2 h 4 min 2 s** for Transit15.
+Training and evaluation took about **2 h 38 min**, including container startup,
+evaluations and videos. Training-stage wall times were about **32 min** for P1A
+and **2 h 4 min** for Transit15.
 These are workstation timings, not a guarantee on another GPU.
 
 | Check | Result |
@@ -148,28 +148,16 @@ index and resumed boundary, not a 19k run. Parallel sampling used 4,096 environm
 and 64 rollout steps per update. Simulation key depression reached approximately
 1.35 times nominal travel in the batches, so contact mechanics remain approximate.
 
-Another 2,500-update continuation started at **13:55:15 PDT** on the frozen source
-and image. It is separate: the successful physical bundle remained pinned to
-`model_2498.pt`. Additional training did not produce this already-prepared result.
+## FK checks versus policy typing
 
-## What happened with the slow Q probe
+The earlier Q tests were policy-free FK trajectories. They reached Q but stopped
+on an extra down/up event, so they did not complete the strict probe. A faster
+FK comparison passed simulation; a complete physical Q/G/P qualification set is
+still missing. Those timing changes were not applied to the learned policy.
 
-The `--probe Q` command was a **policy-free FK trajectory**, not learned typing.
-Both logged slow attempts reached Q but stopped on `down → up → down`; neither
-completed the strict probe. In the second, Q was held for 4.034 seconds, then
-released and re-pressed 23.09 ms later during lift. The operator reported that
-the tip looked steady. Ordinary held-key repeat events were already ignored.
-
-The separate `--quick-probe` comparison shortened descent from 3.84 to 0.96 s,
-dwell from 0.40 to 0.12 s, and lift from 4.04 to 1.04 s. It retained the same
-depth, mapping and path waypoints, stayed inside joint-rate limits, and passed
-Q/G/P simulation. No completed physical Q/G/P qualification set is archived.
-These FK timing changes were not applied to the learned policy.
-
-The successful policy instead held individual keys for approximately **30–83 ms**,
-using actual key events to switch phases. It ran with the original 15 mm clearance,
-rate scale 1.0 and no clearance override. A faster FK test is a contact-timing
-comparison, not proof of why the earlier extra Q event occurred.
+The successful policy used actual key events to switch phases and retained native
+25 Hz timing, 15 mm clearance and unchanged joint-rate limits. Its result belongs
+to the pinned `model_2498.pt`, not a later training continuation.
 
 ## Reproduction and remaining scope
 
@@ -186,10 +174,8 @@ independent installation, placement robustness and cross-robot transfer remain
 to be measured. Typing success still required the exact key sequence, matching
 releases and all clearance transitions; formal alignment qualification was not claimed.
 
-Local evidence is under `output/traj-calibrated-anchorbench-mjwarp-20260917/`.
-`SUCCESS_20260917.md` contains the workstation command and full artifact locations;
-`hardware-preparation/success-evidence.json` pins their hashes. The raw success log
-is `20260917T213637.673785Z_hardware.jsonl`. Earlier failed Q logs are preserved.
-The downloadable release's `manifest.json` distinguishes original hashes from
-sanitized-file hashes; its `SHA256SUMS` verifies the published files. No weights,
-scene coordinates, offsets or numeric event results were changed during packaging.
+The [machine-readable result](physical_typing_success_20260917.json) pins the
+original evidence hashes. The downloadable release's `manifest.json` distinguishes
+original and sanitized-file hashes; `SHA256SUMS` verifies the published files.
+Weights, scene coordinates, offsets and numeric event results were unchanged
+during packaging. Original recordings and unsuccessful attempts remain archived.

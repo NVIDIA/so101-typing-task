@@ -11,14 +11,13 @@ a fresh policy was trained in that scene and deployed with its matching offsets.
 | Training | 500 P1A + 2,000 Transit15 updates; `model_2498.pt` |
 | Pipeline wall time, including evaluation/video | 2 h 38 min 21 s on RTX 5090, 4,096 environments, AnchorBench/MJWarp/CUDA graphs |
 | Strict six-letter simulation | 2,048/2,048 over seeds 2307 and 3307; zero wrong keys |
-| Physical trial, September 17 at 14:36 PDT | NEWTON in 7.099 s; six down/up pairs and six clearance transitions; exact match |
+| September physical trial | NEWTON in 7.099 s; six down/up pairs and six clearance transitions; exact match |
 
 This was one supervised experimental trial, with original 15 mm clearance and
 native policy timing. The root encoder/model or contact-geometry discrepancy is
 still unresolved; the fitted correction made this workflow usable. Repeated
 reliability, reserved replay, full Q/G/P qualification and independent-user
-reproduction remain pending. The additional background training is separate.
-The [complete case study](../experiments/physical_typing_success_20260917.md) and
+reproduction remain pending. The [complete case study](../experiments/physical_typing_success_20260917.md) and
 [sanitized evidence summary](../experiments/physical_typing_success_20260917.json)
 pin the exact scene, offsets, checkpoint and log. Download the matching weights,
 scene and sanitized evidence with `./so101 download --calibrated`; see the

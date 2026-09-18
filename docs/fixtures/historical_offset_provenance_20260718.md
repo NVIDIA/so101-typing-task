@@ -157,7 +157,7 @@ diagnostic and does not pass; it was not required by the original July gate.
 The [selected pose, offsets and evidence](../experiments/scene_calibration_20260917.md)
 identify the passing `refined/` candidate. Both recordings were used for fitting;
 physical deployment is not established by this result.
-Subsequently, at **14:36 PDT on September 17**, a fresh policy trained in the
+A fresh policy trained in the
 selected September scene completed [physical NEWTON typing](../experiments/physical_typing_success_20260917.md)
 with its own fitted mapping. That single-trial result is separate from both
 the 93/93 fitting check and the historical 89/100 benchmark.
@@ -180,12 +180,11 @@ this initial numerical fit was not a pass. The later contact refinement above
 established the reset-per-key result.
 The current recordings' timestamps and capture modes must remain explicit;
 they cannot be relabelled as the original powered, kernel-edge-synchronised data.
-See the [current investigation](../experiments/mapping_plan_20260916.md#original-workflow-recovered-from-archived-source--2026-09-17).
+See the [current investigation](../experiments/mapping_plan_20260916.md#original-workflow-recovered-from-archived-source).
 Exact inputs and results are in the [September calibration report](../experiments/scene_calibration_20260917.md).
 
-## Fresh reproduction — 2026-09-16 UTC
+## Historical replay reproduction
 
-Run time: **2026-09-15, 21:12–21:17 PDT** (2026-09-16, 04:12–04:17 UTC).
 This result uses the **original July robot recordings + original July keyboard
 layout + historical joint offsets** listed above.
 
@@ -208,7 +207,7 @@ rerun report (local artifact: `output/fixture-photos-20260915/historical-az-repl
 This confirms reproduction of the historical gate; it does not qualify transfer
 to the new robot or replace the current full-event-sequence validation.
 
-## Extended comparison — 2026-09-16 UTC
+## Extended contact comparison
 
 The original raw reports also preserve measured retraction. Replaying these on
 the historical layout with historical offsets gives 78/78 expected releases,
