@@ -69,7 +69,8 @@ anonymized Git history.
 
 ## Host checks (no robot connection)
 
-Run these inside a separate development Python environment. Keep the pinned
+Run these inside a separate Python 3.11+ development environment (3.12 recommended).
+The pinned NumPy and SciPy versions require Python 3.11 or newer. Keep the pinned
 hardware environment unchanged.
 
 ```bash

@@ -1,13 +1,18 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
 from scripts.run_public_training_pipeline import Pipeline, passes_gate
 from scripts import run_public_training_pipeline as supervisor
+from scripts.so101_homing.joint_calibration import ARM_JOINT_NAMES, fit
 
 
 class TrainingPipelineTests(unittest.TestCase):
@@ -91,6 +96,94 @@ class TrainingPipelineTests(unittest.TestCase):
                     self.assertEqual(supplied, pipeline.status['inputs'][kind + '_config']['snapshot_path'])
             command = run.call_args_list[-1].args[1]
             self.assertEqual(command[command.index('--checkpoint') + 1], 'previous.pt')
+
+    def calibration(self):
+        return fit({'robot_id': 'test_robot', 'arm_joint_names': list(ARM_JOINT_NAMES),
+                    'samples': [{'measurement_reference': f'synthetic fixture {i}',
+                                 'model_deg': [i + 1] * 5, 'encoder_deg': [i] * 5}
+                                for i in range(3)]})
+
+    def test_invalid_joint_calibration_fails_before_creating_output(self):
+        wrong_robot = self.calibration()
+        wrong_robot['robot_id'] = 'another_robot'
+        inconsistent = self.calibration()
+        inconsistent['joint_zero_offset_deg'][0] += 1
+        missing_evidence = self.calibration()
+        del missing_evidence['samples'][0]['model_deg']
+        cases = [None, '{', json.dumps(wrong_robot), json.dumps(inconsistent), json.dumps(missing_evidence)]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, contents in enumerate(cases):
+                with self.subTest(contents=contents):
+                    source = root / f'fit-{index}.json'
+                    if contents is not None:
+                        source.write_text(contents)
+                    output = root / f'run-{index}'
+                    with patch('sys.argv', ['pipeline', '--out-dir', str(output), '--prepare-deployment',
+                                           '--robot-id', 'test_robot', '--joint-calibration', str(source)]), \
+                         patch.object(Pipeline, 'execute') as execute, self.assertRaises(SystemExit) as error:
+                        supervisor.main()
+                    self.assertEqual(error.exception.code, 2)
+                    execute.assert_not_called()
+                    self.assertFalse(output.exists())
+            with patch.object(Path, 'read_bytes', side_effect=PermissionError('unreadable calibration')), \
+                 self.assertRaises(PermissionError):
+                self.pipeline(root / 'unreadable-run', joint_calibration=root / 'fit.json')
+            self.assertFalse((root / 'unreadable-run').exists())
+
+    def test_relative_joint_calibration_is_snapshotted_and_export_uses_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'fit.json'
+            source.write_text(json.dumps(self.calibration()))
+            payload = source.read_bytes()
+            original_directory = Path.cwd()
+            try:
+                os.chdir(root)
+                pipeline = self.pipeline(root / 'run', joint_calibration=Path('fit.json'), encoder_convention=None)
+            finally:
+                os.chdir(original_directory)
+            metadata = pipeline.status['inputs']['joint_calibration']
+            snapshot = Path(metadata['snapshot_path'])
+            self.assertEqual(metadata['source_path'], str(source))
+            self.assertEqual(metadata['sha256'], hashlib.sha256(payload).hexdigest())
+            self.assertEqual(snapshot.read_bytes(), payload)
+            source.write_text('changed after training started')
+            with patch.object(pipeline, 'train', return_value=('checkpoint', 'config')), \
+                 patch.object(pipeline, 'evaluate', return_value=True), \
+                 patch.object(pipeline, 'video'), patch.object(pipeline, 'run') as run:
+                self.assertEqual(pipeline.execute(), 0)
+            exported = run.call_args_list[0].args[1]
+            self.assertEqual(exported[exported.index('--joint-calibration') + 1], str(snapshot))
+            self.assertEqual(snapshot.read_bytes(), payload)
+
+    def test_archive_calibration_validation_uses_only_standard_library(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = ['scripts/run_public_training_pipeline.py',
+                     'scripts/reinforcement_learning/rsl_rl/public_task.py',
+                     'scripts/reinforcement_learning/rsl_rl/public_physics.py',
+                     'source/so101_typing/__init__.py', 'source/so101_typing/hardware/__init__.py',
+                     'source/so101_typing/hardware/constants.py',
+                     'source/so101_typing/hardware/joint_calibration.py']
+            for name in paths:
+                destination = root / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(supervisor.ROOT / name, destination)
+            (root / 'fit.json').write_text(json.dumps(self.calibration()))
+            code = (
+                'import argparse, pathlib, runpy, sys; '
+                'module = runpy.run_path(sys.argv[1]); '
+                'args = argparse.Namespace(out_dir=pathlib.Path("run"), '
+                'joint_calibration=pathlib.Path("fit.json"), robot_id="test_robot"); '
+                'pipeline = module["Pipeline"](args); '
+                'assert pipeline.status["source_distribution"] == "archive"; '
+                'assert "numpy" not in sys.modules and "torch" not in sys.modules'
+            )
+            subprocess.run([sys.executable, '-I', '-S', '-c', code,
+                            str(root / paths[0])], cwd=root, check=True, capture_output=True, text=True)
+            saved = json.loads((root / 'run/status.json').read_text())
+            self.assertEqual(saved['inputs']['joint_calibration']['source_path'], str(root / 'fit.json'))
 
     def test_evaluation_and_video_inherit_saved_checkpoint_configuration(self):
         with tempfile.TemporaryDirectory() as directory:

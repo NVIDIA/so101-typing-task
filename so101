@@ -207,6 +207,8 @@ def main():
             path = ROOT / 'configs/tasks/replay-calibrated-20260917.json'
             setattr(args, attr, path)
         if path:
+            path = path.expanduser().resolve()
+            setattr(args, attr, path)
             if kind == 'physics' and args.command == 'probe':
                 parser.error('custom physics probes are not yet supported; use a short training run')
             sys.path.insert(0, str(ROOT / 'scripts/reinforcement_learning/rsl_rl'))
@@ -217,6 +219,7 @@ def main():
                 parser.error(str(error))
     artifacts = {}
     if getattr(args, 'perturbation_config', None):
+        args.perturbation_config = args.perturbation_config.expanduser().resolve()
         sys.path.insert(0, str(ROOT / 'scripts/reinforcement_learning/rsl_rl'))
         from public_task import load_perturbation
         try:

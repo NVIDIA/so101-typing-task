@@ -156,6 +156,25 @@ class PublicCliTests(unittest.TestCase):
                 self.assertIn(f'src={task},dst=/inputs/task.json,readonly', command)
                 self.assertNotIn('replay-calibrated-20260917.json', command)
 
+    def test_configuration_paths_expand_home_before_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'model.pt').write_bytes(b'fixture')
+            (root / 'env.yaml').write_text('fixture: true')
+            cases = {
+                'task': {'schema_version': 1},
+                'physics': {'schema_version': 1, 'solver': 'mjwarp'},
+                'perturbation': {'schema_version': 1, 'domain_randomization': {'reset_joint_noise_rad': 0.01}},
+            }
+            for kind, data in cases.items():
+                source = root / f'{kind}.json'
+                source.write_text(json.dumps(data))
+                with self.subTest(kind=kind), patch.dict(os.environ, {'HOME': str(root)}):
+                    command = self.plan('evaluate', '--checkpoint', str(root / 'model.pt'),
+                                        '--env-config', str(root / 'env.yaml'),
+                                        '--' + kind + '-config', f'~/{kind}.json', '--plan')
+                    self.assertIn(f'src={source},dst=/inputs/{kind}.json,readonly', command)
+
     def test_checkpoint_commands_preserve_historical_scene_without_sidecars(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

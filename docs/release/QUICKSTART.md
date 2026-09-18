@@ -5,7 +5,7 @@ the repository. Run all commands from its root. Replace device/robot placeholder
 with your own values; use the host artifact paths printed by completed commands.
 
 Use Linux x86-64, an NVIDIA GPU, Docker with NVIDIA Container Toolkit and host
-Python 3. Building uses the pinned NVIDIA Isaac Lab image and its applicable
+Python 3.10+. Building uses the pinned NVIDIA Isaac Lab image and its applicable
 license terms. Runtime dependencies are public, and no additional source checkout
 or cluster account is required. Simulation does not receive robot devices.
 See [RESULTS.md](RESULTS.md) for the tested configuration and measured results.
@@ -81,7 +81,7 @@ not supplied to the actor.
 
 Use the [model layout guide](../../FIXTURE_SETUP.md) and `./so101 fixture` to draw
 the scene or fit a candidate task JSON from Q/P/Z measurements. It needs only host
-Python 3. Its fitted reference geometry is not a verified physical setup template;
+Python 3.10+. Its fitted reference geometry is not a verified physical setup template;
 robot joint alignment and physical contacts need independent checks.
 
 ## Evaluate your training

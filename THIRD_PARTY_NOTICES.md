@@ -89,7 +89,7 @@ The Docker build downloads `robot_assets/so101_no_camera_new_calib.usd` from
 [`nvidia/Anchor-Lab` revision `647edd5787cd764cdc041103ad282dc59214d919`](https://huggingface.co/datasets/nvidia/Anchor-Lab/tree/647edd5787cd764cdc041103ad282dc59214d919).
 The pinned dataset card declares Apache-2.0. The SO-ARM100 attribution above
 also identifies the underlying robot design. This USD is downloaded during
-the build and is separate from the converted USD files bundled in this tree.
+the build; the bundled model sources are listed above.
 
 Checkpoints and evaluation bundles fetched by
 `scripts/download_benchmark_artifacts.sh` are published separately in

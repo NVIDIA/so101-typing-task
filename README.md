@@ -12,7 +12,7 @@ in simulation.
 
 | Use | Requirements |
 | --- | --- |
-| Simulation and training | Linux x86-64, NVIDIA GPU, Docker with NVIDIA Container Toolkit, host Python 3, and `curl` or `wget` |
+| Simulation and training | Linux x86-64, NVIDIA GPU, Docker with NVIDIA Container Toolkit, host Python 3.10+, and `curl` or `wget` |
 | Tested GPU | RTX 5090 with 32 GB VRAM |
 | Physical typing | SO-101 follower with the supported fixed typing jaw, Logitech MX Keys keyboard, and [uv](https://docs.astral.sh/uv/getting-started/installation/) for the hardware environment |
 | Disk | Built image is about 32.6 GB; budget at least 70 GB free for build layers, caches and runs |

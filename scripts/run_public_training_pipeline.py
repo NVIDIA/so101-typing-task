@@ -64,6 +64,21 @@ def validated_inputs(args):
         if source.read_bytes() != payload:
             raise ValueError(f'{kind} configuration changed during validation: {source}')
         inputs[kind] = (source, payload)
+    if args.joint_calibration is not None:
+        # This package path also works in an uninstalled source archive; the
+        # calibration loader and its constants use only the standard library.
+        sys.path.insert(0, str(ROOT / 'source'))
+        from so101_typing.hardware.joint_calibration import load
+        source = args.joint_calibration.expanduser().resolve()
+        payload = source.read_bytes()
+        try:
+            _, validated_sha256 = load(source, args.robot_id)
+        except (KeyError, TypeError) as error:
+            raise ValueError(f'invalid joint calibration: {error}') from error
+        if (validated_sha256 != hashlib.sha256(payload).hexdigest()
+                or source.read_bytes() != payload):
+            raise ValueError(f'joint calibration changed during validation: {source}')
+        inputs['joint_calibration'] = (source, payload)
     return inputs
 
 
@@ -89,9 +104,11 @@ class Pipeline:
         if inputs:
             (self.root / 'inputs').mkdir()
         for kind, (source, payload) in inputs.items():
-            snapshot = self.root / 'inputs' / f'public_{kind}.json'
+            key = kind if kind == 'joint_calibration' else kind + '_config'
+            filename = 'joint_calibration.json' if kind == 'joint_calibration' else f'public_{kind}.json'
+            snapshot = self.root / 'inputs' / filename
             snapshot.write_bytes(payload)
-            self.status['inputs'][kind + '_config'] = {
+            self.status['inputs'][key] = {
                 'source_path': str(source), 'snapshot_path': str(snapshot),
                 'sha256': hashlib.sha256(payload).hexdigest(),
             }
@@ -184,7 +201,8 @@ class Pipeline:
             self.video('06-transit15-video', 'transit15', transit, 'NEWTON')
             if self.args.prepare_deployment and all(gates):
                 bundle = self.root / 'deployment'
-                mapping = (['--joint-calibration', self.args.joint_calibration] if self.args.joint_calibration
+                calibration = self.status['inputs'].get('joint_calibration')
+                mapping = (['--joint-calibration', calibration['snapshot_path']] if calibration
                            else ['--encoder-convention', self.args.encoder_convention])
                 self.run('07-prepare-deployment', ['prepare-deployment', '--checkpoint', transit[0],
                     '--env-config', transit[1], '--robot-id', self.args.robot_id,
