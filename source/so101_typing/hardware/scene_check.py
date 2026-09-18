@@ -11,6 +11,7 @@ import time
 import numpy as np
 
 from .fk_probe_trajectory import ROOT, TASK, digest
+from .source_identity import identity_matches, source_hash_matches
 from .so101_kinematics import JOINT_NAMES, lerobot_position_to_model_rad
 
 
@@ -53,7 +54,7 @@ def load_mapping_candidate(recording, report_path, candidate, task):
     if report.get("joint_order") != list(JOINT_NAMES[:5]):
         raise ValueError("mapping report joint order differs from recording")
     for field in ("robot_id", "calibration_sha256", "robot_usd_sha256", "source_sha256"):
-        if not recording.get(field) or report.get("identities", {}).get(field) != recording[field]:
+        if not recording.get(field) or not identity_matches(field, report.get("identities", {}).get(field), recording[field]):
             raise ValueError(f"mapping report differs from recording: {field}")
     if task != report.get("task_config"):
         raise ValueError("explicit replay task differs from mapping report frozen task")
@@ -85,20 +86,20 @@ def load_recording(path):
     if data["kind"] == "so101_powered_teleop_recording":
         if data.get("measurement_source") != "follower_present_position":
             raise ValueError("powered replay requires measured follower Present_Position, not leader targets")
-        try:
-            measured = np.asarray([r["lerobot_position"] for r in samples], dtype=float)
-        except (KeyError, TypeError, ValueError) as error:
-            raise ValueError("powered recording needs measured follower positions") from error
-        if measured.shape != q.shape or not np.isfinite(measured).all():
-            raise ValueError("powered recording needs six finite measured follower positions per sample")
-        expected = np.array([lerobot_position_to_model_rad(row) for row in measured])
-        if not np.allclose(q, expected, rtol=0, atol=1e-10):
-            raise ValueError("replay poses differ from recorded follower measurements")
+    try:
+        measured = np.asarray([r["lerobot_position"] for r in samples], dtype=float)
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError("recording needs measured follower positions") from error
+    if measured.shape != q.shape or not np.isfinite(measured).all():
+        raise ValueError("recording needs six finite measured follower positions per sample")
+    expected = np.array([lerobot_position_to_model_rad(row) for row in measured])
+    if not np.allclose(q, expected, rtol=0, atol=1e-10):
+        raise ValueError("replay poses differ from recorded follower measurements")
     if times[-1] > 600 or np.max(np.diff(times)) > .25:
         raise ValueError("recording exceeds 10 minutes or has a sampling gap above 250 ms")
     for name, expected in data["source_sha256"].items():
         source = (ROOT/name).resolve()
-        if not source.is_relative_to(ROOT) or digest(source) != expected:
+        if not source.is_relative_to(ROOT) or not source_hash_matches(name, digest(source), expected):
             raise ValueError(f"recorded model/scene source changed: {name}")
     return data
 
@@ -113,7 +114,7 @@ def load_alignment_candidate(recording, path, task):
     if fingerprint(c) != data.get('contract_sha256') or c.get('task_config') != task:
         raise ValueError('alignment contract or replay scene changed')
     for field in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256'):
-        if c.get(field) != recording.get(field):
+        if not identity_matches(field, c.get(field), recording.get(field)):
             raise ValueError(f'alignment differs from recording: {field}')
     if c.get('joint_order') != list(JOINT_NAMES[:5]):
         raise ValueError('alignment joint order changed')

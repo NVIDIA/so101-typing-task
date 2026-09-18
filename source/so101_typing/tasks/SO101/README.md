@@ -2,8 +2,8 @@
 
 For robot setup, training and deployment, follow the [main guide](../../../../README.md).
 The typing runtime loads the pinned robot USD selected by `SO101_ROBOT_USD` in
-`docker/typing-public.Dockerfile`. The local URDF, MJCF, meshes and converted USD
-preserve model sources and conversion provenance.
+`docker/typing-public.Dockerfile`. The local URDF, MJCF and meshes preserve the
+upstream model sources.
 
 `scene.xml` loads `so101_new_calib.xml`, whose virtual joint zeros are at the
 middle of each joint's range. Editing these source files does not switch the

@@ -29,11 +29,8 @@ with Hugging Face. These assets are licensed under
 [Apache License 2.0](licenses/Apache-2.0.txt).
 
 The bundled mesh, `.part`, URDF, and XML files match that upstream revision.
-The README has local usage changes. The files in
-`source/so101_typing/tasks/SO101/so101_new_calib.usd/` are converted derivatives:
-the local conversion fixes the base, configures joint drives, and applies
-collision schemas for Newton. The adjacent asset manifest records the source
-hashes and conversion settings.
+The README has local usage changes. The typing runtime uses the separately
+downloaded, pinned USD described below.
 
 The robot description's upstream attribution to
 [Open Duck Mini](https://github.com/apirrone/Open_Duck_Mini) for STS3215 motor

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .source_identity import source_hash_matches
 from .so101_kinematics import (
     ARM_JOINT_NAMES, ARM_JOINT_LIMITS_RAD, FIXED_JAW_TYPING_TIP_SITE_POS,
     GRIPPER_MODEL_MIN_RAD, site_position, site_position_jacobian,
@@ -129,7 +130,7 @@ def validate(plan):
         raise ValueError("trajectory must start and finish at its fixed reset")
     for name, expected in plan["source_sha256"].items():
         path = (ROOT/name).resolve()
-        if not path.is_relative_to(ROOT) or digest(path) != expected:
+        if not path.is_relative_to(ROOT) or not source_hash_matches(name, digest(path), expected):
             raise ValueError(f"trajectory model source changed: {name}; regenerate and verify in sim")
 
 

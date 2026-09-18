@@ -152,6 +152,8 @@ def _validate_artifact_contract(env_cfg: ManagerBasedRLEnvCfg) -> dict[str, obje
     env_config = args_cli.env_config.expanduser().resolve()
     if not env_config.is_file():
         raise FileNotFoundError(f"environment config not found: {env_config}")
+    from so101_typing.hardware.checkpoint_identity import validate_files
+    validate_files(args_cli.checkpoint, env_config)
     contract = TASK_CONTRACTS[args_cli.task]
     # Isaac Lab config snapshots contain Python-specific YAML tags. BaseLoader
     # treats those values as plain data without constructing Python objects.

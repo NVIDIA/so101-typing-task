@@ -59,7 +59,8 @@ def test_refuses_capture_if_any_motor_has_torque(monkeypatch):
 def test_replay_rejects_invalid_samples(tmp_path, times, q, match):
     data = {"kind": "so101_torque_off_recording", "schema_version": 1, "joint_names": list(JOINT_NAMES),
             "joint_zero_offset_deg": [0]*5, "source_sha256": {},
-            "samples": [{"time_s": t, "q_model_rad": p} for t,p in zip(times,q)]}
+            "samples": [{"time_s": t, "q_model_rad": p, "lerobot_position": [0]*5+[100/11]}
+                        for t,p in zip(times,q)]}
     path = tmp_path/"recording.json"
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError, match=match):
@@ -80,9 +81,10 @@ def test_benchmark_offsets_apply_on_read_once_without_changing_recording():
     assert zero == [0]*5
 
 
-def test_powered_replay_uses_follower_measurements_not_leader_or_goals(tmp_path):
-    measured = [[10, 20, 30, 40, 50, 0], [11, 21, 31, 41, 51, 0]]
-    data = {"kind": "so101_powered_teleop_recording", "schema_version": 1,
+@pytest.mark.parametrize('kind', ['so101_torque_off_recording', 'so101_powered_teleop_recording'])
+def test_replay_uses_follower_measurements_not_leader_or_goals(tmp_path, kind):
+    measured = [[10, 20, 30, 40, 50, 0], [11, 21, 31, 41, 51, 50]]
+    data = {"kind": kind, "schema_version": 1,
             "joint_names": list(JOINT_NAMES), "joint_zero_offset_deg": [0]*5,
             "measurement_source": "follower_present_position", "source_sha256": {},
             "samples": [{"time_s": i*.02, "lerobot_position": p,
@@ -94,14 +96,32 @@ def test_powered_replay_uses_follower_measurements_not_leader_or_goals(tmp_path)
     loaded = scene_check.load_recording(path)
     replay, offsets = scene_check.replay_joint_positions(loaded)
     np.testing.assert_allclose(replay[:, :5], np.deg2rad(np.array(measured)[:, :5]))
+    np.testing.assert_allclose(replay[:, 5], np.deg2rad([-10, 45]))
     assert offsets == [0]*5
     data["samples"][0]["q_model_rad"][0] = np.deg2rad(70)
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="differ from recorded follower"):
         scene_check.load_recording(path)
-    data["measurement_source"] = "leader_targets"
+    if kind == 'so101_powered_teleop_recording':
+        data["measurement_source"] = "leader_targets"
+        path.write_text(json.dumps(data))
+        with pytest.raises(ValueError, match="measured follower"):
+            scene_check.load_recording(path)
+
+
+@pytest.mark.parametrize('kind', ['so101_torque_off_recording', 'so101_powered_teleop_recording'])
+@pytest.mark.parametrize('raw', [None, [0]*5, [float('nan')]*6, [0]*5+[101]])
+def test_recordings_reject_missing_or_invalid_encoder_readings(tmp_path, kind, raw):
+    row = {'time_s': 0., 'q_model_rad': scene_check.lerobot_position_to_model_rad([0]*6).tolist()}
+    if raw is not None:
+        row['lerobot_position'] = raw
+    data = {'kind': kind, 'schema_version': 1, 'joint_names': list(JOINT_NAMES),
+            'joint_zero_offset_deg': [0]*5, 'source_sha256': {},
+            'measurement_source': 'follower_present_position',
+            'samples': [row, {**row, 'time_s': .02}]}
+    path = tmp_path/'recording.json'
     path.write_text(json.dumps(data))
-    with pytest.raises(ValueError, match="measured follower"):
+    with pytest.raises(ValueError, match='measured follower|gripper position'):
         scene_check.load_recording(path)
 
 

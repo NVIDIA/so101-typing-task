@@ -2,11 +2,13 @@
 """Reject infrastructure-specific files, machine paths and credential material."""
 from pathlib import Path
 import argparse
+import ast
 import os
 import re
 import subprocess
 import sys
 import zipfile
+import zlib
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,6 +58,51 @@ def source_link_failures(files):
     return failures
 
 
+def npz_text(path):
+    """Inspect ZIP/NPY bytes and Unicode metadata without loading array objects."""
+    texts = []
+    with zipfile.ZipFile(path) as archive:
+        for member in archive.infolist():
+            if member.is_dir():
+                continue
+            payload = archive.read(member)
+            texts.extend((member.filename, payload.decode(errors='replace')))
+            if not member.filename.endswith('.npy'):
+                continue
+            if payload[:6] != b'\x93NUMPY':
+                raise ValueError('invalid NPY signature')
+            version = tuple(payload[6:8])
+            length_size = {(1, 0): 2, (2, 0): 4, (3, 0): 4}.get(version)
+            if length_size is None or len(payload) < 8 + length_size:
+                raise ValueError('invalid NPY version or header')
+            header_start = 8 + length_size
+            header_end = header_start + int.from_bytes(payload[8:header_start], 'little')
+            if header_end > len(payload):
+                raise ValueError('truncated NPY header')
+            header = ast.literal_eval(payload[header_start:header_end].decode(
+                'utf-8' if version == (3, 0) else 'latin1'))
+            if (not isinstance(header, dict) or set(header) != {'descr', 'fortran_order', 'shape'}
+                    or not isinstance(header['descr'], (str, list))
+                    or not isinstance(header['fortran_order'], bool)
+                    or not isinstance(header['shape'], tuple)
+                    or any(type(size) is not int or size < 0 for size in header['shape'])):
+                raise ValueError('invalid NPY header fields')
+            # NumPy's ordinary Unicode arrays store fixed-width UTF-32, whereas
+            # byte strings, uint8 JSON and object-pickle strings are visible above.
+            dtype = header['descr']
+            unicode_dtype = re.fullmatch(r'([<>=])U(\d+)', dtype) if isinstance(dtype, str) else None
+            if unicode_dtype:
+                byteorder, width = unicode_dtype.groups()
+                size = int(width) * 4
+                for dimension in header['shape']:
+                    size *= dimension
+                if len(payload) - header_end != size:
+                    raise ValueError('truncated or oversized NPY Unicode data')
+                little = byteorder == '<' or (byteorder == '=' and sys.byteorder == 'little')
+                texts.append(payload[header_end:].decode('utf-32-le' if little else 'utf-32-be'))
+    return '\n'.join(texts)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifact-dir', type=Path, help='also scan public bundle metadata and checkpoint pickle strings')
@@ -71,14 +118,22 @@ def main():
     for path, relative in files:
         if not path.is_file():
             continue
-        if path.suffix == '.pt' and zipfile.is_zipfile(path):
+        if path.suffix == '.npz':
+            try:
+                text = relative + '\n' + npz_text(path)
+            except (OSError, ValueError, SyntaxError, RuntimeError, NotImplementedError, zipfile.BadZipFile, zlib.error):
+                # Never echo archive contents or parser exceptions: either may
+                # contain the very credentials/paths this checker must hide.
+                failures.append(f'{relative}: malformed or unreadable NPZ archive')
+                continue
+        elif path.suffix == '.pt' and zipfile.is_zipfile(path):
             with zipfile.ZipFile(path) as archive:
                 payload = b'\n'.join(archive.read(name) for name in archive.namelist() if name.endswith('.pkl'))
-        elif path.suffix in ('.mp4', '.png', '.npz'):
+            text = relative + '\n' + payload.decode(errors='replace')
+        elif path.suffix in ('.mp4', '.png'):
             continue
         else:
-            payload = path.read_bytes()
-        text = relative + '\n' + payload.decode(errors='replace')
+            text = relative + '\n' + path.read_bytes().decode(errors='replace')
         for label, pattern in PATTERNS.items():
             if pattern.search(text):
                 failures.append(f'{relative}: {label}')

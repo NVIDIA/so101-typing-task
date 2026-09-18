@@ -23,7 +23,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 _SO101_USD_PATH = os.environ.get(
     "SO101_ROBOT_USD",
-    "https://huggingface.co/datasets/nvidia/Anchor-Lab/resolve/main/robot_assets/so101_no_camera_new_calib.usd",
+    "https://huggingface.co/datasets/nvidia/Anchor-Lab/resolve/647edd5787cd764cdc041103ad282dc59214d919/robot_assets/so101_no_camera_new_calib.usd",
 )
 
 _SO101_SYSID_STIFFNESS: dict[str, float] = {

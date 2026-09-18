@@ -14,6 +14,7 @@ from so101_typing.hardware.constants import ARM_JOINT_NAMES
 from so101_typing.hardware.fixed_cartesian_policy import JOINT_RATE_LIMITS_RAD_S
 from so101_typing.hardware.deployment_bundle import profile_from_environment, sha256, validate_manifest
 from so101_typing.hardware import deployment_bundle, joint_calibration
+from so101_typing.hardware import checkpoint_identity
 
 
 class DeploymentBundleTests(unittest.TestCase):
@@ -160,6 +161,85 @@ class DeploymentBundleTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'No automatic joint mapping'):
                 self.export_fixture(root, 'auto')
             self.assertFalse((root/'bundle').exists())
+
+    def test_known_mismatched_pair_is_rejected_before_every_mapping_selection(self):
+        selections = [('auto', {}), ('lerobot', {}), ('benchmark', {}),
+                      ('auto', {'joint_calibration_path': Path('unused-joints')}),
+                      ('auto', {'alignment_path': Path('unused-qualification')}),
+                      ('auto', {'alignment_candidate_path': Path('unused-candidate')})]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root/'model.pt'; checkpoint.write_bytes(b'known-test-checkpoint')
+            env = root/'env.yaml'; env.write_text(yaml.safe_dump(self.environment()))
+            calibration = root/'robot.json'; calibration.write_text('local-calibration')
+            with patch.dict(checkpoint_identity.RELEASED_ENVIRONMENTS, {sha256(checkpoint): 'different-env'}), \
+                 patch.object(deployment_bundle, 'require_calibration', return_value=calibration), \
+                 patch.object(deployment_bundle, 'FixedCartesianPolicy') as policy:
+                for convention, kwargs in selections:
+                    with self.subTest(convention=convention, kwargs=kwargs), \
+                         self.assertRaisesRegex(ValueError, 'published checkpoint requires its matching environment'):
+                        deployment_bundle.prepare(checkpoint, env, 'robot', convention, root/'bundle', **kwargs)
+                    self.assertFalse((root/'bundle').exists())
+                policy.assert_not_called()
+
+    def test_manifest_revalidation_checks_known_pair_even_if_manifest_pins_both_hashes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data, calibration = self.export_fixture(root)
+            folder = root/'bundle'
+            with patch.object(deployment_bundle, 'require_calibration', return_value=calibration), \
+                 patch.dict(checkpoint_identity.RELEASED_ENVIRONMENTS,
+                            {data['checkpoint_sha256']: data['env_sha256']}):
+                validate_manifest(folder/'deployment.json', folder/'checkpoint.pt', folder/'env.yaml', 'robot')
+            with patch.dict(checkpoint_identity.RELEASED_ENVIRONMENTS,
+                            {data['checkpoint_sha256']: 'different-env'}), \
+                 self.assertRaisesRegex(ValueError, 'published checkpoint requires its matching environment'):
+                validate_manifest(folder/'deployment.json', folder/'checkpoint.pt', folder/'env.yaml', 'robot')
+
+    def test_archived_sidecars_match_contract_geometry_and_revalidate_after_export(self):
+        from scripts.fixture_layout import load_geometry
+        from scripts.reinforcement_learning.rsl_rl import public_task, public_physics
+        reference = deployment_bundle.PHYSICAL_CALIBRATED_20260718_PROFILE
+        task = {'schema_version': 1, 'keyboard': {'position_m': [.27, .02, .01], 'yaw_offset_deg': 2}}
+        physics = {'schema_version': 1, 'solver': 'mjwarp', 'num_substeps': 4}
+        geometry = load_geometry()
+        position, rotation, points, _ = public_task.nominal_geometry(geometry['reference_position_m'],
+            geometry['reference_rotation_xyzw'], reference.az_xyz_b_m, task['keyboard'])
+        env_data = self.environment()
+        env_data['commands']['typing']['letter_xyz_b_m'] = points
+        env_data['scene'] = {'keyboard': {'init_state': {'pos': position, 'rot': rotation}}}
+        env_data['task_contract'] += '_task_'+public_task.fingerprint(task)+'_physics_'+public_physics.fingerprint(physics)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root/'model.pt'; checkpoint.write_bytes(b'new-training-checkpoint')
+            env = root/'env.yaml'; env.write_text(yaml.safe_dump(env_data))
+            calibration = root/'robot.json'; calibration.write_text('local-calibration')
+            for kind, value in [('task', task), ('physics', physics)]:
+                (root/f'public_{kind}.json').write_text(json.dumps(value))
+            with patch.object(deployment_bundle, 'require_calibration', return_value=calibration), \
+                 patch.object(deployment_bundle, 'FixedCartesianPolicy') as policy:
+                policy.return_value.sha256 = sha256(checkpoint)
+                deployment_bundle.prepare(checkpoint, env, 'robot', 'lerobot', root/'bundle')
+                folder = root/'bundle'
+                validate_manifest(folder/'deployment.json', folder/'checkpoint.pt', folder/'env.yaml', 'robot')
+                for kind, change in [('task', {'schema_version': 1}),
+                                     ('physics', {'schema_version': 1, 'solver': 'mjwarp'})]:
+                    sidecar = folder/f'public_{kind}.json'
+                    original = sidecar.read_bytes()
+                    sidecar.write_text(json.dumps(change))
+                    with self.subTest(kind=kind), self.assertRaisesRegex(ValueError, 'archived training contract'):
+                        validate_manifest(folder/'deployment.json', folder/'checkpoint.pt', folder/'env.yaml', 'robot')
+                    sidecar.write_bytes(original)
+                task['keyboard']['yaw_offset_deg'] = 5
+                (root/'public_task.json').write_text(json.dumps(task))
+                with self.assertRaisesRegex(ValueError, 'archived training contract'):
+                    deployment_bundle.prepare(checkpoint, env, 'robot', 'lerobot', root/'bad-contract')
+                self.assertFalse((root/'bad-contract').exists())
+                env_data['task_contract'] = 'test_task_task_'+public_task.fingerprint(task)+'_physics_'+public_physics.fingerprint(physics)
+                env.write_text(yaml.safe_dump(env_data))
+                with self.assertRaisesRegex(ValueError, 'geometry differs'):
+                    deployment_bundle.prepare(checkpoint, env, 'robot', 'lerobot', root/'bad-geometry')
+                self.assertFalse((root/'bad-geometry').exists())
 
     def test_changed_motor_calibration_invalidates_new_bundle(self):
         with tempfile.TemporaryDirectory() as directory:

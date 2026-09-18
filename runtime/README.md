@@ -27,3 +27,9 @@ The public calibration JSON omits machine-specific provenance paths. Its own
 checksum is `PUBLIC_CALIBRATION_DATASET_SHA256`; the historical dataset identity
 remains in the frozen checkpoint contract. Numerical measurements and the target
 map are unchanged.
+
+The keyboard NPZ's embedded source filename is also sanitized. Its 20 geometry
+and texture-coordinate array payloads are unchanged. Source-identity checks
+recognize only the exact original and sanitized asset hashes (and the resulting
+drawing metadata hashes), preserving existing recording and alignment evidence
+without accepting changes to geometry or other source files.

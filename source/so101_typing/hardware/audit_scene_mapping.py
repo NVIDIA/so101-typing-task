@@ -19,6 +19,7 @@ from .fit_scene_recording import PRESS_TRAVEL_M, contacts
 from .fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG
 from .fk_probe_trajectory import ROOT, digest
 from .scene_check import load_recording
+from .source_identity import identity_matches
 from .so101_kinematics import (
     ARM_JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, _BODY_CHAIN, _quat_to_matrix,
 )
@@ -95,7 +96,7 @@ def validate_identities(recordings, geometry):
     first = recordings[0]
     for recording in recordings:
         for field in IDENTITY_FIELDS:
-            if not recording.get(field) or recording[field] != first.get(field):
+            if not recording.get(field) or not identity_matches(field, recording[field], first.get(field)):
                 raise ValueError(f"recordings have missing or different {field}")
         if recording["robot_usd_sha256"] != geometry["robot_usd_sha256"]:
             raise ValueError("recording robot USD differs from fixed geometry")

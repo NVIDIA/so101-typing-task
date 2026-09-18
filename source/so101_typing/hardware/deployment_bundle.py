@@ -6,21 +6,17 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import shutil
 
+import numpy as np
 import yaml
+from .checkpoint_identity import REFERENCE_PAIR, validate_pair
 from .constants import ARM_JOINT_NAMES
 from .robot import require_calibration
 from .fixed_cartesian_policy import (PHYSICAL_CALIBRATED_20260718_PROFILE, JOINT_RATE_LIMITS_RAD_S,
                                      FixedCartesianPolicy)
 from . import joint_calibration
-
-# Exact released checkpoint/environment pair; names and task labels are not identity.
-REFERENCE_PAIR = (
-    '239d93c99cd282e9add019f4ac952407c97fde2879821103a2aa7bd7a307a15f',
-    'd4766dacb28a4ffc0fc75efe8e5abed162e656b338b110e8d498cc808e31ef8b',
-)
-
 
 def resolve_convention(checkpoint_hash, environment_hash, requested):
     if requested in ('lerobot', 'benchmark'):
@@ -85,14 +81,46 @@ def profile_from_environment(path, encoder_convention, measured_offsets=None):
     return profile, env, stage
 
 
+def validate_sidecars(env_config, profile, env):
+    """Check available archived overrides before copying or using a bundle."""
+    from scripts.reinforcement_learning.rsl_rl import public_physics, public_task
+    paths = []
+    for kind, module in (('task', public_task), ('physics', public_physics)):
+        path = Path(env_config).parent / f'public_{kind}.json'
+        if not path.is_file():
+            continue
+        data = module.load_config(path)
+        marker = f'_{kind}_{module.fingerprint(data)}'
+        if not re.search(re.escape(marker) + r'(?:_|$)', env['task_contract']):
+            raise ValueError(f'{path.name} differs from the archived training contract')
+        if kind == 'task':
+            from scripts.fixture_layout import load_geometry
+            geometry = load_geometry()
+            position, rotation, points, _ = public_task.nominal_geometry(
+                geometry['reference_position_m'], geometry['reference_rotation_xyzw'],
+                PHYSICAL_CALIBRATED_20260718_PROFILE.az_xyz_b_m, data.get('keyboard', {}))
+            state = env['scene']['keyboard']['init_state']
+            saved_position = floats(state['pos'], 3)
+            saved_rotation = floats(state['rot'], 4)
+            if (not np.allclose(saved_position, position, atol=1e-8, rtol=0)
+                    or not (np.allclose(saved_rotation, rotation, atol=1e-8, rtol=0)
+                            or np.allclose(saved_rotation, -np.array(rotation), atol=1e-8, rtol=0))
+                    or not np.allclose(profile.az_xyz_b_m, points, atol=1e-8, rtol=0)):
+                raise ValueError('public_task.json geometry differs from the archived training environment')
+        paths.append(path)
+    return paths
+
+
 def validate_manifest(path, checkpoint, env_config, robot_id):
     data = json.loads(Path(path).read_text())
     if data.get('schema_version') != 1 or data.get('kind') != 'so101_typing_deployment_bundle':
         raise ValueError('unsupported deployment bundle')
     if data.get('robot_id') != robot_id:
         raise ValueError('bundle robot_id differs from the selected LeRobot calibration ID')
-    if sha256(checkpoint) != data.get('checkpoint_sha256') or sha256(env_config) != data.get('env_sha256'):
+    checkpoint_hash, environment_hash = sha256(checkpoint), sha256(env_config)
+    if checkpoint_hash != data.get('checkpoint_sha256') or environment_hash != data.get('env_sha256'):
         raise ValueError('checkpoint/environment hash differs from prepared deployment bundle')
+    validate_pair(checkpoint_hash, environment_hash)
     offsets = None
     alignment = None
     if data['encoder_convention'] == 'candidate':
@@ -117,6 +145,7 @@ def validate_manifest(path, checkpoint, env_config, robot_id):
         if sha256(require_calibration(robot_id)) != data['lerobot_calibration_sha256']:
             raise ValueError('LeRobot calibration changed since export; verify joint alignment and prepare a new bundle')
     profile, env, stage = profile_from_environment(env_config, data['encoder_convention'], offsets)
+    validate_sidecars(env_config, profile, env)
     if json.loads(json.dumps(asdict(profile))) != data.get('profile'):
         raise ValueError('bundle geometry differs from the archived training environment')
     if env['task_contract'] != data.get('task_contract') or stage != data.get('stage'):
@@ -152,6 +181,8 @@ def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint
     if not robot_id.strip():
         raise ValueError('robot_id must be nonempty and match the LeRobot calibration ID')
     calibration_hash = sha256(require_calibration(robot_id))
+    checkpoint_hash, environment_hash = sha256(checkpoint), sha256(env_config)
+    validate_pair(checkpoint_hash, environment_hash)
     offsets = calibration_digest = None
     alignment_data = evidence = None
     if alignment_candidate_path:
@@ -174,8 +205,9 @@ def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint
         offsets, calibration_digest = joint_calibration.load(joint_calibration_path, robot_id)
         convention = 'measured'
     else:
-        convention = resolve_convention(sha256(checkpoint), sha256(env_config), encoder_convention)
+        convention = resolve_convention(checkpoint_hash, environment_hash, encoder_convention)
     profile, env, stage = profile_from_environment(env_config, convention, offsets)
+    sidecars = validate_sidecars(env_config, profile, env)
     if alignment_data or alignment_candidate_path:
         validate_environment(contract, profile, env)
     policy = FixedCartesianPolicy(checkpoint)  # Validate supported checkpoint schema on CPU.
@@ -193,13 +225,12 @@ def prepare(checkpoint, env_config, robot_id, encoder_convention, out_dir, joint
             destination = out_dir/'alignment'/alignment_data['evidence'][name]['file']
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
-    for name in ('public_task.json','public_physics.json'):
-        candidate = env_config.parent/name
-        if candidate.is_file():shutil.copy2(candidate,out_dir/name)
+    for sidecar in sidecars:
+        shutil.copy2(sidecar, out_dir/sidecar.name)
     manifest = {'schema_version':1,'kind':'so101_typing_deployment_bundle','robot_id':robot_id,
                 'encoder_convention':convention,'profile':asdict(profile), 'stage':stage,
                 'task_contract':env['task_contract'],'actuator_profile':env['actuator_profile'],
-                'checkpoint_sha256':policy.sha256,'env_sha256':sha256(env_config),
+                'checkpoint_sha256':policy.sha256,'env_sha256':environment_hash,
                 'lerobot_calibration_sha256':calibration_hash,
                 'mapping_selection':'qualified_alignment' if alignment_data else 'measured' if joint_calibration_path else encoder_convention,
                 'hardware_validated':False}

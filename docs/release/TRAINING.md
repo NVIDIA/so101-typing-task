@@ -129,8 +129,8 @@ python3 scripts/run_public_training_pipeline.py \
   --out-dir output/my-training-seed1307
 ```
 
-This command uses the same 500 + 2,000 budget, with 4096 environments. If you omit
-the two iteration flags, the supervisor retains its older 4,000 + 16,000 defaults.
+The supervisor defaults to this 500 + 2,000 budget with 4096 environments.
+Override the iteration flags when evaluation justifies a longer run.
 It evaluates P1A on 1024 episodes with seed 2307 before advancing. The
 default promotion threshold is 90% strict success, an engineering gate rather
 than a claim of hardware readiness. A failed gate saves its report and video,

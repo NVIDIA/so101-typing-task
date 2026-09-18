@@ -21,6 +21,7 @@ from .fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_PROFILE as REFE
 from .fk_probe_trajectory import ROOT, RESET, digest, load as load_trajectory, tip
 from .robot import require_calibration
 from .scene_check import load_recording, validate_mapping_offsets
+from .source_identity import identity_matches
 from .so101_kinematics import ARM_JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS
 
 PROBE_KEYS = frozenset('QGP')
@@ -71,7 +72,7 @@ def prepare(task_path, robot_id, out_dir, *, convention=None, mapping_report=Non
         if mapping_candidate not in ('fit4', 'fit3_pose', 'joint_scene') or report.get('status') != 'diagnostic_only_not_approved_for_deployment':
             raise ValueError('recording-based alignment requires diagnostic fit4, fit3_pose or joint_scene')
         for field in ('robot_id', 'calibration_sha256', 'robot_usd_sha256', 'source_sha256'):
-            if report.get('identities', {}).get(field) != contract[field]:
+            if not identity_matches(field, report.get('identities', {}).get(field), contract[field]):
                 raise ValueError(f'mapping report identity differs: {field}')
         if report.get('task_config') != task or report.get('joint_order') != list(ARM_JOINT_NAMES):
             raise ValueError('mapping report differs from frozen task or joint order')
@@ -136,7 +137,7 @@ def validate_candidate(data, robot_id):
     if c.get('robot_id') != robot_id or c.get('calibration_sha256') != digest(require_calibration(robot_id)):
         raise ValueError('alignment robot or LeRobot calibration changed')
     for field, value in model_identity().items():
-        if c.get(field) != value:
+        if not identity_matches(field, c.get(field), value):
             raise ValueError(f'alignment model/jaw identity changed: {field}')
     if c.get('joint_order') != list(ARM_JOINT_NAMES):
         raise ValueError('alignment joint order changed')
@@ -152,7 +153,7 @@ def candidate(path, robot_id):
 
 def check_plan(contract, plan):
     for field in ('task_config', 'source_sha256', 'robot_usd_sha256'):
-        if plan.get(field) != contract[field]:
+        if not identity_matches(field, plan.get(field), contract[field]):
             raise ValueError(f'probe differs from alignment: {field}')
 
 
@@ -176,7 +177,7 @@ def check_reserved_recording(contract, recording, reference_task):
     if recording.get('status') != 'recorded':
         raise ValueError('reserved recording did not complete')
     for field in ('robot_id', 'calibration_sha256', 'source_sha256', 'robot_usd_sha256'):
-        if recording.get(field) != contract[field]:
+        if not identity_matches(field, recording.get(field), contract[field]):
             raise ValueError(f'reserved recording differs from alignment: {field}')
     if recording.get('task_config') != reference_task:
         raise ValueError('reserved recording differs from alignment: task_config')

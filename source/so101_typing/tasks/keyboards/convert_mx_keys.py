@@ -385,7 +385,7 @@ def convert(source: str, out_dir: Path) -> None:
     case_hi = case_pts_all.max(axis=0) - origin
 
     manifest = {
-        "source": str(source),
+        "source": source.name,
         "slot_names": [key.name for key in flat_keys],
         "slot_labels": [key.label for key in flat_keys],
         "slot_groups": [key.group for key in flat_keys],

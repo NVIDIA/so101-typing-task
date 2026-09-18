@@ -11,6 +11,14 @@ from scripts import run_public_training_pipeline as supervisor
 
 
 class TrainingPipelineTests(unittest.TestCase):
+    def test_default_budget_matches_september_recipe(self):
+        with patch('sys.argv', ['pipeline', '--out-dir', 'unused']), \
+             patch.object(supervisor, 'Pipeline') as pipeline:
+            pipeline.return_value.execute.return_value = 0
+            self.assertEqual(supervisor.main(), 0)
+        args = pipeline.call_args.args[0]
+        self.assertEqual((args.p1a_iterations, args.transit_iterations), (500, 2000))
+
     def test_source_archive_does_not_require_git(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -140,7 +148,7 @@ class TrainingPipelineTests(unittest.TestCase):
             pipeline = self.pipeline(Path(directory) / 'run')
             with patch.object(pipeline, 'train', return_value=('checkpoint', 'config')) as train, \
                  patch.object(pipeline, 'evaluate', return_value=True) as evaluate, \
-                 patch.object(pipeline, 'video'), patch.object(pipeline, 'run') as run:
+                 patch.object(pipeline, 'video') as video, patch.object(pipeline, 'run') as run:
                 self.assertEqual(pipeline.execute(), 0)
             self.assertEqual(train.call_count, 2)
             self.assertEqual(evaluate.call_count, 3)
@@ -148,6 +156,8 @@ class TrainingPipelineTests(unittest.TestCase):
             exported = run.call_args_list[0].args[1]
             self.assertEqual(exported[exported.index('--encoder-convention')+1], 'benchmark')
             self.assertEqual(run.call_args.args[1][0], 'deploy')
+            self.assertEqual(video.call_args.args[-1], 'NEWTON')
+            self.assertEqual(run.call_args.args[1][-1], 'NEWTON')
             self.assertNotIn('--execute', run.call_args.args[1])
 
     def test_export_requires_mapping_before_spending_training_budget(self):

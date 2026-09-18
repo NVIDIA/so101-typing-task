@@ -316,7 +316,10 @@ def _validated_training_environment(
 ) -> dict[str, Any] | None:
     """Require calibrated checkpoints to carry their matching IsaacLab environment contract."""
 
+    from .checkpoint_identity import validate_files
     if profile.name != "physical-calibrated-20260718":
+        if env_config is not None:
+            validate_files(checkpoint, env_config)
         return None
     candidates = (
         [env_config]
@@ -332,6 +335,7 @@ def _validated_training_environment(
             "physical-calibrated-20260718 deployment requires its matching params/env.yaml; "
             "pass --env-config or keep params/env.yaml beside the checkpoint"
         )
+    validate_files(checkpoint, selected)
     try:
         config = yaml.load(selected.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
     except yaml.YAMLError as exc:

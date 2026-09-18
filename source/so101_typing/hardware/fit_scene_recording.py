@@ -16,6 +16,7 @@ from scripts.fixture_layout import load_geometry, transform, quaternion
 from scripts.reinforcement_learning.rsl_rl.public_task import rotate_xyzw
 from .fk_probe_trajectory import ROOT, digest
 from .scene_check import load_recording, replay_joint_positions
+from .source_identity import identity_matches
 from .fixed_cartesian_policy import PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG
 from .so101_kinematics import FIXED_JAW_TYPING_TIP_SITE_POS, site_position
 
@@ -141,7 +142,7 @@ def fit_recording(path, out_dir, validation_path=None, *, benchmark_offsets=Fals
     if validation_path:
         old = load_recording(validation_path)
         for field in ("robot_id", "calibration_sha256", "task_config", "source_sha256", "robot_usd_sha256"):
-            if old[field] != recording[field]:
+            if not identity_matches(field, old[field], recording[field]):
                 raise ValueError(f"validation recording has different {field}")
         other = contacts(old, geometry, benchmark_offsets=benchmark_offsets)
         report["earlier_recording_validation"] = {"recording_sha256": digest(validation_path),

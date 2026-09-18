@@ -181,7 +181,7 @@ class Pipeline:
             transit = self.train('04-transit15-train', 'transit15', self.args.transit_iterations, p1a[0])
             gates = [self.evaluate(f'05-transit15-evaluate-seed-{seed}', 'transit15', transit, seed)
                      for seed in (self.args.seed + 1000, self.args.seed + 2000)]
-            self.video('06-transit15-video', 'transit15', transit, 'NVIDIA')
+            self.video('06-transit15-video', 'transit15', transit, 'NEWTON')
             if self.args.prepare_deployment and all(gates):
                 bundle = self.root / 'deployment'
                 mapping = (['--joint-calibration', self.args.joint_calibration] if self.args.joint_calibration
@@ -189,7 +189,7 @@ class Pipeline:
                 self.run('07-prepare-deployment', ['prepare-deployment', '--checkpoint', transit[0],
                     '--env-config', transit[1], '--robot-id', self.args.robot_id,
                     '--out-dir', bundle, *mapping], simulation=False)
-                self.run('08-deployment-dry-run', ['deploy', bundle, 'NVIDIA'], simulation=False)
+                self.run('08-deployment-dry-run', ['deploy', bundle, 'NEWTON'], simulation=False)
             self.status['status'] = 'software_quality_gates_passed' if all(gates) else 'transit15_quality_gate_failed'
             self.status['final_checkpoint'] = str(transit[0])
             self.status['next_action'] = 'Inspect saved rollout videos and traces; physical reproduction requires operator validation.'
@@ -225,8 +225,8 @@ def main():
     parser.add_argument('--image', help='Docker image for all simulation stages; defaults to the public CLI image')
     parser.add_argument('--num-envs', type=positive, default=4096)
     parser.add_argument('--eval-envs', type=positive, default=1024)
-    parser.add_argument('--p1a-iterations', type=positive, default=4000)
-    parser.add_argument('--transit-iterations', type=positive, default=16000)
+    parser.add_argument('--p1a-iterations', type=positive, default=500)
+    parser.add_argument('--transit-iterations', type=positive, default=2000)
     parser.add_argument('--seed', type=int, default=1307)
     parser.add_argument('--minimum-success', type=float, default=0.90)
     parser.add_argument('--prepare-deployment', action='store_true', help='Requires ./so101 setup-hardware; performs dry run only')

@@ -44,7 +44,8 @@ bottom-right corner of right Ctrl. The
 [measured physical reference](../fixtures/physical_reference_20260915.md) shows
 these datums separately from the fitted simulation scene. Check and save your
 own placement; fitted model coordinates are not physical ruler instructions.
-`./so101 fixture` fits a candidate XYZ/full-orientation pose and preserves the
+`./so101 fixture --measurements FILE --out-dir NEW_DIR` fits a candidate
+XYZ/full-orientation pose and preserves the
 asset's built-in key geometry; it does not verify real-to-sim contact alignment.
 You can change the nominal keyboard position/yaw with a task JSON, retrain, and
 export that policy's geometry. You can also train over bounded XY/yaw placement
@@ -105,6 +106,9 @@ The second command is a software dry run and does not open the robot.
 The bundle contains the checkpoint, its environment YAML, optional task/physics
 JSONs, nominal A-Z geometry, normalization, robot ID and a generated reset target.
 Its hashes and geometry are checked before the runner can connect to hardware.
+Released checkpoint hashes are also checked against their matching environment.
+For your own checkpoints, keep the original `params/` directory: the checkpoint
+format does not embed the scene, so export cannot infer a missing training pairing.
 Qualified bundles copy and revalidate the replay/probe evidence at deployment.
 New bundles record the LeRobot calibration hash and reject subsequent changes.
 Recalibration requires checking the mapping and exporting a new bundle.
