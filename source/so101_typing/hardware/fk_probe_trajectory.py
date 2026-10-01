@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """One offline joint trajectory, shared by the Newton and physical F probes."""
 from __future__ import annotations
 

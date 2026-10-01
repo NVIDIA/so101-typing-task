@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """CPU-only diagnostic of joint zero offsets with the keyboard and jaw site frozen.
 
 Fit one recording; score separate recordings without refitting or candidate selection.

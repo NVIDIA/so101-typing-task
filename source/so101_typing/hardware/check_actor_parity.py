@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Compare recorded simulator actions to the CPU deployment actor; no robot connection."""
 import argparse
 import hashlib

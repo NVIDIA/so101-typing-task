@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Prepare and validate portable typing deployment inputs without opening hardware."""
 from __future__ import annotations
 import argparse

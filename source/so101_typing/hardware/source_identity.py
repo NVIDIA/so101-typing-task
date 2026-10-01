@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Exact identities for one metadata-only keyboard asset cleanup.
 
 The public NPZ removes the converter's workstation source path. All other NPY

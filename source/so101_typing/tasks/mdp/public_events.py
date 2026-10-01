@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Reset-only fixture pose randomization; sampled pose is not an actor input."""
 import torch
 from isaaclab.utils.math import quat_apply, quat_from_euler_xyz, quat_mul, subtract_frame_transforms

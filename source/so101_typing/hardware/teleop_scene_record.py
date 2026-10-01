@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Record measured follower poses during bounded, powered leader teleoperation.
 
 Default --check is offline. --inspect reads both buses without changing either.

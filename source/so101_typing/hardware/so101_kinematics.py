@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Pure NumPy SO-101 kinematics used by calibration and live policy observations."""
 
 from __future__ import annotations
