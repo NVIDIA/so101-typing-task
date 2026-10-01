@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Generate, simulate, or physically replay ONE saved joint-command trajectory.
 
 Default: offline hardware preflight. Only --execute can connect to the robot.

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Parallel local search of scene/joint parameters using complete recorded replays.
 
 All supplied recordings are optimization data. Never sends hardware commands.

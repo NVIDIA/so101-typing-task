@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Read calibration and controller registers without changing motor state.
 
 This does not call the follower's connect/configure methods, write registers,

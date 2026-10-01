@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Offline Newton first-contact refinement with a reset between recorded keys.
 
 Each recorded press is replayed in its own reset environment. All five joint

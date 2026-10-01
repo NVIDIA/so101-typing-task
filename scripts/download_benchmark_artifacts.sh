@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Download the released SO-101 typing checkpoints and their matched contracts.
 set -euo pipefail
 
