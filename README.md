@@ -34,6 +34,10 @@ from the September checkpoint used below. See the
 | Example training budget | About 2 h 38 min for 500 two-letter + 2,000 six-letter updates, including evaluation/video, on RTX 5090 |
 
 The container supplies pinned Isaac Lab, Newton and RSL-RL dependencies.
+The Isaac Lab base image carries NVIDIA Isaac Sim terms and separate component
+licenses; this repository's BSD license covers its source code. Users build the
+container locally. No container image or codec binaries are distributed by this
+source release; optional simulation video export runs in the locally built container.
 Hardware setup uses a separate LeRobot environment. See [training budgets](docs/release/TRAINING.md)
 for runtime estimates and larger runs; the disk allowance is planning headroom.
 

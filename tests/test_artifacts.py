@@ -193,6 +193,24 @@ def test_identity_alias_is_exact_and_scoped_to_one_asset():
     assert not source_identity.identity_matches('source_sha256', None, None)
 
 
+def test_calibration_notice_preserves_exact_source_identity():
+    notice = b'# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.\n'
+    current = (ROOT / 'source/so101_typing/tasks/physical_calibrated_20260718_env_cfg.py').read_bytes()
+    assert current.count(notice) == 1
+    original = current.replace(notice, b'', 1)
+    old_hash = hashlib.sha256(original).hexdigest()
+    new_hash = hashlib.sha256(current).hexdigest()
+    assert old_hash != new_hash
+    assert {old_hash, new_hash} == source_identity.CALIBRATION_SOURCE_HASHES
+    for name in source_identity.CALIBRATION_SOURCE_PATHS:
+        assert source_identity.source_hash_matches(name, old_hash, new_hash)
+        assert source_identity.source_hash_matches(name, new_hash, old_hash)
+        changed = hashlib.sha256(current + b'\n# changed\n').hexdigest()
+        assert not source_identity.source_hash_matches(name, changed, old_hash)
+        assert not source_identity.source_hash_matches(name, PUBLIC, old_hash)
+    assert not source_identity.source_hash_matches('unrelated.py', old_hash, new_hash)
+
+
 def test_old_recording_loads_without_rewriting_its_original_hash(tmp_path, monkeypatch):
     root = tmp_path / 'checkout'
     asset = root / ASSET
