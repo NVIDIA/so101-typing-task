@@ -8,6 +8,7 @@ import json
 import math
 from pathlib import Path
 from scripts.reinforcement_learning.rsl_rl.public_task import nominal_geometry, rotate_xyzw
+from source.so101_typing.hardware.source_identity import source_hash_matches
 
 ROOT = Path(__file__).resolve().parents[1]
 LANDMARKS = ('Q', 'P', 'Z')
@@ -17,7 +18,7 @@ MAX_RESIDUAL_MM = 1.0  # Measurement consistency only; not policy tolerance.
 def load_geometry():
     data = json.loads((ROOT / 'docs/fixtures/model_geometry.json').read_text())
     for name, expected in data['source_sha256'].items():
-        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+        if not source_hash_matches(name, hashlib.sha256((ROOT / name).read_bytes()).hexdigest(), expected):
             raise ValueError('fixture drawing geometry is stale; regenerate with scripts/build_fixture_geometry.py')
     return data
 
