@@ -1,0 +1,1866 @@
+{
+  "viewer": {
+    "eye": [
+      -0.22,
+      -0.27,
+      0.7
+    ],
+    "lookat": [
+      0.16,
+      0.05,
+      0.1
+    ],
+    "cam_prim_path": "/OmniverseKit_Persp",
+    "resolution": [
+      1280,
+      720
+    ],
+    "origin_type": "env",
+    "env_index": 0,
+    "asset_name": null,
+    "body_name": null
+  },
+  "sim": {
+    "device": "cuda:0",
+    "dt": 0.01,
+    "gravity": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "physics_prim_path": "/physicsScene",
+    "physics_material": {
+      "func": "isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material",
+      "static_friction": 0.5,
+      "dynamic_friction": 0.5,
+      "restitution": 0.0,
+      "density": null,
+      "compliant_contact_stiffness": null,
+      "compliant_contact_damping": null,
+      "compliant_contact_acceleration_spring": null,
+      "friction_combine_mode": null,
+      "restitution_combine_mode": null,
+      "damping_combine_mode": null,
+      "_usd_applied_schema": "PhysxMaterialAPI",
+      "_usd_field_exceptions": {},
+      "_usd_namespace": "physxMaterial"
+    },
+    "use_fabric": true,
+    "render_interval": 4,
+    "enable_scene_query_support": false,
+    "use_newton_actuators": false,
+    "physics": {
+      "class_type": "isaaclab_newton.physics.mjwarp_manager:NewtonMJWarpManager",
+      "num_substeps": 2,
+      "collision_decimation": 0,
+      "debug_mode": false,
+      "use_cuda_graph": true,
+      "solver_cfg": {
+        "class_type": "isaaclab_newton.physics.mjwarp_manager:NewtonMJWarpManager",
+        "solver_type": "mujoco_warp",
+        "njmax": 1024,
+        "nconmax": 600,
+        "iterations": 100,
+        "ls_iterations": 15,
+        "solver": "newton",
+        "integrator": "implicitfast",
+        "use_mujoco_cpu": false,
+        "disable_contacts": false,
+        "default_actuator_gear": null,
+        "actuator_gears": null,
+        "update_data_interval": 2,
+        "save_to_mjcf": null,
+        "impratio": 1.0,
+        "cone": "pyramidal",
+        "ccd_iterations": 35,
+        "ls_parallel": false,
+        "use_mujoco_contacts": false,
+        "tolerance": 1e-06
+      },
+      "collision_cfg": {
+        "broad_phase": "explicit",
+        "reduce_contacts": true,
+        "rigid_contact_max": null,
+        "max_triangle_pairs": 1000000,
+        "soft_contact_max": null,
+        "soft_contact_margin": 0.01,
+        "requires_grad": null,
+        "sdf_hydroelastic_config": null
+      },
+      "default_shape_cfg": {
+        "margin": 0.0,
+        "gap": 0.01,
+        "ke": 2500.0,
+        "kd": 100.0
+      },
+      "simplify_meshes": true,
+      "bvh_constructor_geometry": "cubql",
+      "bvh_constructor_scene": "sah",
+      "bvh_constructor_gaussian": "cubql",
+      "nan_replay": null
+    },
+    "create_stage_in_memory": false,
+    "logging_level": "WARNING",
+    "save_logs_to_file": true,
+    "log_dir": null,
+    "visualizer_cfgs": []
+  },
+  "ui_window_class_type": "isaaclab.envs.ui.manager_based_rl_env_window:ManagerBasedRLEnvWindow",
+  "seed": 4811,
+  "decimation": 4,
+  "scene": {
+    "class_type": "isaaclab.scene.interactive_scene:InteractiveScene",
+    "num_envs": 64,
+    "env_spacing": 1.0,
+    "lazy_sensor_update": true,
+    "replicate_physics": true,
+    "filter_collisions": true,
+    "clone_in_fabric": false,
+    "robot": {
+      "class_type": "isaaclab.assets.articulation.articulation:Articulation",
+      "prim_path": "/World/envs/env_.*/Robot",
+      "spawn": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.tabletop_scene:_spawn_robot",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": false,
+        "spawn_path": "/World/envs/env_0/Robot",
+        "mass_props": null,
+        "deformable_props": null,
+        "rigid_props": null,
+        "collision_props": null,
+        "activate_contact_sensors": true,
+        "scale": null,
+        "articulation_props": {
+          "articulation_enabled": null,
+          "fix_root_link": null,
+          "enabled_self_collisions": false,
+          "solver_position_iteration_count": null,
+          "solver_velocity_iteration_count": null,
+          "sleep_threshold": null,
+          "stabilization_threshold": null,
+          "_usd_applied_schema": "PhysxArticulationAPI",
+          "_usd_field_exceptions": {
+            "PhysxArticulationAPI": [
+              "physxArticulation",
+              [
+                "articulation_enabled"
+              ]
+            ]
+          },
+          "_usd_namespace": "physxArticulation"
+        },
+        "fix_root_link": null,
+        "fixed_tendons_props": null,
+        "spatial_tendons_props": null,
+        "joint_drive_props": null,
+        "ensure_drives_exist": false,
+        "visual_material_path": "material",
+        "visual_material": {
+          "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+          "diffuse_color": [
+            0.95,
+            0.24,
+            0.025
+          ],
+          "emissive_color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roughness": 0.5,
+          "metallic": 0.0,
+          "opacity": 1.0
+        },
+        "physics_material_path": "material",
+        "physics_material": null,
+        "usd_path": "/opt/so101/assets/workshop_so101.usdc",
+        "variants": null
+      },
+      "init_state": {
+        "pos": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.7071067811865475,
+          0.7071067811865476
+        ],
+        "lin_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ang_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "joint_pos": {
+          "shoulder_pan": -0.08285519086390664,
+          "shoulder_lift": -0.13809964128766555,
+          "elbow_flex": 0.020637904096827316,
+          "wrist_flex": 1.1561739160158462,
+          "wrist_roll": -1.533204619828865,
+          "gripper": -0.17453292519943295
+        },
+        "joint_vel": {
+          ".*": 0.0
+        }
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null,
+      "articulation_root_prim_path": null,
+      "soft_joint_pos_limit_factor": 1.0,
+      "joint_ordering": null,
+      "body_ordering": null,
+      "actuators": {
+        "all": {
+          "class_type": "isaaclab.actuators.actuator_pd:ImplicitActuator",
+          "joint_names_expr": [
+            ".*"
+          ],
+          "effort_limit": null,
+          "velocity_limit": null,
+          "effort_limit_sim": 3.35,
+          "velocity_limit_sim": 30.0,
+          "stiffness": {
+            "shoulder_pan": 48.93682087435154,
+            "shoulder_lift": 51.336503963086734,
+            "elbow_flex": 18.565405780730025,
+            "wrist_flex": 43.03380653711947,
+            "wrist_roll": 47.135886076886166,
+            "gripper": 50.83054002253434
+          },
+          "damping": {
+            "shoulder_pan": 2.309705389862818,
+            "shoulder_lift": 2.7829628172221677,
+            "elbow_flex": 0.534694353676958,
+            "wrist_flex": 2.7191323580266284,
+            "wrist_roll": 1.7895194158608136,
+            "gripper": 2.345108101123728
+          },
+          "armature": {
+            "shoulder_pan": 0.058228342618297214,
+            "shoulder_lift": 0.04425337526513037,
+            "elbow_flex": 0.054507128694178224,
+            "wrist_flex": 0.05110346770103517,
+            "wrist_roll": 0.05138195786130317,
+            "gripper": 0.04338043435613245
+          },
+          "friction": {
+            "shoulder_pan": 0.2154699280851669,
+            "shoulder_lift": 0.3181311647624241,
+            "elbow_flex": 0.4018746873200306,
+            "wrist_flex": 0.29646325177526045,
+            "wrist_roll": 0.2827718443928624,
+            "gripper": 0.31151570694796027
+          },
+          "dynamic_friction": {
+            "shoulder_pan": 0.2154699280851669,
+            "shoulder_lift": 0.3181311647624241,
+            "elbow_flex": 0.4018746873200306,
+            "wrist_flex": 0.29646325177526045,
+            "wrist_roll": 0.2827718443928624,
+            "gripper": 0.31151570694796027
+          },
+          "viscous_friction": {
+            "shoulder_pan": 1.0732503444852939,
+            "shoulder_lift": 0.8773707044105059,
+            "elbow_flex": 0.4925605028705261,
+            "wrist_flex": 0.51747384516758,
+            "wrist_roll": 0.4502010515484256,
+            "gripper": 1.1389592259244838
+          }
+        }
+      },
+      "actuator_value_resolution_debug_print": false
+    },
+    "keyboard": {
+      "class_type": "isaaclab.assets.articulation.articulation:Articulation",
+      "prim_path": "/World/envs/env_.*/Keyboard",
+      "spawn": {
+        "func": "isaaclab.sim.spawners.wrappers.wrappers:spawn_multi_asset",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": null,
+        "mass_props": null,
+        "deformable_props": null,
+        "rigid_props": null,
+        "collision_props": null,
+        "activate_contact_sensors": false,
+        "assets_cfg": [
+          {
+            "func": "isaaclab_tasks.core.dexsuite.config.so101.keyboards.keyboard_mx_keys:spawn_mx_keys_keyboard",
+            "visible": true,
+            "semantic_tags": null,
+            "copy_from_source": true,
+            "spawn_path": null,
+            "asset_dir": "/workspace/isaaclab/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/keyboards/data/mx_keys",
+            "partition_mode": "single",
+            "partition_dof": 6,
+            "partition_tail_policy": "pad_tail",
+            "include_case_collision": true,
+            "key_collision_margin": 0.0015,
+            "key_collision_thickness": 0.0035,
+            "case_collision_margin": 0.002,
+            "travel": 0.0018,
+            "rest_upper_limit": 0.0001,
+            "key_mass": 0.008,
+            "base_mass": 0.81,
+            "stiffness": 60.0,
+            "damping": 2.5,
+            "max_force": 4.0,
+            "strict_validation": true
+          }
+        ],
+        "spawn_paths": [
+          "/World/envs/env_0/Keyboard"
+        ],
+        "random_choice": true
+      },
+      "init_state": {
+        "pos": [
+          0.23290250740244195,
+          0.04264249710968002,
+          0.029120267782466944
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          -0.7074538725855443,
+          0.7067595193301018
+        ],
+        "lin_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ang_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "joint_pos": {
+          "key_.*_joint": 0.0
+        },
+        "joint_vel": {
+          "key_.*_joint": 0.0
+        }
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null,
+      "articulation_root_prim_path": null,
+      "soft_joint_pos_limit_factor": 1.0,
+      "joint_ordering": null,
+      "body_ordering": null,
+      "actuators": {},
+      "actuator_value_resolution_debug_print": false
+    },
+    "robot_contact": {
+      "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+      "prim_path": "/World/envs/env_.*/Robot/.*",
+      "update_period": 0.0,
+      "debug_vis": false,
+      "track_pose": false,
+      "track_contact_points": false,
+      "track_friction_forces": false,
+      "max_contact_data_count_per_prim": null,
+      "track_air_time": false,
+      "force_threshold": null,
+      "history_length": 1,
+      "filter_prim_paths_expr": [],
+      "visualizer_cfg": {
+        "prim_path": "/Visuals/ContactSensor",
+        "markers": {
+          "contact": {
+            "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+            "visible": true,
+            "semantic_tags": null,
+            "copy_from_source": true,
+            "spawn_path": null,
+            "mass_props": null,
+            "rigid_props": null,
+            "collision_props": null,
+            "activate_contact_sensors": false,
+            "visual_material_path": "material",
+            "visual_material": {
+              "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+              "diffuse_color": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "emissive_color": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "roughness": 0.5,
+              "metallic": 0.0,
+              "opacity": 1.0
+            },
+            "physics_material_path": "material",
+            "physics_material": null,
+            "radius": 0.02
+          },
+          "no_contact": {
+            "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+            "visible": false,
+            "semantic_tags": null,
+            "copy_from_source": true,
+            "spawn_path": null,
+            "mass_props": null,
+            "rigid_props": null,
+            "collision_props": null,
+            "activate_contact_sensors": false,
+            "visual_material_path": "material",
+            "visual_material": {
+              "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+              "diffuse_color": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "emissive_color": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "roughness": 0.5,
+              "metallic": 0.0,
+              "opacity": 1.0
+            },
+            "physics_material_path": "material",
+            "physics_material": null,
+            "radius": 0.02
+          }
+        },
+        "class_type": "isaaclab.markers.visualization_markers:VisualizationMarkers"
+      }
+    },
+    "plane": {
+      "class_type": null,
+      "prim_path": "/World/envs/env_.*/WhiteTable",
+      "spawn": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.tabletop_scene:_spawn_box",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": "/World/envs/env_0/WhiteTable",
+        "mass_props": null,
+        "rigid_props": null,
+        "collision_props": {
+          "collision_enabled": true,
+          "contact_offset": null,
+          "rest_offset": null,
+          "torsional_patch_radius": null,
+          "min_torsional_patch_radius": null,
+          "_usd_applied_schema": "PhysxCollisionAPI",
+          "_usd_field_exceptions": {
+            "PhysxCollisionAPI": [
+              "physxCollision",
+              [
+                "contact_offset",
+                "rest_offset"
+              ]
+            ]
+          },
+          "_usd_namespace": "physxCollision"
+        },
+        "activate_contact_sensors": false,
+        "visual_material_path": "material",
+        "visual_material": {
+          "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+          "diffuse_color": [
+            0.94,
+            0.94,
+            0.92
+          ],
+          "emissive_color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roughness": 0.85,
+          "metallic": 0.0,
+          "opacity": 1.0
+        },
+        "physics_material_path": "material",
+        "physics_material": null,
+        "size": [
+          0.690125,
+          0.8,
+          0.025
+        ]
+      },
+      "init_state": {
+        "pos": [
+          0.1799375,
+          0.03,
+          0.006583326164739663
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null
+    },
+    "sky_light": {
+      "class_type": null,
+      "prim_path": "/World/skyLight",
+      "spawn": {
+        "func": "isaaclab.sim.spawners.lights.lights:spawn_light",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": "/World/skyLight",
+        "prim_type": "DomeLight",
+        "color": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "enable_color_temperature": false,
+        "color_temperature": 6500.0,
+        "normalize": false,
+        "exposure": 0.0,
+        "intensity": 750.0,
+        "texture_file": null,
+        "texture_format": "automatic",
+        "visible_in_primary_ray": true
+      },
+      "init_state": {
+        "pos": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null
+    },
+    "camera_wrist": {
+      "class_type": "isaaclab.sensors.camera.camera:Camera",
+      "prim_path": "/World/envs/env_.*/Robot/gripper/wowrobo_2MP_camera",
+      "update_period": 0.04,
+      "debug_vis": false,
+      "offset": {
+        "pos": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "convention": "ros"
+      },
+      "spawn": null,
+      "depth_clipping_behavior": "none",
+      "data_types": [
+        "rgb"
+      ],
+      "width": 160,
+      "height": 120,
+      "update_latest_camera_pose": true,
+      "semantic_filter": "*:*",
+      "colorize_semantic_segmentation": true,
+      "colorize_instance_id_segmentation": true,
+      "colorize_instance_segmentation": true,
+      "semantic_segmentation_mapping": {},
+      "renderer_cfg": {
+        "renderer_type": "ovrtx",
+        "temp_usd_dir": null,
+        "log_level": "warn",
+        "log_file_path": "/tmp/ovrtx_renderer.log",
+        "colorize_semantic_segmentation": true,
+        "colorize_instance_segmentation": true,
+        "colorize_instance_id_segmentation": true
+      },
+      "isp_cfg": null
+    },
+    "tabletop_back_wall": {
+      "class_type": null,
+      "prim_path": "/World/envs/env_.*/WhiteBackPanel",
+      "spawn": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.tabletop_scene:_spawn_box",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": "/World/envs/env_0/WhiteBackPanel",
+        "mass_props": null,
+        "rigid_props": null,
+        "collision_props": {
+          "collision_enabled": true,
+          "contact_offset": null,
+          "rest_offset": null,
+          "torsional_patch_radius": null,
+          "min_torsional_patch_radius": null,
+          "_usd_applied_schema": "PhysxCollisionAPI",
+          "_usd_field_exceptions": {
+            "PhysxCollisionAPI": [
+              "physxCollision",
+              [
+                "contact_offset",
+                "rest_offset"
+              ]
+            ]
+          },
+          "_usd_namespace": "physxCollision"
+        },
+        "activate_contact_sensors": false,
+        "visual_material_path": "material",
+        "visual_material": {
+          "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+          "diffuse_color": [
+            0.94,
+            0.94,
+            0.92
+          ],
+          "emissive_color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roughness": 0.85,
+          "metallic": 0.0,
+          "opacity": 1.0
+        },
+        "physics_material_path": "material",
+        "physics_material": null,
+        "size": [
+          0.006,
+          0.746,
+          0.508
+        ]
+      },
+      "init_state": {
+        "pos": [
+          0.5,
+          0.03,
+          0.2730833261647397
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null
+    },
+    "tabletop_left_wall": {
+      "class_type": null,
+      "prim_path": "/World/envs/env_.*/WhiteLeftPanel",
+      "spawn": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.tabletop_scene:_spawn_box",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": "/World/envs/env_0/WhiteLeftPanel",
+        "mass_props": null,
+        "rigid_props": null,
+        "collision_props": {
+          "collision_enabled": true,
+          "contact_offset": null,
+          "rest_offset": null,
+          "torsional_patch_radius": null,
+          "min_torsional_patch_radius": null,
+          "_usd_applied_schema": "PhysxCollisionAPI",
+          "_usd_field_exceptions": {
+            "PhysxCollisionAPI": [
+              "physxCollision",
+              [
+                "contact_offset",
+                "rest_offset"
+              ]
+            ]
+          },
+          "_usd_namespace": "physxCollision"
+        },
+        "activate_contact_sensors": false,
+        "visual_material_path": "material",
+        "visual_material": {
+          "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+          "diffuse_color": [
+            0.94,
+            0.94,
+            0.92
+          ],
+          "emissive_color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roughness": 0.85,
+          "metallic": 0.0,
+          "opacity": 1.0
+        },
+        "physics_material_path": "material",
+        "physics_material": null,
+        "size": [
+          0.655125,
+          0.006,
+          0.508
+        ]
+      },
+      "init_state": {
+        "pos": [
+          0.1724375,
+          0.4,
+          0.2730833261647397
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null
+    },
+    "tabletop_right_wall": {
+      "class_type": null,
+      "prim_path": "/World/envs/env_.*/WhiteRightPanel",
+      "spawn": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.tabletop_scene:_spawn_box",
+        "visible": true,
+        "semantic_tags": null,
+        "copy_from_source": true,
+        "spawn_path": "/World/envs/env_0/WhiteRightPanel",
+        "mass_props": null,
+        "rigid_props": null,
+        "collision_props": {
+          "collision_enabled": true,
+          "contact_offset": null,
+          "rest_offset": null,
+          "torsional_patch_radius": null,
+          "min_torsional_patch_radius": null,
+          "_usd_applied_schema": "PhysxCollisionAPI",
+          "_usd_field_exceptions": {
+            "PhysxCollisionAPI": [
+              "physxCollision",
+              [
+                "contact_offset",
+                "rest_offset"
+              ]
+            ]
+          },
+          "_usd_namespace": "physxCollision"
+        },
+        "activate_contact_sensors": false,
+        "visual_material_path": "material",
+        "visual_material": {
+          "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+          "diffuse_color": [
+            0.94,
+            0.94,
+            0.92
+          ],
+          "emissive_color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "roughness": 0.85,
+          "metallic": 0.0,
+          "opacity": 1.0
+        },
+        "physics_material_path": "material",
+        "physics_material": null,
+        "size": [
+          0.655125,
+          0.006,
+          0.508
+        ]
+      },
+      "init_state": {
+        "pos": [
+          0.1724375,
+          -0.34,
+          0.2730833261647397
+        ],
+        "rot": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "collision_group": 0,
+      "debug_vis": false,
+      "disable_shape_checks": null
+    }
+  },
+  "recorders": {
+    "dataset_file_handler_class_type": "isaaclab.utils.datasets.hdf5_dataset_file_handler:HDF5DatasetFileHandler",
+    "dataset_export_dir_path": "/tmp/isaaclab/logs",
+    "dataset_filename": "dataset",
+    "dataset_export_mode": {
+      "_value_": 1,
+      "_name_": "EXPORT_ALL",
+      "_sort_order_": 1
+    },
+    "export_in_record_pre_reset": true,
+    "export_in_close": false,
+    "dataset_compression": true
+  },
+  "observations": {
+    "policy": {
+      "concatenate_terms": true,
+      "concatenate_dim": -1,
+      "enable_corruption": false,
+      "history_length": null,
+      "flatten_history_dim": true,
+      "joint_pos_rel_reset": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_joint_pos_rel_reset",
+        "params": {
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      },
+      "joint_vel": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_joint_vel",
+        "params": {
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      },
+      "joint_command_rel_reset": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_joint_command_rel_reset",
+        "params": {
+          "action_name": "action",
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      },
+      "target_xyz_b": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_target_xyz_b",
+        "params": {
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      },
+      "phase_onehot": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_typing_phase_onehot",
+        "params": {
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      },
+      "phase_elapsed_s": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.observations:fixed_phase_elapsed_s",
+        "params": {
+          "command_name": "typing"
+        },
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      }
+    },
+    "proprio": {
+      "concatenate_terms": true,
+      "concatenate_dim": -1,
+      "enable_corruption": false,
+      "history_length": null,
+      "flatten_history_dim": true,
+      "state": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.vision_observations:vision_proprio",
+        "params": {},
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      }
+    },
+    "rgb": {
+      "concatenate_terms": true,
+      "concatenate_dim": -1,
+      "enable_corruption": false,
+      "history_length": null,
+      "flatten_history_dim": true,
+      "image": {
+        "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.vision_observations:wrist_rgb_history",
+        "params": {},
+        "modifiers": null,
+        "noise": null,
+        "clip": null,
+        "scale": null,
+        "history_length": 0,
+        "flatten_history_dim": true
+      }
+    }
+  },
+  "actions": {
+    "action": {
+      "class_type": "isaaclab_tasks.core.dexsuite.config.so101.mdp.joint_rate_actions:JointRatePositionAction",
+      "asset_name": "robot",
+      "debug_vis": false,
+      "clip": null,
+      "joint_names": [
+        "shoulder_pan",
+        "shoulder_lift",
+        "elbow_flex",
+        "wrist_flex",
+        "wrist_roll"
+      ],
+      "velocity_limits_rad_s": [
+        0.3,
+        1.1,
+        0.75,
+        0.2,
+        0.1
+      ],
+      "q_reset_ref": [
+        -0.08285519086390664,
+        -0.13809964128766555,
+        0.020637904096827316,
+        1.1561739160158462,
+        -1.533204619828865
+      ],
+      "command_name": "typing",
+      "control_dt_s": 0.04,
+      "saturation_threshold": 0.95,
+      "action_bound_epsilon": 1e-06
+    }
+  },
+  "events": {
+    "reset_keyboard": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.vision_observations:reset_vision_domain",
+      "params": {
+        "letter_xyz_keyboard_m": [
+          [
+            -0.16729426941362902,
+            -0.014006391915824068,
+            0.0011142015033664063
+          ],
+          [
+            -0.08219227756130071,
+            -0.03289419052796633,
+            -0.0010377940277101509
+          ],
+          [
+            -0.12021226539733401,
+            -0.03289419052796634,
+            -0.001037794027710144
+          ],
+          [
+            -0.12927427785230544,
+            -0.014006391915824076,
+            0.001114201503366395
+          ],
+          [
+            -0.13434900788182738,
+            0.005132666385647841,
+            0.0032948244959952596
+          ],
+          [
+            -0.11026428393428875,
+            -0.014006391915824062,
+            0.0011142015033663985
+          ],
+          [
+            -0.09125428815362695,
+            -0.014006391915824066,
+            0.0011142015033663924
+          ],
+          [
+            -0.07224429237296517,
+            -0.014006391915824057,
+            0.0011142015033663928
+          ],
+          [
+            -0.03929902525322825,
+            0.005132666385647846,
+            0.0032948244959952527
+          ],
+          [
+            -0.05323430031759363,
+            -0.01400639191582407,
+            0.001114201503366389
+          ],
+          [
+            -0.03422430826222203,
+            -0.01400639191582408,
+            0.0011142015033663855
+          ],
+          [
+            -0.015214316206850481,
+            -0.014006391915824054,
+            0.0011142015033663855
+          ],
+          [
+            -0.044172293450557544,
+            -0.032894190527966334,
+            -0.0010377940277101552
+          ],
+          [
+            -0.06318228550592914,
+            -0.03289419052796633,
+            -0.00103779402771015
+          ],
+          [
+            -0.02028904064843711,
+            0.005132666385647876,
+            0.0032948244959952514
+          ],
+          [
+            -0.0012790485930655395,
+            0.005132666385647843,
+            0.003294824495995245
+          ],
+          [
+            -0.1723689943208769,
+            0.00513266638564787,
+            0.003294824495995271
+          ],
+          [
+            -0.11533900837587542,
+            0.00513266638564786,
+            0.0032948244959952614
+          ],
+          [
+            -0.14828427363296723,
+            -0.014006391915824059,
+            0.001114201503366401
+          ],
+          [
+            -0.09632901632050384,
+            0.005132666385647889,
+            0.0032948244959952596
+          ],
+          [
+            -0.05830902475918024,
+            0.005132666385647889,
+            0.003294824495995254
+          ],
+          [
+            -0.10120226961667227,
+            -0.03289419052796631,
+            -0.0010377940277101457
+          ],
+          [
+            -0.1533589999371989,
+            0.005132666385647882,
+            0.0032948244959952674
+          ],
+          [
+            -0.13922226117799583,
+            -0.032894190527966334,
+            -0.0010377940277101422
+          ],
+          [
+            -0.07731902053984203,
+            0.005132666385647871,
+            0.0032948244959952557
+          ],
+          [
+            -0.15823298478723338,
+            -0.03289419052796633,
+            -0.0010377940277101396
+          ]
+        ]
+      },
+      "mode": "reset",
+      "interval_range_s": null,
+      "is_global_time": false,
+      "resample_interval_on_reset": true,
+      "min_step_count_between_reset": 0
+    },
+    "reset_robot_rest": {
+      "func": "isaaclab.envs.mdp.events:reset_joints_by_offset",
+      "params": {
+        "asset_cfg": {
+          "name": "robot",
+          "joint_names": [
+            "shoulder_pan",
+            "shoulder_lift",
+            "elbow_flex",
+            "wrist_flex",
+            "wrist_roll"
+          ],
+          "joint_ids": "slice(None, None, None)",
+          "fixed_tendon_names": null,
+          "fixed_tendon_ids": "slice(None, None, None)",
+          "body_names": null,
+          "body_ids": "slice(None, None, None)",
+          "object_collection_names": null,
+          "object_collection_ids": "slice(None, None, None)",
+          "preserve_order": false
+        },
+        "position_range": [
+          0,
+          0
+        ],
+        "velocity_range": [
+          0.0,
+          0.0
+        ]
+      },
+      "mode": "reset",
+      "interval_range_s": null,
+      "is_global_time": false,
+      "resample_interval_on_reset": true,
+      "min_step_count_between_reset": 0
+    },
+    "reset_gripper_closed": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.registered_mx_env_cfg:_reset_gripper_closed",
+      "params": {
+        "asset_cfg": {
+          "name": "robot",
+          "joint_names": [
+            "gripper"
+          ],
+          "joint_ids": "slice(None, None, None)",
+          "fixed_tendon_names": null,
+          "fixed_tendon_ids": "slice(None, None, None)",
+          "body_names": null,
+          "body_ids": "slice(None, None, None)",
+          "object_collection_names": null,
+          "object_collection_ids": "slice(None, None, None)",
+          "preserve_order": false
+        }
+      },
+      "mode": "reset",
+      "interval_range_s": null,
+      "is_global_time": false,
+      "resample_interval_on_reset": true,
+      "min_step_count_between_reset": 0
+    }
+  },
+  "rerender_on_reset": false,
+  "num_rerenders_on_reset": 0,
+  "wait_for_textures": true,
+  "xr": null,
+  "teleop_devices": {
+    "devices": {}
+  },
+  "isaac_teleop": null,
+  "export_io_descriptors": false,
+  "log_dir": null,
+  "video_recorder": {
+    "class_type": "isaaclab.envs.utils.video_recorder:VideoRecorder",
+    "env_render_mode": null,
+    "eye": [
+      -0.22,
+      -0.27,
+      0.7
+    ],
+    "lookat": [
+      0.16,
+      0.05,
+      0.1
+    ],
+    "backend_source": "visualizer",
+    "window_width": 1280,
+    "window_height": 720
+  },
+  "is_finite_horizon": false,
+  "compute_final_obs": false,
+  "episode_length_s": 61.0,
+  "rewards": {
+    "seek_progress": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_seek_progress",
+      "params": {
+        "command_name": "typing",
+        "distance_scale": 0.02
+      },
+      "weight": 6.25
+    },
+    "lift_progress": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_lift_progress",
+      "params": {
+        "command_name": "typing",
+        "height_scale": 0.004
+      },
+      "weight": 12.5
+    },
+    "target_down": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_target_down",
+      "params": {
+        "command_name": "typing"
+      },
+      "weight": 50.0
+    },
+    "target_up": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_target_up",
+      "params": {
+        "command_name": "typing"
+      },
+      "weight": 25.0
+    },
+    "clearance": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_clearance",
+      "params": {
+        "command_name": "typing"
+      },
+      "weight": 25.0
+    },
+    "success": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_success",
+      "params": {
+        "command_name": "typing"
+      },
+      "weight": 125.0
+    },
+    "action_change": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_action_change_l2",
+      "params": {
+        "action_name": "action"
+      },
+      "weight": -0.02
+    },
+    "measured_joint_velocity": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_cartesian_joint_velocity_l2",
+      "params": {
+        "command_name": "typing",
+        "action_name": "action"
+      },
+      "weight": -0.01
+    },
+    "low_clearance_lateral_motion": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.rewards:fixed_jaw_low_clearance_lateral_motion",
+      "params": {
+        "command_name": "typing",
+        "tip_body": "gripper",
+        "tip_offset": [
+          -0.0106769063594562,
+          -0.0005212273838322845,
+          -0.10413855748835771
+        ],
+        "clearance_m": 0.015,
+        "lateral_speed_m_s": 0.04,
+        "asset_cfg": {
+          "name": "robot",
+          "joint_names": null,
+          "joint_ids": "slice(None, None, None)",
+          "fixed_tendon_names": null,
+          "fixed_tendon_ids": "slice(None, None, None)",
+          "body_names": null,
+          "body_ids": "slice(None, None, None)",
+          "object_collection_names": null,
+          "object_collection_ids": "slice(None, None, None)",
+          "preserve_order": false
+        }
+      },
+      "weight": -0.5
+    },
+    "failure": {
+      "func": "isaaclab.envs.mdp.rewards:is_terminated_term",
+      "params": {
+        "term_keys": [
+          "invalid_key",
+          "map_invalid",
+          "action_contract",
+          "phase_timeout",
+          "scrape",
+          "excessive_contact",
+          "abnormal_robot"
+        ]
+      },
+      "weight": -125.0
+    },
+    "timeout": {
+      "func": "isaaclab.envs.mdp.rewards:is_terminated_term",
+      "params": {
+        "term_keys": [
+          "time_out"
+        ]
+      },
+      "weight": -50.0
+    }
+  },
+  "terminations": {
+    "time_out": {
+      "func": "isaaclab.envs.mdp.terminations:time_out",
+      "params": {},
+      "time_out": true
+    },
+    "abnormal_robot": {
+      "func": "isaaclab.envs.mdp.terminations:joint_vel_out_of_limit",
+      "params": {},
+      "time_out": false
+    },
+    "excessive_contact": {
+      "func": "isaaclab.envs.mdp.terminations:illegal_contact",
+      "params": {
+        "sensor_cfg": {
+          "name": "robot_contact",
+          "joint_names": null,
+          "joint_ids": "slice(None, None, None)",
+          "fixed_tendon_names": null,
+          "fixed_tendon_ids": "slice(None, None, None)",
+          "body_names": null,
+          "body_ids": "slice(None, None, None)",
+          "object_collection_names": null,
+          "object_collection_ids": "slice(None, None, None)",
+          "preserve_order": false
+        },
+        "threshold": 10.0
+      },
+      "time_out": false
+    },
+    "invalid_key": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_cartesian_invalid_key",
+      "params": {
+        "command_name": "typing"
+      },
+      "time_out": false
+    },
+    "map_invalid": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_cartesian_map_invalid",
+      "params": {
+        "command_name": "typing"
+      },
+      "time_out": false
+    },
+    "action_contract": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_cartesian_action_contract_violation",
+      "params": {
+        "action_name": "action"
+      },
+      "time_out": false
+    },
+    "phase_timeout": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_cartesian_phase_timeout",
+      "params": {
+        "command_name": "typing"
+      },
+      "time_out": false
+    },
+    "scrape": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_jaw_scrape",
+      "params": {
+        "command_name": "typing",
+        "tip_body": "gripper",
+        "tip_offset": [
+          -0.0106769063594562,
+          -0.0005212273838322845,
+          -0.10413855748835771
+        ],
+        "clearance_m": 0.015,
+        "lateral_speed_m_s": 0.04,
+        "persistence_steps": 3,
+        "asset_cfg": {
+          "name": "robot",
+          "joint_names": null,
+          "joint_ids": "slice(None, None, None)",
+          "fixed_tendon_names": null,
+          "fixed_tendon_ids": "slice(None, None, None)",
+          "body_names": null,
+          "body_ids": "slice(None, None, None)",
+          "object_collection_names": null,
+          "object_collection_ids": "slice(None, None, None)",
+          "preserve_order": false
+        }
+      },
+      "time_out": false
+    },
+    "success": {
+      "func": "isaaclab_tasks.core.dexsuite.config.so101.mdp.terminations:fixed_cartesian_typing_complete",
+      "params": {
+        "command_name": "typing"
+      },
+      "time_out": false
+    }
+  },
+  "curriculum": null,
+  "commands": {
+    "typing": {
+      "class_type": "isaaclab_tasks.core.dexsuite.config.so101.mdp.vision_observations:VisionTypingCommand",
+      "resampling_time_range": [
+        1000000000.0,
+        1000000000.0
+      ],
+      "debug_vis": false,
+      "cmd_kind": null,
+      "element_names": null,
+      "asset_name": "robot",
+      "object_name": "keyboard",
+      "letter_length": [
+        6,
+        6
+      ],
+      "target_slots": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "max_len": 6,
+      "command_mode": "letter_left",
+      "actuation_fraction": 0.5,
+      "typeable_slots": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "backspace_slot": 13,
+      "reset": {
+        "ik": null,
+        "ik_rpy_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ik_hover_height": 0.0,
+        "ik_iters": 1,
+        "ik_seed_joint_noise": 0.0,
+        "match_prob": 0.0,
+        "oversample_factor": 64,
+        "w_target": 1.0,
+        "w_next_key": 1.0,
+        "w_unmatched": 1.0,
+        "w_prefix_complete": 1.0,
+        "w_remaining": 1.0,
+        "enabled": false,
+        "buffer_size": 4096,
+        "beta_target": 0.5,
+        "beta_kappa": 1.0,
+        "normal_weight": 0.5,
+        "sample_eps": 0.0001,
+        "history_len": 20,
+        "reset_assets": null,
+        "pre_solve_reset": null
+      },
+      "slot_labels": [
+        "`",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "0",
+        "-",
+        "=",
+        "Backspace",
+        "Tab",
+        "Q",
+        "W",
+        "E",
+        "R",
+        "T",
+        "Y",
+        "U",
+        "I",
+        "O",
+        "P",
+        "[",
+        "]",
+        "\\",
+        "Caps",
+        "A",
+        "S",
+        "D",
+        "F",
+        "G",
+        "H",
+        "J",
+        "K",
+        "L",
+        ";",
+        "'",
+        "Enter",
+        "Shift",
+        "Z",
+        "X",
+        "C",
+        "V",
+        "B",
+        "N",
+        "M",
+        ",",
+        ".",
+        "/",
+        "Shift",
+        "Ctrl",
+        "Meta",
+        "Alt",
+        "Space",
+        "Alt",
+        "Fn",
+        "Menu",
+        "Ctrl",
+        "Esc",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Prt",
+        "Scr",
+        "Pause",
+        "Ins",
+        "Home",
+        "PgUp",
+        "Del",
+        "End",
+        "PgDn",
+        "Up",
+        "Left",
+        "Down",
+        "Right",
+        "Num",
+        "/",
+        "*",
+        "-",
+        "7",
+        "8",
+        "9",
+        "+",
+        "4",
+        "5",
+        "6",
+        "1",
+        "2",
+        "3",
+        "Enter",
+        "0",
+        ".",
+        "Calc",
+        "Shot",
+        "Lock",
+        "Vol"
+      ],
+      "visualizer_prim_path": "/Visuals/TypingCommand",
+      "viz_pixel_size": 0.0045,
+      "viz_letter_gap": 1.0,
+      "viz_row_gap": 0.02,
+      "viz_banner_height": 0.25,
+      "viz_key_marker_radius": 0.009,
+      "viz_key_marker_height": 0.003,
+      "viz_key_marker_lift": 0.003,
+      "viz_env_ids": null,
+      "q_reset_ref": [
+        -0.08285519086390664,
+        -0.13809964128766555,
+        0.020637904096827316,
+        1.1561739160158462,
+        -1.533204619828865
+      ],
+      "letter_slots": [
+        29,
+        46,
+        44,
+        31,
+        17,
+        32,
+        33,
+        34,
+        22,
+        35,
+        36,
+        37,
+        48,
+        47,
+        23,
+        24,
+        15,
+        18,
+        30,
+        19,
+        21,
+        45,
+        16,
+        43,
+        20,
+        42
+      ],
+      "letter_xyz_b_m": [
+        [
+          0.2190603991346626,
+          0.20995043963436302,
+          0.03023446928583335
+        ],
+        [
+          0.20008904256436544,
+          0.12486703594404724,
+          0.028082473754756792
+        ],
+        [
+          0.20012637681125187,
+          0.16288700544963905,
+          0.0280824737547568
+        ],
+        [
+          0.2190230648841181,
+          0.17193046640348275,
+          0.03023446928583334
+        ],
+        [
+          0.23816709715868098,
+          0.17698640012636396,
+          0.032415092278462204
+        ],
+        [
+          0.2190043977606749,
+          0.15292048165068683,
+          0.030234469285833343
+        ],
+        [
+          0.21898573063540264,
+          0.13391049503524668,
+          0.030234469285833336
+        ],
+        [
+          0.21896706351013037,
+          0.11490050841980656,
+          0.030234469285833336
+        ],
+        [
+          0.23807376152866155,
+          0.08193646332387489,
+          0.0324150922784622
+        ],
+        [
+          0.2189483963885162,
+          0.09589052552965485,
+          0.030234469285833333
+        ],
+        [
+          0.21892972926690202,
+          0.07688054263950311,
+          0.03023446928583333
+        ],
+        [
+          0.21891106214528788,
+          0.057870559749351416,
+          0.03023446928583333
+        ],
+        [
+          0.2000517083211371,
+          0.0868470701637438,
+          0.02808247375475679
+        ],
+        [
+          0.20007037544275127,
+          0.10585705305389553,
+          0.028082473754756795
+        ],
+        [
+          0.23805509441436362,
+          0.06292648788430003,
+          0.0324150922784622
+        ],
+        [
+          0.23803642729274943,
+          0.0439165049941483,
+          0.03241509227846219
+        ],
+        [
+          0.23820443140419564,
+          0.21500636823497266,
+          0.03241509227846222
+        ],
+        [
+          0.2381484300297506,
+          0.15797640978563546,
+          0.032415092278462204
+        ],
+        [
+          0.21904173200939037,
+          0.19094045301892287,
+          0.030234469285833343
+        ],
+        [
+          0.23812976290813648,
+          0.13896642689548372,
+          0.032415092278462204
+        ],
+        [
+          0.23809242865759198,
+          0.10094645366460343,
+          0.0324150922784622
+        ],
+        [
+          0.2001077096859796,
+          0.14387701883419896,
+          0.0280824737547568
+        ],
+        [
+          0.23818576428029517,
+          0.19599638301651562,
+          0.03241509227846221
+        ],
+        [
+          0.2001450439365241,
+          0.18189699206507923,
+          0.028082473754756802
+        ],
+        [
+          0.2381110957828642,
+          0.11995644028004357,
+          0.0324150922784622
+        ],
+        [
+          0.2001637117764976,
+          0.2009077065087442,
+          0.028082473754756802
+        ]
+      ],
+      "target_xyz_mean_b_m": [
+        0.24875869794180977,
+        0.104053144318032,
+        0.0042535491608431805
+      ],
+      "target_xyz_std_b_m": [
+        0.015494051359203873,
+        0.048965322097747226,
+        0.00039845633235672894
+      ],
+      "action_name": "action",
+      "tip_body": "gripper",
+      "tip_offset_m": [
+        -0.0106769063594562,
+        -0.0005212273838322845,
+        -0.10413855748835771
+      ],
+      "key_down_fraction": 0.5,
+      "key_up_fraction": 0.25,
+      "stable_samples": 2,
+      "clearance_m": 0.015,
+      "clearance_control_ticks": 2,
+      "public_pose_randomization": true,
+      "map_tolerance_m": 0.001,
+      "phase_timeouts_s": [
+        6.0,
+        2.0,
+        2.0
+      ]
+    }
+  },
+  "actuator_profile": "gtc_berlin",
+  "keyboard_profile": "mx_keys_powered_az_20260718",
+  "source_keyboard_variant_indices": [
+    32
+  ],
+  "rest_joint_noise_rad": 0.0,
+  "task_contract": "vision_ppo_gtc_berlin_6letters_ovrtx_v1_task_ce38714723686af99350ecc9b5c2d1ca9fcc36ffa0f2c9e338360a8767085b33",
+  "target_reference_sha256": "328581f0f691049acbe1fc5811fa7d6df2fb88ea076dd0cd7d9dd93511268e51",
+  "target_manifest_sha256": "dca2c7c51d4fabf5512cbeac59e617e289ab6deb0bf0855be5cd21c8c616b2d7",
+  "physical_alphabet_key_face_xy_m": [
+    0.016,
+    0.016
+  ],
+  "joint_rate_limits_rad_s": [
+    0.3,
+    1.1,
+    0.75,
+    0.2,
+    0.1
+  ],
+  "joint_rate_source_sha256": "15dc8fcf17dfafd274f84de53d75e085240d5e44c5aab2f5b741ee170896fb04",
+  "joint_rate_source_kind": "recorded_fyn_homing_current.json:p95_abs_finite_difference_rounded_up"
+}

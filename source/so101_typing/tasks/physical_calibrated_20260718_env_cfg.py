@@ -8,6 +8,8 @@
 
 from __future__ import annotations
 
+import math
+
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.scene import InteractiveSceneCfg
@@ -66,6 +68,21 @@ PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD = {
 PHYSICAL_CALIBRATED_POLICY_Q_RESET_RAD = tuple(
     PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD[name] for name in ARM_JOINT_NAMES
 )
+# The Workshop camera sits to the side at the historical wrist reset. Roll the
+# wrist 90 degrees toward the top for both GTC and Workshop baseline tasks.
+GTC_BERLIN_CAMERA_TOP_WRIST_ROLL_RAD = (
+    PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD["wrist_roll"] - math.pi / 2
+)
+
+
+def _set_camera_top_reset(cfg) -> None:
+    rest = cfg.scene.robot.init_state.joint_pos.copy()
+    rest["wrist_roll"] = GTC_BERLIN_CAMERA_TOP_WRIST_ROLL_RAD
+    cfg.scene.robot.init_state.joint_pos = rest
+    reset = list(cfg.actions.action.q_reset_ref)
+    reset[ARM_JOINT_NAMES.index("wrist_roll")] = GTC_BERLIN_CAMERA_TOP_WRIST_ROLL_RAD
+    cfg.actions.action.q_reset_ref = tuple(reset)
+    cfg.commands.typing.q_reset_ref = tuple(reset)
 
 # A-Z key-body centers transformed through the same calibrated keyboard pose.
 # These are geometric goals; switch state still defines press/release success.
@@ -193,7 +210,11 @@ class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianBaselineP1AEnvCfg(
     """Independent two-letter P1A using the original Workshop actuator profile."""
 
     actuator_profile: str = "baseline"
-    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_baseline_p1a_letters2_v0"
+    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_baseline_p1a_letters2_camera_top_v1"
+
+    def __post_init__(self):
+        super().__post_init__()
+        _set_camera_top_reset(self)
 
 
 @configclass
@@ -204,6 +225,20 @@ class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianUSDDriveP1AEnvCfg(
 
     actuator_profile: str = "usd_drive"
     task_contract: str = "physical_calibrated_20260718_fixed_cartesian_usd_drive_p1a_letters2_v0"
+
+
+@configclass
+class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1AEnvCfg(
+    SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianP1AEnvCfg
+):
+    """Two-letter P1A with the October 12 GTC Berlin SysID actuator fit."""
+
+    actuator_profile: str = "gtc_berlin"
+    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1a_letters2_camera_top_v1"
+
+    def __post_init__(self):
+        super().__post_init__()
+        _set_camera_top_reset(self)
 
 
 @configclass
@@ -273,7 +308,11 @@ class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianBaselineP1DTransit1
     """Matched Transit15 baseline using the original Workshop actuator profile."""
 
     actuator_profile: str = "baseline"
-    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_baseline_p1d_transit15_letters6_v0"
+    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_baseline_p1d_transit15_letters6_camera_top_v1"
+
+    def __post_init__(self):
+        super().__post_init__()
+        _set_camera_top_reset(self)
 
 
 @configclass
@@ -284,3 +323,17 @@ class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianUSDDriveP1DTransit1
 
     actuator_profile: str = "usd_drive"
     task_contract: str = "physical_calibrated_20260718_fixed_cartesian_usd_drive_p1d_transit15_letters6_v0"
+
+
+@configclass
+class SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg(
+    SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianP1DTransit15EnvCfg
+):
+    """Six-letter Transit15 with the October 12 GTC Berlin SysID actuator fit."""
+
+    actuator_profile: str = "gtc_berlin"
+    task_contract: str = "physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1d_transit15_letters6_camera_top_v1"
+
+    def __post_init__(self):
+        super().__post_init__()
+        _set_camera_top_reset(self)

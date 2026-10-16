@@ -19,7 +19,7 @@ checks below can run earlier and do not establish physical correspondence.
 ## Short validation
 
 ```bash
-./so101 train --actuator anchorbench --stage p1a \
+./so101 train --actuator gtc_berlin --stage p1a \
   --task-config output/my-scene/task.json --num-envs 64 --iterations 10 --seed 1307
 ```
 
@@ -27,8 +27,8 @@ For simulation-only installation checks, use the
 [separate example task](QUICKSTART.md#simulation-only-startup-check) instead.
 One-iteration runs with four environments have been tested for both public actuator
 profiles, task DR, changed nominal pose, custom solver settings and custom actuator
-parameters. The 64-environment, 10-update AnchorBench quickstart and DR run also
-pass, as does a short P1A-to-Transit15 resume. These runs test the pipeline, not
+parameters. The earlier 64-environment, 10-update AnchorBench quickstart and DR run also
+passed, as does a short P1A-to-Transit15 resume. These runs test the pipeline, not
 policy performance. First startup
 compiles Warp kernels; the user-owned runtime cache reuses them on later runs.
 
@@ -38,7 +38,8 @@ The September 17 fitted-scene run used **500 P1A + 2,000 Transit15 updates**,
 passed 2,048/2,048 six-letter simulation episodes and completed one physical
 NEWTON trial on a second SO-101 after fitting and training for that setup.
 Its measured training/evaluation wall time was **2 h 38 min 21 s**
-on an RTX 5090. The commands below use that budget with your own fitted scene.
+on an RTX 5090. The commands below use that budget with your own fitted scene and the newer
+`gtc_berlin` actuator fit; the cited September result used `anchorbench`.
 Evaluate your own checkpoints before continuing; this result does not guarantee
 another setup or establish a minimum training budget.
 See the [checkpoint evidence](calibrated_policy_result.json).
@@ -47,20 +48,20 @@ After the real-to-sim fit produces `output/my-scene/task.json`, run the two stag
 with an evaluation between them:
 
 ```bash
-./so101 train --actuator anchorbench --stage p1a \
+./so101 train --actuator gtc_berlin --stage p1a \
   --task-config output/my-scene/task.json \
   --num-envs 4096 --iterations 500 --seed 1307
 
 # Evaluate a saved P1A checkpoint before choosing a continuation budget.
-./so101 evaluate --actuator anchorbench --stage p1a \
+./so101 evaluate --actuator gtc_berlin --stage p1a \
   --checkpoint /absolute/path/to/P1A/model_N.pt \
   --env-config /absolute/path/to/P1A/params/env.yaml --num-envs 1024 --seed 2307
-./so101 video --actuator anchorbench --stage p1a \
+./so101 video --actuator gtc_berlin --stage p1a \
   --checkpoint /absolute/path/to/P1A/model_N.pt \
   --env-config /absolute/path/to/P1A/params/env.yaml --target HE
 
 # Continue from the evaluated model with the same profile/configuration.
-./so101 train --actuator anchorbench --stage transit15 \
+./so101 train --actuator gtc_berlin --stage transit15 \
   --checkpoint /absolute/path/to/P1A/model_N.pt \
   --num-envs 4096 --iterations 2000 --seed 1307
 ```
@@ -88,10 +89,10 @@ claim that 64 reproduces the measured 4,096-environment training result.
 ## Evaluate and compare
 
 ```bash
-./so101 evaluate --actuator anchorbench --stage transit15 \
+./so101 evaluate --actuator gtc_berlin --stage transit15 \
   --checkpoint /absolute/path/to/model_N.pt \
   --env-config /absolute/path/to/params/env.yaml --num-envs 1024 --seed 2307
-./so101 video --actuator anchorbench --stage transit15 \
+./so101 video --actuator gtc_berlin --stage transit15 \
   --checkpoint /absolute/path/to/model_N.pt \
   --env-config /absolute/path/to/params/env.yaml --target NEWTON
 ```

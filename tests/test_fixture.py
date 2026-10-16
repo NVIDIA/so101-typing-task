@@ -156,13 +156,15 @@ class FixtureTests(unittest.TestCase):
             rotated=rotate_xyzw(self.geometry['reference_rotation_xyzw'],local)
             expected=[v+self.geometry['reference_position_m'][i] for i,v in enumerate(rotated)]
             np.testing.assert_allclose(key['rim_center_m'],expected,atol=1e-14)
-        self.assertIn(self.geometry['robot_usd_sha256'],(ROOT/'docker/typing-public.Dockerfile').read_text())
+        from scripts.robot_model_identity import WORKSHOP_USD_SHA256
+        self.assertEqual(self.geometry['robot_usd_sha256'], WORKSHOP_USD_SHA256)
 
     def test_stale_geometry_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder); (root/'docs/fixtures').mkdir(parents=True)
             (root/'changed.py').write_text('changed')
-            data={'source_sha256':{'changed.py':'invalid'}}
+            from scripts.robot_model_identity import WORKSHOP_USD_SHA256
+            data={'robot_usd_sha256': WORKSHOP_USD_SHA256, 'source_sha256':{'changed.py':'invalid'}}
             (root/'docs/fixtures/model_geometry.json').write_text(json.dumps(data))
             with patch.object(fixture,'ROOT',root),self.assertRaisesRegex(ValueError,'stale'):
                 fixture.load_geometry()

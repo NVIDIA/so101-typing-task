@@ -1,0 +1,14 @@
+{
+  "kind": "vision",
+  "target": "NEWTON",
+  "domain_strength": 1.0,
+  "source_checkpoint": "output/vision_ppo/20261014_newton_ovrtx_height2mm_from24950/generation_000/model_38000.pt",
+  "training": {
+    "seed": 4811,
+    "num_envs": 64,
+    "learning_rate": 2.5e-05,
+    "warmup": 0,
+    "resume_full_domain": true,
+    "height_curriculum_iterations": 1000
+  }
+}

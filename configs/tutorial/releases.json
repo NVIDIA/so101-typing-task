@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "images": {},
+  "models": {},
+  "note": "Selected NEWTON vision and ISAAC LAB 3.0 state checkpoints are included under models/. No additional bundle downloads or prebuilt image URLs are configured."
+}

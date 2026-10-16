@@ -24,7 +24,7 @@ from .fk_probe_trajectory import ROOT, digest
 from .scene_check import load_recording
 from .source_identity import identity_matches
 from .so101_kinematics import (
-    ARM_JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, _BODY_CHAIN, _quat_to_matrix,
+    ARM_JOINT_NAMES, FIXED_JAW_TYPING_TIP_SITE_POS, _BODY_CHAIN, _ROOT_ROTATION_WXYZ, _quat_to_matrix,
 )
 
 HISTORICAL = np.array(PHYSICAL_CALIBRATED_20260718_JOINT_ZERO_OFFSET_DEG)
@@ -38,7 +38,7 @@ def batch_fk(q):
     if q.ndim != 2 or q.shape[1] != 6 or not np.isfinite(q).all():
         raise ValueError("FK requires finite N-by-6 joint positions")
     position = np.zeros((len(q), 3))
-    rotation = np.broadcast_to(np.eye(3), (len(q), 3, 3)).copy()
+    rotation = np.broadcast_to(_quat_to_matrix(np.asarray(_ROOT_ROTATION_WXYZ)), (len(q), 3, 3)).copy()
     for _, origin, quat, index in _BODY_CHAIN:
         position += rotation @ np.asarray(origin)
         rotation = rotation @ _quat_to_matrix(np.asarray(quat))

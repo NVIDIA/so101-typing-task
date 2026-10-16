@@ -13,6 +13,8 @@ import time
 
 import numpy as np
 
+from scripts.robot_model_identity import WORKSHOP_USD_SHA256
+
 from .fk_probe_trajectory import ROOT, TASK, digest
 from .source_identity import identity_matches, source_hash_matches
 from .so101_kinematics import JOINT_NAMES, lerobot_position_to_model_rad
@@ -177,7 +179,7 @@ def record(args):
     data = {"schema_version": 1, "kind": "so101_torque_off_recording", "task": TASK,
             "task_config": task, "task_config_sha256": digest(args.task_config),
             "source_sha256": {name: digest(ROOT/name) for name in source_files},
-            "robot_usd_sha256": "c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462",
+            "robot_usd_sha256": WORKSHOP_USD_SHA256,
             "robot_id": args.robot_id, "port": port, "calibration": json.loads(calibration.read_text()),
             "calibration_sha256": digest(calibration), "keyboard_device": args.keyboard_device,
             "joint_names": list(JOINT_NAMES), "joint_zero_offset_deg": [0]*5,

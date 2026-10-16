@@ -200,3 +200,31 @@ class SO101PhysicalCalibrated20260718FixedCartesianUSDDriveP1DTransit15PPORunner
     default = SO101PhysicalCalibrated20260718FixedCartesianP1DTransit15PPORunnerCfg().default.replace(
         experiment_name=("so101_physical_calibrated_20260718_fixed_cartesian_usd_drive_p1d_transit15_letters6")
     )
+
+
+@configclass
+class SO101PhysicalCalibrated20260718FixedCartesianGTCBerlinP1APPORunnerCfg(PresetCfg):
+    """GTC Berlin P1A output namespace, distinct from archived profiles."""
+
+    default = SO101PhysicalCalibrated20260718FixedCartesianP1APPORunnerCfg().default.replace(
+        experiment_name="so101_physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1a_letters2"
+    )
+
+
+@configclass
+class SO101PhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15PPORunnerCfg(PresetCfg):
+    """GTC Berlin Transit15 continuation output namespace."""
+
+    default = SO101PhysicalCalibrated20260718FixedCartesianP1DTransit15PPORunnerCfg().default.replace(
+        experiment_name="so101_physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1d_transit15_letters6"
+    )
+
+
+@configclass
+class SO101GTCBerlinIsaacLabPhrasePPORunnerCfg(PresetCfg):
+    """State-policy PPO for the exact ISAAC LAB 3.0 key sequence."""
+
+    default = SO101PhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15PPORunnerCfg().default.replace(
+        max_iterations=5000, save_interval=250,
+        experiment_name="so101_gtc_berlin_state_isaac_lab_3p0",
+    )

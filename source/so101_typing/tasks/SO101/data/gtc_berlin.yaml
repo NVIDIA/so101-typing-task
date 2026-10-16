@@ -1,0 +1,41 @@
+schema_version: 1
+type: actuator_sys_id_result
+metric: position_mse
+best_mse: 0.0001072153189590853
+parameters:
+  shoulder_pan:
+    stiffness: 48.93682087435154
+    damping: 2.309705389862818
+    armature: 0.058228342618297214
+    dry_friction: 0.2154699280851669
+    viscous_friction: 1.0732503444852939
+  shoulder_lift:
+    stiffness: 51.336503963086734
+    damping: 2.7829628172221677
+    armature: 0.04425337526513037
+    dry_friction: 0.3181311647624241
+    viscous_friction: 0.8773707044105059
+  elbow_flex:
+    stiffness: 18.565405780730025
+    damping: 0.534694353676958
+    armature: 0.054507128694178224
+    dry_friction: 0.4018746873200306
+    viscous_friction: 0.4925605028705261
+  wrist_flex:
+    stiffness: 43.03380653711947
+    damping: 2.7191323580266284
+    armature: 0.05110346770103517
+    dry_friction: 0.29646325177526045
+    viscous_friction: 0.51747384516758
+  wrist_roll:
+    stiffness: 47.135886076886166
+    damping: 1.7895194158608136
+    armature: 0.05138195786130317
+    dry_friction: 0.2827718443928624
+    viscous_friction: 0.4502010515484256
+  gripper:
+    stiffness: 50.83054002253434
+    damping: 2.345108101123728
+    armature: 0.04338043435613245
+    dry_friction: 0.31151570694796027
+    viscous_friction: 1.1389592259244838

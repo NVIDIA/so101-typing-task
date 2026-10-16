@@ -1,0 +1,7 @@
+{
+  "description": "Preferred close overhead view from the front-left, showing the SO-101 arm and keyboard",
+  "coordinate_frame": "simulation world",
+  "units": "metres",
+  "eye_m": [-0.22, -0.27, 0.70],
+  "lookat_m": [0.16, 0.05, 0.10]
+}

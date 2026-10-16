@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SO-101 typing calibration playback</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background:#101419; color:#eaf0f5; }
+    body { margin:0; padding:18px 24px 40px; }
+    h1 { font-size:25px; margin:0 0 4px; }
+    p { margin:4px 0 12px; color:#b5c1cb; }
+    .feeds { display:grid; grid-template-columns:1fr; gap:12px; }
+    figure { margin:0; background:#1d252d; border:1px solid #35424e; border-radius:9px; overflow:hidden; }
+    figcaption { padding:9px 12px; font-weight:650; }
+    .tag { display:inline-block; margin-left:8px; padding:2px 7px; border-radius:4px; font-size:12px; background:#394551; color:#d9e3ec; vertical-align:2px; }
+    .tag.warn { background:#665128; color:#ffe09b; }
+    figure img, figure video { display:block; width:100%; height:min(48vh,620px); object-fit:contain; background:#080b0e; }
+    .caption { padding:8px 12px; color:#aebbc6; font-size:13px; }
+    .controls { margin:16px 0 8px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    button { background:#2476b6; color:#fff; border:0; border-radius:7px; padding:10px 14px; font:inherit; cursor:pointer; }
+    button:hover { background:#358aca; }
+    input[type=range] { flex:1; min-width:260px; }
+    #time { font-variant-numeric:tabular-nums; min-width:132px; text-align:right; }
+    #coverage { font-size:13px; color:#b5c1cb; margin-bottom:14px; }
+    .legend { display:flex; gap:22px; align-items:center; margin:10px 0 6px; color:#c4ced6; }
+    .line { width:22px; height:3px; display:inline-block; vertical-align:middle; margin-right:6px; }
+    #telemetry-graphs, #graphs { display:grid; grid-template-columns:1fr 1fr; gap:4px 18px; }
+    .joint { border-top:1px solid #34414b; padding:7px 0 1px; }
+    h2 { font-size:18px; margin:16px 0 8px; }
+    .telemetry-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; color:#c4ced6; }
+    select { background:#1d252d; border:1px solid #536778; color:#eaf0f5; border-radius:5px; padding:6px 9px; font:inherit; }
+    .note { font-size:13px; color:#aebbc6; }
+    .joint-head { display:flex; justify-content:space-between; gap:12px; font-size:14px; }
+    .joint-head span { font-variant-numeric:tabular-nums; color:#b9c8d3; }
+    canvas { display:block; width:100%; height:110px; }
+    .keypress-panel { padding:12px 14px; border-top:1px solid #35424e; background:#14202a; }
+    .keypress-heading { color:#aebbc6; font-size:13px; margin-bottom:8px; }
+    .keyboard-layout { display:grid; grid-template-columns:minmax(360px,1.5fr) minmax(220px,1fr); gap:18px; align-items:start; }
+    .keyboard { display:grid; gap:6px; padding:10px; border:1px solid #3a4b59; border-radius:8px; background:#0d151c; }
+    .keyboard-row { display:flex; justify-content:center; gap:5px; }
+    .keyboard-key { flex:1; max-width:52px; padding:10px 0; border:1px solid #607383; border-radius:5px; background:#273745; text-align:center; font-weight:700; box-shadow:0 3px #101820; }
+    .keyboard-key.active { background:#56dab0; color:#06261c; border-color:#abffe1; box-shadow:0 0 14px #56dab0; }
+    .pressed-side { min-height:120px; padding:9px; border:1px solid #3a4b59; border-radius:8px; }
+    .key-note { color:#aebbc6; font-size:12px; margin:3px 0 10px; }
+    .pressed-sequence { display:flex; flex-wrap:wrap; gap:5px; }
+    .pressed-key { padding:7px 10px; background:#344858; border-radius:5px; font-weight:700; }
+    .pressed-key.active { background:#56dab0; color:#06261c; }
+    .pressed-key[hidden] { display:none; }
+    .keypress-current { min-height:22px; margin-top:9px; padding:8px 10px; border-radius:6px; background:#21303c; font-weight:700; }
+    .keypress-current.active { background:#225a4e; color:#e9fff7; }
+    @media(max-width:850px) { .keyboard-layout { grid-template-columns:1fr; } }
+    footer { margin-top:14px; color:#9eabb6; font-size:13px; }
+    a { color:#79c6ff; }
+    @media(max-width:850px) { .feeds, #telemetry-graphs, #graphs { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <h1>SO-101 typing calibration playback</h1>
+  <p>Camera views, debounced keyboard events, joint angles, and follower telemetry from the same take.</p>
+  <div class="feeds">
+    <figure>
+      <figcaption>Arm camera <span class="tag">RECORDED</span></figcaption>
+      <video id="arm" src="typing_calibration.webm" muted playsinline preload="auto"></video>
+      <div class="caption">Onboard camera from this take.</div>
+      <div class="keypress-panel" aria-live="polite">
+        <div class="keypress-heading">Physical keyboard input</div>
+        <div class="keyboard-layout">
+          <div id="keyboard" class="keyboard" aria-label="Recorded keyboard"></div>
+          <div class="pressed-side">
+            <strong>Keys pressed so far</strong>
+            <div class="key-note"><span id="debounce-note">Debounced key-down events</span></div>
+            <div id="pressed-sequence" class="pressed-sequence"></div>
+          </div>
+        </div>
+        <div id="keypress-current" class="keypress-current">No key pressed at this time</div>
+      </div>
+    </figure>
+    <figure id="external-panel" hidden>
+      <figcaption>External side camera <span class="tag">RECORDED</span></figcaption>
+      <video id="external" muted playsinline preload="auto"></video>
+      <div class="caption">Synchronized using host frame receipt times.</div>
+    </figure>
+  </div>
+  <div class="controls">
+    <button id="play">Play / pause</button>
+    <input id="scrub" type="range" min="0" max="1" step="0.02" value="0" aria-label="Teleoperation time">
+    <span id="time">0.0 / 0.0 s</span>
+  </div>
+  <div id="coverage">Arm video, keyboard presses, follower motor telemetry, and joint angles cover the take.</div>
+  <h2>Follower motor telemetry</h2>
+  <div class="telemetry-controls"><label for="motor">Motor</label><select id="motor"></select><span class="note">Current and voltage are servo readings. Load is signed raw feedback, not force.</span></div>
+  <div id="telemetry-graphs"></div>
+  <h2>Joint angles</h2>
+  <div class="legend"><span><i class="line" style="background:#46c8e8"></i>Follower</span><span><i class="line" style="background:#f8a34f"></i>Leader</span><span>White line: playback time</span></div>
+  <div id="graphs"></div>
+  <footer>Camera frame times use host receipt timestamps, so synchronization is approximate. <a href="recording.json">Full joint and electrical telemetry</a> · <a href="keyboard_events.jsonl">Raw keyboard events</a> · <a href="playback_keyboard_events_debounced.jsonl">Debounced events</a> · <a href="typing_calibration_timestamps.jsonl">Arm frame times</a></footer>
+<script>
+(async () => {
+  const [data,telemetry] = await Promise.all(['playback_data.json','telemetry_data.json'].map(async name => (await fetch(name,{cache:'no-store'})).json()));
+  document.getElementById('debounce-note').textContent=`${data.keyboard_debounce_ms || 0} ms debounce · ${data.debounced_key_down_count ?? data.key_presses.length} presses (${data.raw_key_down_count ?? data.key_presses.length} raw)`;
+  const names = ['Shoulder pan','Shoulder lift','Elbow flex','Wrist flex','Wrist roll','Gripper'];
+  const colors = {follower:'#46c8e8',leader:'#f8a34f'};
+  const graphs = document.getElementById('graphs');
+  const video = document.getElementById('arm');
+  const scrub = document.getElementById('scrub');
+  const time = document.getElementById('time');
+  const coverage = document.getElementById('coverage');
+  scrub.max = data.duration_s;
+  scrub.value = data.camera_start_s;
+  const motorSelect=document.getElementById('motor');
+  names.forEach((name,index)=>{const option=document.createElement('option');option.value=index;option.textContent=name;motorSelect.append(option);});
+  const telemetryGraphs=document.getElementById('telemetry-graphs');
+  const telemetryCanvases=[],telemetryValues=[];
+  for(let m=0;m<4;m++){
+    const row=document.createElement('section');row.className='joint';
+    const head=document.createElement('div');head.className='joint-head';
+    const title=document.createElement('strong');title.textContent=`${telemetry.metrics[m]} (${telemetry.units[m]})`;
+    const value=document.createElement('span');head.append(title,value);row.append(head);
+    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=110;row.append(canvas);telemetryGraphs.append(row);
+    telemetryCanvases.push(canvas);telemetryValues.push(value);
+  }
+  let telemetryBounds=[];
+  function updateTelemetryBounds(){
+    const motor=Number(motorSelect.value);
+    telemetryBounds=telemetry.metrics.map((_,m)=>{
+      const all=telemetry.samples.map(s=>s[1][m][motor]);
+      const lo=Math.min(...all),hi=Math.max(...all),pad=Math.max(m===1?0.2:1,(hi-lo)*0.1);
+      return [lo-pad,hi+pad];
+    });
+  }
+  updateTelemetryBounds();
+  motorSelect.onchange=()=>{updateTelemetryBounds();render(playbackTime());};
+  const canvases = [];
+  const values = [];
+  const bounds = [];
+  for (let j=0;j<6;j++) {
+    const all = data.samples.flatMap(s=>[s[1][j],s[2][j]]);
+    let lo=Math.min(...all), hi=Math.max(...all), pad=Math.max(2,(hi-lo)*0.1);
+    bounds.push([lo-pad,hi+pad]);
+    const row=document.createElement('section');row.className='joint';
+    const head=document.createElement('div');head.className='joint-head';
+    const title=document.createElement('strong');title.textContent=names[j];
+    const val=document.createElement('span');head.append(title,val);row.append(head);
+    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=110;row.append(canvas);graphs.append(row);
+    canvases.push(canvas);values.push(val);
+  }
+  function closest(t) {
+    let lo=0,hi=data.samples.length-1;
+    while(lo<hi){const mid=(lo+hi)>>1;if(data.samples[mid][0]<t)lo=mid+1;else hi=mid;}
+    if(lo>0 && Math.abs(data.samples[lo-1][0]-t)<Math.abs(data.samples[lo][0]-t))lo--;
+    return data.samples[lo];
+  }
+  function closestTelemetry(t){
+    let lo=0,hi=telemetry.samples.length-1;
+    while(lo<hi){const mid=(lo+hi)>>1;if(telemetry.samples[mid][0]<t)lo=mid+1;else hi=mid;}
+    if(lo>0 && Math.abs(telemetry.samples[lo-1][0]-t)<Math.abs(telemetry.samples[lo][0]-t))lo--;
+    return telemetry.samples[lo];
+  }
+  function renderTelemetry(t){
+    const motor=Number(motorSelect.value),near=closestTelemetry(t);
+    for(let m=0;m<4;m++){
+      const c=telemetryCanvases[m],ctx=c.getContext('2d'),W=c.width,H=c.height,left=52,right=12,top=9,bottom=21;
+      const [min,max]=telemetryBounds[m],unit=telemetry.units[m];
+      const x=s=>left+(W-left-right)*s/data.duration_s;
+      const y=v=>top+(H-top-bottom)*(max-v)/(max-min);
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#151d24';ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle='#34434e';ctx.lineWidth=1;
+      for(let q=0;q<=4;q++){let yy=top+(H-top-bottom)*q/4;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(W-right,yy);ctx.stroke();}
+      ctx.beginPath();ctx.strokeStyle=colors.follower;ctx.lineWidth=2;
+      telemetry.samples.forEach((s,k)=>{const xx=x(s[0]),yy=y(s[1][m][motor]);if(k===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);});ctx.stroke();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x(t),top);ctx.lineTo(x(t),H-bottom);ctx.stroke();
+      ctx.fillStyle='#aebcc6';ctx.font='12px system-ui';
+      ctx.fillText(max.toFixed(m===1?1:0),3,top+8);ctx.fillText(min.toFixed(m===1?1:0),3,H-bottom);
+      ctx.fillText('0 s',left,H-4);ctx.fillText(data.duration_s.toFixed(0)+' s',W-45,H-4);
+      const digits=m<2?1:0;
+      telemetryValues[m].textContent=`Follower ${near[1][m][motor].toFixed(digits)} ${unit}`;
+    }
+  }
+  function render(t) {
+    t=Math.max(0,Math.min(data.duration_s,t));
+    scrub.value=t;time.textContent=`${t.toFixed(1)} / ${data.duration_s.toFixed(1)} s`;
+    coverage.textContent='Arm video, keyboard presses, follower motor telemetry, and joint angles are from the same recorded take.';
+    renderTelemetry(t);
+    renderKey(t);
+    syncExternal(t);
+    const near=closest(t);
+    for(let j=0;j<6;j++){
+      const c=canvases[j],ctx=c.getContext('2d'),W=c.width,H=c.height,left=48,right=12,top=9,bottom=21;
+      const [min,max]=bounds[j],unit=j===5?'%':'°';
+      const x=s=>left+(W-left-right)*s/data.duration_s;
+      const y=v=>top+(H-top-bottom)*(max-v)/(max-min);
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#151d24';ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle='#34434e';ctx.lineWidth=1;
+      for(let q=0;q<=4;q++){let yy=top+(H-top-bottom)*q/4;ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(W-right,yy);ctx.stroke();}
+      const start=x(data.camera_start_s),end=x(data.camera_end_s);
+      ctx.fillStyle='rgba(100,160,140,.09)';ctx.fillRect(start,top,end-start,H-top-bottom);
+      for(const [idx,color] of [[1,colors.follower],[2,colors.leader]]){
+        ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
+        data.samples.forEach((s,k)=>{const xx=x(s[0]),yy=y(s[idx][j]);if(k===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);});ctx.stroke();
+      }
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x(t),top);ctx.lineTo(x(t),H-bottom);ctx.stroke();
+      ctx.fillStyle='#aebcc6';ctx.font='12px system-ui';ctx.fillText(max.toFixed(0)+unit,3,top+8);ctx.fillText(min.toFixed(0)+unit,3,H-bottom);ctx.fillText('0 s',left,H-4);ctx.fillText(data.duration_s.toFixed(0)+' s',W-45,H-4);
+      values[j].textContent=`Follower ${near[1][j].toFixed(1)}${unit}  ·  Leader ${near[2][j].toFixed(1)}${unit}  ·  Δ ${(near[2][j]-near[1][j]).toFixed(1)}${unit}`;
+    }
+  }
+  const presses=data.key_presses || [];
+  const keyCurrent=document.getElementById('keypress-current');
+  const keyboard=document.getElementById('keyboard');
+  const pressedSequence=document.getElementById('pressed-sequence');
+  const keyNodes=new Map();
+  ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach(letters=>{
+    const row=document.createElement('div');row.className='keyboard-row';
+    [...letters].forEach(letter=>{const key=document.createElement('span');key.className='keyboard-key';
+      key.textContent=letter;keyNodes.set(letter,key);row.append(key);});keyboard.append(row);
+  });
+  const chips=presses.map(p=>{const chip=document.createElement('button');chip.className='pressed-key';
+    chip.textContent=p[1];chip.title=`${p[1]} at ${p[0].toFixed(2)} s`;
+    chip.onclick=()=>{video.pause();seekVideo(p[0]);render(p[0]);};pressedSequence.append(chip);return chip;});
+  function renderKey(t){
+    let active=-1;
+    presses.forEach((p,i)=>{if(t>=p[0] && t<=Math.max(p[2],p[0]+0.8))active=i;
+      chips[i].hidden=p[0]>t;chips[i].classList.toggle('active',i===active);});
+    for(const [letter,key] of keyNodes)key.classList.toggle('active',active>=0 && presses[active][1]===letter);
+    const press=active>=0?presses[active]:null;
+    keyCurrent.textContent=press?`${press[1]} pressed at ${press[0].toFixed(2)} s`:'No key pressed at this time';
+    keyCurrent.classList.toggle('active',Boolean(press));
+  }
+  const starts=data.video_start_s || {arm:0};
+  const externalVideo=document.getElementById('external');
+  const hasExternal=Number.isFinite(starts.external);
+  if(hasExternal){document.getElementById('external-panel').hidden=false;document.querySelector('.feeds').style.gridTemplateColumns='repeat(auto-fit,minmax(440px,1fr))';externalVideo.src='external_camera.webm';}
+  function syncExternal(t,force=false){
+    if(!hasExternal || externalVideo.readyState<1)return;
+    const at=t-starts.external;
+    const desired=Math.max(0,Math.min(externalVideo.duration,at));
+    if(force || Math.abs(externalVideo.currentTime-desired)>.12)externalVideo.currentTime=desired;
+    if(video.paused || at<0 || at>=externalVideo.duration)externalVideo.pause();
+    else if(externalVideo.paused)externalVideo.play().catch(()=>{});
+  }
+  video.addEventListener('play',()=>syncExternal(playbackTime(),true));
+  video.addEventListener('pause',()=>externalVideo.pause());
+  externalVideo.addEventListener('loadedmetadata',()=>syncExternal(playbackTime(),true));
+  const playbackTime=()=>Math.max(0,starts.arm+video.currentTime);
+  function seekVideo(t){video.currentTime=Math.min(Number.isFinite(video.duration)?video.duration:Infinity,Math.max(0,t-starts.arm));}
+  function playVideo(){video.play().catch(()=>{});}
+  let dragging=false;
+  document.getElementById('play').onclick=()=>{if(video.paused){if(video.ended)seekVideo(0);playVideo();}else{video.pause();}};
+  scrub.addEventListener('pointerdown',()=>{dragging=true;video.pause();});
+  scrub.addEventListener('input',()=>{const t=Number(scrub.value);video.pause();render(t);if(!dragging)seekVideo(t);});
+  scrub.addEventListener('change',()=>{const t=Number(scrub.value);dragging=false;seekVideo(t);render(t);});
+  video.ontimeupdate=()=>{if(!dragging)render(playbackTime());};
+  video.onseeked=()=>{if(!dragging){syncExternal(playbackTime(),true);render(playbackTime());}};
+  render(0);
+  video.addEventListener('loadedmetadata',()=>seekVideo(0),{once:true});
+  setInterval(()=>{if(!video.paused && !video.ended)render(playbackTime());},100);
+  video.addEventListener('canplay',playVideo,{once:true});
+})();
+</script>
+</body>
+</html>

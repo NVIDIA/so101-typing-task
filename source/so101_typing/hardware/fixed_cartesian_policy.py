@@ -321,10 +321,13 @@ class FixedCartesianTypingState:
         self._set_phase(CLEARANCE, now_s)
         return "target_up"
 
+    def active_target_z(self) -> float:
+        return float(frozen_target_xyz(self.active_letter(), self.profile)[2])
+
     def clearance_tick(self, *, tip_z_b_m: float, any_key_held: bool, now_s: float) -> str | None:
         if self.phase != CLEARANCE:
             return None
-        target_z = float(frozen_target_xyz(self.active_letter(), self.profile)[2])
+        target_z = self.active_target_z()
         clear = not any_key_held and float(tip_z_b_m) >= target_z + self.clearance_m
         self.clearance_ticks = self.clearance_ticks + 1 if clear else 0
         if self.clearance_ticks < self.clearance_control_ticks:

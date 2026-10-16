@@ -1,0 +1,32 @@
+#usda 1.0
+(
+    defaultPrim = "so101_new_calib"
+    metersPerUnit = 1
+    subLayers = [
+        @https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/so101_new_calib.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "so101_new_calib"
+{
+    over "joints"
+    {
+        # The measured follower's elbow zero is -6.4 degrees from the upstream
+        # frame. Shift the frame, limits, and target together so physical poses
+        # retain their upstream joint coordinates plus 6.4 degrees.
+        over "elbow_flex"
+        {
+            float drive:angular:physics:targetPosition = 6.4
+            quatf physics:localRot0 = (0.7454748, -6.239807e-16, -2.6585315e-16, 0.6665338)
+            float physics:lowerLimit = -90.42986
+            float physics:upperLimit = 103.22987
+        }
+        # Permit the full 0-100% gripper travel using the average calibration span.
+        over "gripper"
+        {
+            float physics:lowerLimit = -12.505752
+            float physics:upperLimit = 118.04370
+        }
+    }
+}

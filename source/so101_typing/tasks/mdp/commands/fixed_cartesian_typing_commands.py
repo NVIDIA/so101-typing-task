@@ -49,8 +49,15 @@ class FixedCartesianTypingCommand(LetterTypingCommand):
         )
         if len(cfg.q_reset_ref) != 5:
             raise ValueError("q_reset_ref must contain the five controlled arm joints")
-        if len(cfg.letter_slots) != 26 or len(cfg.letter_xyz_b_m) != 26:
-            raise ValueError("fixed Cartesian command requires exactly 26 A-Z slots and XYZ rows")
+        if not cfg.letter_slots or len(cfg.letter_slots) != len(cfg.letter_xyz_b_m):
+            raise ValueError("fixed Cartesian command requires one XYZ row per mapped key slot")
+        if len(set(cfg.letter_slots)) != len(cfg.letter_slots):
+            raise ValueError("fixed Cartesian key slots must be unique")
+        if cfg.fixed_target_slots is not None:
+            if len(cfg.fixed_target_slots) != self.max_len or any(
+                slot not in cfg.letter_slots for slot in cfg.fixed_target_slots
+            ):
+                raise ValueError("fixed target must fill max_len with mapped key slots")
         if cfg.stable_samples < 1 or cfg.clearance_control_ticks < 1:
             raise ValueError("stable_samples and clearance_control_ticks must be positive")
         if not 0.0 <= cfg.key_up_fraction < cfg.key_down_fraction <= 1.0:
@@ -62,7 +69,9 @@ class FixedCartesianTypingCommand(LetterTypingCommand):
         self._target_xyz_mean_b = torch.tensor(cfg.target_xyz_mean_b_m, device=self.device)
         self._target_xyz_std_b = torch.tensor(cfg.target_xyz_std_b_m, device=self.device)
         self._slot_to_letter = torch.full((self.num_keys,), -1, dtype=torch.long, device=self.device)
-        self._slot_to_letter[self._letter_slots] = torch.arange(26, device=self.device)
+        self._slot_to_letter[self._letter_slots] = torch.arange(len(cfg.letter_slots), device=self.device)
+        self._fixed_target = (torch.tensor(cfg.fixed_target_slots, dtype=torch.long, device=self.device)
+                              if cfg.fixed_target_slots is not None else None)
 
         body_ids, _ = self.robot.find_bodies(cfg.tip_body)
         self._tip_body_idx = body_ids[0]
@@ -341,11 +350,12 @@ class FixedCartesianTypingCommand(LetterTypingCommand):
         if not bool(pending.any()):
             return
         all_key_pos_w = self.key_pos_w()[:, self._letter_slots]
-        n = self.num_envs * len(self._letter_slots)
-        root_pos = self.robot.data.root_pos_w.torch[:, None, :].expand(-1, 26, -1).reshape(n, 3)
-        root_quat = self.robot.data.root_quat_w.torch[:, None, :].expand(-1, 26, -1).reshape(n, 4)
+        mapped_count = len(self._letter_slots)
+        n = self.num_envs * mapped_count
+        root_pos = self.robot.data.root_pos_w.torch[:, None, :].expand(-1, mapped_count, -1).reshape(n, 3)
+        root_quat = self.robot.data.root_quat_w.torch[:, None, :].expand(-1, mapped_count, -1).reshape(n, 4)
         key_pos_b, _ = subtract_frame_transforms(root_pos, root_quat, all_key_pos_w.reshape(n, 3))
-        key_pos_b = key_pos_b.reshape(self.num_envs, 26, 3)
+        key_pos_b = key_pos_b.reshape(self.num_envs, mapped_count, 3)
         expected = self._letter_xyz_b[None, :, :]
         if self.cfg.public_pose_randomization:
             expected = self._env._public_expected_key_xyz_b
@@ -362,10 +372,16 @@ class FixedCartesianTypingCommand(LetterTypingCommand):
             omitted_count = max(0, int(invalid_env_ids.numel()) - len(displayed_env_ids))
             omitted_suffix = f" (+{omitted_count} more)" if omitted_count else ""
             worst_error_m = float(max_error[invalid].max().detach().cpu())
+            first_env = int(invalid_env_ids[0])
+            worst_keys = torch.topk(error[first_env], k=min(5, mapped_count)).indices.detach().cpu().tolist()
+            details = [(int(self._letter_slots[j]), float(error[first_env, j]),
+                        tuple(float(v) for v in key_pos_b[first_env, j]),
+                        tuple(float(v) for v in expected[first_env, j])) for j in worst_keys]
             raise RuntimeError(
-                "Frozen A-Z map validation failed after key-state initialization: "
+                "Frozen key map validation failed after key-state initialization: "
                 "live key centers exceed "
                 f"map_tolerance_m={self.cfg.map_tolerance_m:.6f} in environment(s) "
+                f"worst_keys={details}; "
                 f"{displayed_env_ids}{omitted_suffix}; worst error={worst_error_m:.6f} m. "
                 "Refusing to continue because resetting cannot repair a geometry/map mismatch."
             )
@@ -407,6 +423,9 @@ class FixedCartesianTypingCommand(LetterTypingCommand):
             ids = torch.as_tensor(env_ids, device=self.device)
 
         extras = super().reset(env_ids)
+        if self._fixed_target is not None:
+            self.target[ids] = self._fixed_target
+            self.target_len[ids] = len(self._fixed_target)
         self.typed[ids] = -1
         self.typed_len[ids] = 0
         self.character_index[ids] = 0

@@ -14,3 +14,13 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+
+# Ignore generated weights; the two selected release checkpoints are explicitly included.
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.ckpt
+
+!models/newton_vision/newton_ckpt.pt
+!models/isaac_lab_state/isaac_lab_ckpt.pt

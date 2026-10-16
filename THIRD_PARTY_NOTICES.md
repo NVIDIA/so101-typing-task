@@ -103,3 +103,13 @@ The dataset card at the revision recorded in
 [docs/release/artifact_revision.json](docs/release/artifact_revision.json)
 does not declare a license for those artifacts. This repository's source
 license does not establish a license for the downloaded weights or data.
+
+## Workshop SO-101 SysID USD
+
+The Docker image assembles the SO-101 SysID asset from NVIDIA's public Isaac 6.1
+content collection. Pinned dependency URLs and hashes are recorded in
+`source/so101_typing/tasks/SO101/data/workshop_asset_sources.json`.
+`scripts/build_workshop_so101_asset.py` flattens those layers, applies the
+Workshop joint overrides, and converts constant MDL colors for local viewing.
+Original upstream asset and NVIDIA content terms apply; the repository license
+does not replace them. The assembled USD is not included in Git.

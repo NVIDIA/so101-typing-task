@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
 from datetime import datetime
@@ -41,9 +42,8 @@ from .fixed_cartesian_policy import (
     profile_model_rad_to_lerobot_position,
 )
 from .keyboard_events import _suppress_terminal_echo
+from .keyboard_debounce import DEFAULT_KEYBOARD_DEBOUNCE_MS, KeyboardDebouncer
 from .policy_runtime import (
-    DEFAULT_RELEASE_SETTLE_S,
-    DEFAULT_RETURN_TO_REST_S,
     KeyboardMonitor,
     PolicyContractError,
     PressGate,
@@ -54,6 +54,7 @@ from .robot import (
     connect_robot,
     prepare_closed_typing_jaw,
     read_arm_q_deg,
+    require_calibration,
     resolve_robot_port,
     send_typing_q_deg,
     smooth_move_arm,
@@ -71,6 +72,9 @@ DEFAULT_FIXED_START_EPSILON_DEG = 0.5
 DEFAULT_RESET_TRANSITION_S = 3.0
 DEFAULT_RESET_SETTLE_TIMEOUT_S = 3.0
 DEFAULT_RESET_MAX_ATTEMPTS = 3
+DEFAULT_POST_EVAL_HOME = Path(__file__).resolve().parents[3] / "local/post_eval_home.json"
+POST_EVAL_HOME_EPSILON_DEG = 2.0
+ALL_MOTOR_NAMES = (*ARM_JOINT_NAMES, "gripper")
 RESET_TRACKING_GAIN = 0.5
 RESET_TRACKING_MAX_STEP_DEG = 1.0
 RESET_TRACKING_HZ = 4.0
@@ -93,6 +97,93 @@ PHYSICAL_CALIBRATED_ADDITIONAL_TASK_CONTRACTS = {
     "p1d": ("physical_calibrated_20260718_fixed_cartesian_anchorbench_p1d_transit15_letters6_v0",),
 }
 _MIN_SAMPLE_DT_S = 1.0e-6
+
+
+def _load_post_eval_home(path: Path, robot_id: str) -> np.ndarray:
+    data = json.loads(path.read_text())
+    if (data.get("schema_version") != 1 or data.get("kind") != "so101_post_eval_home"
+            or data.get("robot_id") != robot_id
+            or data.get("arm_joint_names") != list(ARM_JOINT_NAMES)):
+        raise PolicyContractError(f"post-evaluation home does not match robot {robot_id!r}: {path}")
+    calibration_hash = hashlib.sha256(require_calibration(robot_id).read_bytes()).hexdigest()
+    if data.get("follower_calibration_sha256") != calibration_hash:
+        raise PolicyContractError("post-evaluation home was measured with a different follower calibration")
+    pose = data.get("pose_deg")
+    if not isinstance(pose, dict):
+        raise PolicyContractError("post-evaluation home has no joint mapping")
+    try:
+        target = np.asarray([float(pose[name]) for name in ARM_JOINT_NAMES], dtype=np.float64)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise PolicyContractError("post-evaluation home has an invalid joint mapping") from exc
+    if not np.isfinite(target).all():
+        raise PolicyContractError("post-evaluation home has non-finite joint values")
+    return target
+
+
+def _validate_policy_keyboard_device(selected: str, saved_setup: Path) -> str:
+    expected = json.loads(saved_setup.read_text()).get("typing_keyboard_device")
+    if not isinstance(expected, str) or not expected:
+        raise PolicyContractError("saved local setup must identify the typing keyboard")
+    try:
+        same_device = os.path.samefile(selected, expected)
+    except OSError as exc:
+        raise PolicyContractError(f"typing keyboard unavailable: {exc}") from exc
+    if not same_device:
+        raise PolicyContractError(
+            f"selected keyboard {selected} differs from saved typing keyboard {expected}; no robot command sent"
+        )
+    return os.path.realpath(expected)
+
+
+def _return_home_and_disable(robot: Any, target_q_deg: np.ndarray, duration_s: float) -> dict[str, Any]:
+    """Always attempt torque-off, even when the home move or its readback fails."""
+    report: dict[str, Any] = {"target_q_deg": target_q_deg.tolist(), "torque_off_verified": False}
+    bus = robot.bus
+    try:
+        print(f"Returning follower to saved leader pose over {duration_s:.1f} s.", flush=True)
+        smooth_move_arm(robot, target_q_deg, duration_s=duration_s, control_hz=CONTROL_HZ)
+        measured = read_arm_q_deg(robot)
+        error = float(np.max(np.abs(measured - target_q_deg)))
+        report.update(measured_q_deg=measured.tolist(), joint_error_deg=error,
+                      home_converged=error <= POST_EVAL_HOME_EPSILON_DEG)
+        if not report["home_converged"]:
+            raise RuntimeError(f"post-evaluation home error {error:.2f} deg exceeds {POST_EVAL_HOME_EPSILON_DEG} deg")
+    except BaseException as exc:
+        report["home_error"] = f"{type(exc).__name__}: {exc}"
+    finally:
+        try:
+            present = bus.sync_read("Present_Position", list(ALL_MOTOR_NAMES), normalize=False, num_retry=3)
+            bus.sync_write("Goal_Position", present, normalize=False, num_retry=3)
+        except BaseException as exc:
+            report["hold_error"] = f"{type(exc).__name__}: {exc}"
+        try:
+            bus.sync_write("Torque_Enable", dict.fromkeys(ALL_MOTOR_NAMES, 0), normalize=False, num_retry=3)
+            observed = bus.sync_read("Torque_Enable", list(ALL_MOTOR_NAMES), normalize=False, num_retry=3)
+            report["torque_enable_after"] = observed
+            report["torque_off_verified"] = observed == dict.fromkeys(ALL_MOTOR_NAMES, 0)
+            if not report["torque_off_verified"]:
+                raise RuntimeError(f"follower torque-off readback mismatch: {observed}")
+            print("Follower torque off verified on all six motors.", flush=True)
+        except BaseException as exc:
+            report["torque_off_error"] = f"{type(exc).__name__}: {exc}"
+    return report
+
+
+def _append_telemetry_register(robot: Any, out: Path, register: str, *, step: int) -> None:
+    """Record one raw register for every follower motor with an acquisition time."""
+    before_ns = time.monotonic_ns()
+    try:
+        values = robot.bus.sync_read(register, list(ALL_MOTOR_NAMES), normalize=False, num_retry=0)
+        append_jsonl(out, {
+            'kind': 'telemetry_register', 'step': step, 'register': register,
+            'values_raw': {name: int(value) for name, value in values.items()},
+            'acquisition_monotonic_start_ns': before_ns,
+            'acquisition_monotonic_end_ns': time.monotonic_ns(),
+            'received_unix_ns': time.time_ns(),
+        })
+    except Exception as error:
+        append_jsonl(out, {'kind': 'telemetry_error', 'step': step, 'register': register,
+                           'error': str(error), 'received_unix_ns': time.time_ns()})
 
 
 def _emit_deployment_contract(
@@ -428,8 +519,8 @@ def _validate_args(args: argparse.Namespace) -> None:
         raise ValueError("reset-max-attempts must be positive")
     if not 0.0 < args.diagnostic_rate_scale <= 1.0:
         raise ValueError("diagnostic-rate-scale must be in (0, 1]")
-    if args.return_to_rest_s < 0.0:
-        raise ValueError("return-to-rest-s must be non-negative")
+    if args.return_to_rest_s <= 0.0:
+        raise ValueError("return-to-rest-s must be positive so the follower can return home")
 
 
 def _deployment_contract(
@@ -505,6 +596,9 @@ def _deployment_contract(
         },
         "startup": startup,
         "keyboard_feedback": {
+            "device": args.device,
+            "debounce_ms": args.keyboard_debounce_ms,
+            "debounce_semantics": "immediate down; same-key release gaps below window merged; raw overlap guard",
             "expected_transition": (
                 "target down -> matching up -> "
                 f"{state.clearance_control_ticks} sustained "
@@ -549,6 +643,8 @@ def _deployment_contract(
             "max_policy_duration_s": args.max_duration,
             "max_policy_duration_source": args.max_duration_source,
             "return_to_rest_s": args.return_to_rest_s,
+            "post_eval_home": str(args.post_eval_home.resolve()),
+            "disable_follower_torque_after_home": True,
         },
     }
 
@@ -581,7 +677,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--expected-actuator-profile",
-        choices=("anchorbench", "baseline", "usd_drive"),
+        choices=("anchorbench", "baseline", "usd_drive", "gtc_berlin"),
         default="anchorbench",
         help="Actuator profile that params/env.yaml must declare.",
     )
@@ -602,6 +698,8 @@ def main() -> int:
         default="fixed-reset",
         help="The calibrated policy starts from its fixed simulator reset; manual F/Y/N replay is invalid.",
     )
+    parser.add_argument("--keyboard-debounce-ms", type=float, default=DEFAULT_KEYBOARD_DEBOUNCE_MS,
+                        help="release debounce for typing feedback; raw events and overlap checks are retained")
     parser.add_argument("--device", default=DEFAULT_KEYBOARD_DEVICE)
     parser.add_argument("--port", default=None)
     parser.add_argument("--id", default=DEFAULT_ROBOT_ID)
@@ -620,7 +718,10 @@ def main() -> int:
         type=float,
         default=DEFAULT_FIXED_START_EPSILON_DEG,
     )
-    parser.add_argument("--return-to-rest-s", type=float, default=DEFAULT_RETURN_TO_REST_S)
+    parser.add_argument("--return-to-rest-s", type=float, default=6.0,
+                        help="Seconds to return to the saved leader rest pose before disabling torque")
+    parser.add_argument("--post-eval-home", type=Path, default=DEFAULT_POST_EVAL_HOME,
+                        help="Robot-specific measured rest pose used after every physical policy run")
     parser.add_argument(
         "--diagnostic-rate-scale",
         type=float,
@@ -645,8 +746,14 @@ def main() -> int:
     }
     robot = None
     rest_q_deg: np.ndarray | None = None
+    post_eval_home_q_deg: np.ndarray | None = None
     try:
         _validate_args(args)
+        if not args.dry_run:
+            post_eval_home_q_deg = _load_post_eval_home(args.post_eval_home, args.id)
+            summary["keyboard_device"] = args.device
+            summary["keyboard_event_node"] = _validate_policy_keyboard_device(args.device, args.post_eval_home)
+        key_debouncer = KeyboardDebouncer(args.keyboard_debounce_ms)
         if (not args.dry_run or args.experimental) and not args.deployment_config:
             raise PolicyContractError('Physical or experimental policy execution requires a prepared deployment bundle.')
         profile = deployment_profile(args.task_profile)
@@ -784,14 +891,16 @@ def main() -> int:
             )
 
         q_command_rad = np.asarray(profile.q_reset_rad, dtype=np.float64).copy()
-        previous_sample_at_s = time.perf_counter()
         press_gate = PressGate()
         physical_key_downs: list[str] = []
+        debounced_key_downs: list[str] = []
         stop_reason = "max_duration"
         policy_started_at_unix_s = time.time()
         started_at = time.monotonic()
-        state.phase_started_s = started_at
+        previous_sample_at_s = time.perf_counter()
         step = 0
+        from .typing_calibration_record import TELEMETRY_REGISTERS
+        telemetry_registers = tuple(TELEMETRY_REGISTERS)
         keyboard_release_confirmed = None
         control_period_s = 1.0 / CONTROL_HZ
         sample_dt_history: list[float] = []
@@ -820,19 +929,38 @@ def main() -> int:
                             "this is not a native policy rollout."
                         )
                     print(f"Target: {state.target}")
+                    # Capture all registers once before motion. Short runs still
+                    # retain every available signal, including current.
+                    for register in telemetry_registers:
+                        _append_telemetry_register(robot, out, register, step=-1)
+                    policy_started_at_unix_s = time.time()
+                    started_at = time.monotonic()
+                    state.phase_started_s = started_at
+                    previous_sample_at_s = time.perf_counter()
                     while time.monotonic() - started_at < args.max_duration:
                         tick_started_at = time.perf_counter()
-                        events, stop = keyboard.poll()
+                        raw_events, stop = keyboard.poll()
                         if stop:
                             stop_reason = "escape"
                             break
-                        for event in events:
-                            record = {"kind": "keyboard_edge", "step": step, **event}
-                            if press_gate.process(event):
-                                record["transition"] = "multiple_key_press"
-                                append_jsonl(out, record)
+                        # Keep raw physical edges and overlap detection independent of filtering.
+                        for event in raw_events:
+                            event["received_unix_ns"] = time.time_ns()
+                            overlap = press_gate.process(event)
+                            append_jsonl(out, {"kind": "keyboard_edge_raw", "step": step,
+                                               "received_unix_ns": time.time_ns(), **event,
+                                               "multiple_key_press": overlap})
+                            if event["value"] == 1 and isinstance(event.get("char"), str):
+                                physical_key_downs.append(event["char"].upper())
+                            if overlap:
                                 stop_reason = "multiple_key_press"
-                                break
+                        if stop_reason != "max_duration":
+                            break
+                        events = key_debouncer.process(raw_events, now_s=time.time())
+                        for event in events:
+                            record = {"kind": "keyboard_edge", "step": step,
+                                      "processed_unix_ns": time.time_ns(),
+                                      "keyboard_debounce_ms": args.keyboard_debounce_ms, **event}
                             char = event["char"]
                             if not isinstance(char, str) or not char.isalpha():
                                 record["transition"] = "unmapped_key"
@@ -843,7 +971,7 @@ def main() -> int:
                                 continue
                             now_s = time.monotonic()
                             if event["value"] == 1:
-                                physical_key_downs.append(char.upper())
+                                debounced_key_downs.append(char.upper())
                                 transition = state.key_down(char, now_s=now_s)
                             else:
                                 transition = state.key_up(char, now_s=now_s)
@@ -948,6 +1076,8 @@ def main() -> int:
                             {
                                 "kind": "policy_tick",
                                 "step": step,
+                                "sample_monotonic_s": q_sample_at_s,
+                                "received_unix_ns": time.time_ns(),
                                 "active_letter": state.active_letter(),
                                 "phase": state.phase_name,
                                 "phase_elapsed_s": state.phase_elapsed_s(now_s),
@@ -972,6 +1102,10 @@ def main() -> int:
                                 "tick_pre_log_s": pre_log_s,
                                 "pre_log_overrun_s": overrun_s,
                             },
+                        )
+                        # One register per control tick completes a sweep in 0.44 s.
+                        _append_telemetry_register(
+                            robot, out, telemetry_registers[step % len(telemetry_registers)], step=step
                         )
                         previous_full_q_rad = full_q_rad
                         previous_sample_at_s = q_sample_at_s
@@ -1006,15 +1140,6 @@ def main() -> int:
                     )
                     cleanup_started_at_s = time.monotonic()
                     try:
-                        if args.return_to_rest_s > 0.0:
-                            print("Returning to fixed rest before releasing keyboard capture.")
-                            smooth_move_arm(
-                                robot,
-                                rest_q_deg,
-                                duration_s=args.return_to_rest_s,
-                                control_hz=CONTROL_HZ,
-                            )
-                            time.sleep(DEFAULT_RELEASE_SETTLE_S)
                         keyboard_release_confirmed = keyboard.drain_until_released(timeout_s=2.0)
                     finally:
                         summary["cleanup_duration_s"] = time.monotonic() - cleanup_started_at_s
@@ -1025,6 +1150,8 @@ def main() -> int:
                 "stop_reason": stop_reason,
                 "typed": state.typed,
                 "physical_key_downs": "".join(physical_key_downs),
+                "debounced_key_downs": "".join(debounced_key_downs),
+                "keyboard_debounce_ms": args.keyboard_debounce_ms,
                 "exact_match": state.complete and state.typed == state.target,
                 "multiple_key_press": press_gate.invalid_overlap,
                 "keyboard_release_confirmed": keyboard_release_confirmed,
@@ -1046,11 +1173,25 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     finally:
+        cleanup_failed = False
         if robot is not None:
-            robot.disconnect()
+            try:
+                if post_eval_home_q_deg is None:
+                    raise RuntimeError("post-evaluation home was not loaded before robot connection")
+                cleanup = _return_home_and_disable(robot, post_eval_home_q_deg, args.return_to_rest_s)
+                summary["post_eval_cleanup"] = cleanup
+                append_jsonl(out, {"kind": "post_eval_cleanup", **cleanup})
+                cleanup_failed = bool(cleanup.get("home_error") or cleanup.get("hold_error")
+                                      or not cleanup["torque_off_verified"])
+            finally:
+                robot.disconnect()
+        if cleanup_failed:
+            summary["status"] = "cleanup_failed"
         summary["timestamp_unix_s"] = time.time()
         append_jsonl(out, {"kind": "summary", **summary})
         print(f"Log: {out}")
+        if cleanup_failed:
+            raise RuntimeError("post-evaluation return home or follower torque-off verification failed; see log")
 
 
 if __name__ == "__main__":

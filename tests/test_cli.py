@@ -258,6 +258,10 @@ class PublicCliTests(unittest.TestCase):
                                             '--env-config', str(config), '--plan', *extra)
                         self.assertIn(f'--target {target}', command)
 
+    def test_fresh_training_defaults_to_gtc_berlin(self):
+        command = self.plan('train', '--plan')
+        self.assertIn('FixedCartesian-GTCBerlin-P1A', command)
+
     def test_profiles_map_to_distinct_registered_tasks(self):
         for profile, registered in cli.PROFILES.items():
             command = self.plan('train', '--actuator', profile, '--plan')

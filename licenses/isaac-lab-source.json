@@ -18,7 +18,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "0da8096c7db55ec8f22469bd3be0bfbd3829b48d87906304e54fca20f4795027",
-      "sha256": "a897f077f18a96a5c8622d33ee4d1cbf86c6e103a2cecc0d8b2c8d991bca41cb"
+      "sha256": "6bad13380072680bd862fe6717f4939b602d80179230ca0fc6f5a726db081383"
     },
     {
       "path": "scripts/reinforcement_learning/rsl_rl/play_rsl_rl.py",
@@ -46,7 +46,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "113b53e5c14b152a1a49ef48e9dcae3ef240f4dd73267adfffb968483f440db4",
-      "sha256": "d616ab87881b64bea0d8647019402c9fa5c436eacf073c2aa197b7ffa1505887"
+      "sha256": "f9369a4dba3a5b74922f06633aa3388a2c02aa5f2b3a97dc21a49d9672e43a40"
     },
     {
       "path": "source/so101_typing/hardware/policy_runtime.py",
@@ -60,7 +60,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "c463afc6808f99de0d502f6818806a1e5a6fa96539086579f9c3b4e87bdddce3",
-      "sha256": "dce697f62e2977c80c16de91f1039f2dd439593d034a1132aaa866c3566f0dd4"
+      "sha256": "d60c809273440a26bd3d69e2c24b0bd2bb4f24f1c8f044260a14036d348e26b4"
     },
     {
       "path": "source/so101_typing/tasks/SO101/__init__.py",
@@ -74,21 +74,21 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "30bada603d3733e7b31a709744a53eff25f3cb8d90f641722f5ee59dbee96ba0",
-      "sha256": "60105964b260fdcf0184855f3878836ddaf7a7b7e422eaba24cdc3b233c4fde3"
+      "sha256": "c6bc61c8d6a1c1a4e5bb5957cb54c2b545eb6107641a1fcaac1bf7b14f2df472"
     },
     {
       "path": "source/so101_typing/tasks/SO101/so101_cfg.py",
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "c1f05d25e6c942ada02fab5a7d8866d2190d2f737951f65f8c4cf7880555768d",
-      "sha256": "4c4681afe2a86bd0ca7ec6e9ac3b676c9b2cf9ca56ad3e477c0d889c33f02a03"
+      "sha256": "2f04f092d589deb8069c06544d047ffdc40bda0c9d666444812e6b9656667564"
     },
     {
       "path": "source/so101_typing/tasks/__init__.py",
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "63554af6c3e3a91d31729694463b918876ee3663aceae9e0bcc11e55a108e97f",
-      "sha256": "448f4f5f61101575a7b1c577828633653946de1cce6ad44cfb9ef75f9f99b730"
+      "sha256": "c4953d3f98182a8a7282b5271c4e7cab061700711def6c44dbfd359b77a4b299"
     },
     {
       "path": "source/so101_typing/tasks/agents/__init__.py",
@@ -102,14 +102,14 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "b4e095988b8ac1ae5889d479d99c9a5f1d8b33b96627df9c9b02b5da020fd80f",
-      "sha256": "8920f7b5cea23c63ccdca24859be024a63c88b14fe8392ae4bfebc5cfb5733bc"
+      "sha256": "70587afead2b1dd8d820b211725fbe0fbd418e57161ca84744ebca0e7d8026e0"
     },
     {
       "path": "source/so101_typing/tasks/fixed_cartesian_env_cfg.py",
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "dd125dd53a30796070a309e414c077c1ae9aff2052b14fe65060ea0592813150",
-      "sha256": "63cdee22f94b77ab7a3050bdb7c146a9195705a34dba80bb537382c1d8657b08"
+      "sha256": "81097e7c214ca211daceba064f331eca371945f99628f6d0f6ec011d48da1dca"
     },
     {
       "path": "source/so101_typing/tasks/fixed_cartesian_targets.py",
@@ -235,14 +235,14 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "cb60aa249d11e94c8272036fc255337b90f44a9fba041d899f3667e67f73c72d",
-      "sha256": "8b3f50fade8c5838f0cb2b5e81c5addbbd80c93cbbe461fe95aaef36d8673caf"
+      "sha256": "55c37b0d3f466ebb5e78e4cb3bffa886067ba84e6cc8680a425e78fb78d5cdcd"
     },
     {
       "path": "source/so101_typing/tasks/mdp/commands/fixed_cartesian_typing_commands_cfg.py",
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "cbe88c4ed840c1514668615142acd4c6aab1122690a5ff5fdd336fbaad8e3a05",
-      "sha256": "046ee31c8d7b7736d8bf740eedd107a212ed1ad8823ab4820e6a79767a9645d5"
+      "sha256": "bf5de19a1902c7d402cc7a5ce11e8296dbecf8ff05d5960e4d5d82e4a3ab0764"
     },
     {
       "path": "source/so101_typing/tasks/mdp/commands/grid_bucket.py",
@@ -298,7 +298,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "84fa21e0d014b521c966d0fc9f0000326d35ae7a99eb952384b2bc6a66f20b63",
-      "sha256": "921ce31a9d072df82ee8a4c72600e6feca7d0f2e4f22854e8632e90fbb169b7d"
+      "sha256": "6de3bbcfd1fded8aac55bc5248705114bde6aed855bad62e156766eee774041f"
     },
     {
       "path": "source/so101_typing/tasks/mdp/success_monitor/impl/__init__.py",
@@ -354,14 +354,14 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "910a156ce463341d22ddf50beaf333b7ebc49102e658ec2fec0af2a20cc0a539",
-      "sha256": "b56eec738a3d956e9ffa3986806e59d08a590677cf8876237696bd2f75175c78"
+      "sha256": "b0403449b694d68c6ce8ea4b57c2089e6a174768e4490e671f30622ebcfeb8e8"
     },
     {
       "path": "source/so101_typing/tasks/physical_calibrated_20260718_env_cfg.py",
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "edb76ea369fd29426fbfe45db9759ed98a5b10bf5b6389e0bbb95721cdf9dd8e",
-      "sha256": "9e28338432f7cd79ef62f0185e1da0fd0243e771aa957c3070504f8c82abc48e"
+      "sha256": "4dfebfd353c8382323e93672f40b87652a638cfdee84fd20f938d9270c6f2958"
     },
     {
       "path": "source/so101_typing/tasks/registered_mx_env_cfg.py",
@@ -375,7 +375,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "5561b4143a905480dd952a2f4567555183566146e52ab84bf573b86869385693",
-      "sha256": "7cf07c78922c883ac43b17852aba5ae1341fb074dc9fd56143c9de2405cb7c3a"
+      "sha256": "504389b58ab9fbd2b75157d2b2f8150f1fc9bf69dd812c8c021d9518d24006be"
     },
     {
       "path": "tests/hardware/test_policy.py",
@@ -389,7 +389,7 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "efe951fed4c49454d72f5fd3437d4046e192851585fdcf1019243dc4671b56e7",
-      "sha256": "5e3f72199594dd5d4dac9f2af655d10090449e840460bcbddfa5fe0e635519a6"
+      "sha256": "6f9707d9899d8e82aea18875035f6608fc189740b8428c8c996a37cef69c5cc0"
     },
     {
       "path": "tests/simulation/test_so101_fixed_cartesian_contract.py",
@@ -403,7 +403,8 @@
       "classification": "project-specific",
       "ancestor_path": null,
       "before_notice_sha256": "99e4c2c87ace8d7c9654e59097f247904b9461a77d15df1433832a54e1b46ce7",
-      "sha256": "dc26576878a2b067bb23f97ced99a9b45ae041e974174afd6fc55a78e014f5ea"
+      "sha256": "c4d326d8fdddce33c5ff6fb199081bc8a83c10779c59573ac51c5f04b11b3b83"
     }
-  ]
+  ],
+  "current_tree_note": "Classifications and before_notice_sha256 values preserve the original pinned-ancestor audit. sha256 values identify the current files, including later project changes."
 }

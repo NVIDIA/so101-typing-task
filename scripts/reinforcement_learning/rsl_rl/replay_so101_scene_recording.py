@@ -34,6 +34,8 @@ parser.add_argument("--task", default=TASK)
 parser.add_argument("--video", action="store_true")
 parser.add_argument("--step-sleep", type=float, default=0)
 parser.add_argument("--benchmark-offsets", action="store_true")
+parser.add_argument("--wrist-roll-offset-deg", type=float, default=0.0,
+                    help="Known wrist mounting correction applied to every measured pose; -90 puts the GTC wrist camera on top.")
 parser.add_argument("--mapping-report", type=Path)
 parser.add_argument("--mapping-candidate")
 parser.add_argument('--alignment', type=Path)
@@ -48,6 +50,10 @@ if args.mapping_report and args.benchmark_offsets:
     parser.error("--mapping-report and --benchmark-offsets are mutually exclusive")
 if args.mapping_report and not args.task_config:
     parser.error("diagnostic mapping requires explicit --task-config")
+if not np.isfinite(args.wrist_roll_offset_deg) or abs(args.wrist_roll_offset_deg) > 180:
+    parser.error("--wrist-roll-offset-deg must be finite and within [-180, 180]")
+if args.wrist_roll_offset_deg and (args.mapping_report or args.alignment or args.benchmark_offsets):
+    parser.error("explicit wrist mounting correction cannot be combined with another joint mapping")
 sys.argv = [sys.argv[0]]+remaining
 if args.video:
     args.enable_cameras = True
@@ -56,7 +62,7 @@ if args.video:
 @hydra_task_config(args.task, "rsl_rl_cfg_entry_point")
 def main(env_cfg, agent_cfg):
     recording = load_recording(args.trajectory)
-    if digest(Path(os.environ["SO101_ROBOT_USD"])) != recording["robot_usd_sha256"]:
+    if digest(Path(os.environ["SO101_TYPING_USD"])) != recording["robot_usd_sha256"]:
         raise ValueError("robot USD differs from recorded model")
     task = load_config(args.task_config) if args.task_config else recording["task_config"]
     mapping_offsets, diagnostic_mapping = None, None
@@ -74,6 +80,9 @@ def main(env_cfg, agent_cfg):
     recorded_positions = np.array([s["q_model_rad"] for s in samples])
     positions, offsets_deg = replay_joint_positions(recording, args.benchmark_offsets,
                                                     mapping_offsets_deg=mapping_offsets)
+    # Apply the known mounting correction to the replay copy, never to evidence.
+    positions[:, JOINT_NAMES.index("wrist_roll")] += np.deg2rad(args.wrist_roll_offset_deg)
+    offsets_deg[JOINT_NAMES.index("wrist_roll")] += args.wrist_roll_offset_deg
     times -= times[0]
     velocity = np.gradient(positions, times, axis=0)
     events_real = [{**e, "time_s": e["time_s"]-samples[0]["time_s"]} for e in recording["events"]]
@@ -100,7 +109,8 @@ def main(env_cfg, agent_cfg):
               "recorded_task_config_sha256": recording["task_config_sha256"],
               "task_config": task, "keyboard_pose_overridden": args.task_config is not None,
               "joint_zero_offset_deg": offsets_deg,
-              "encoder_convention": "diagnostic_mapping" if diagnostic_mapping else "benchmark" if args.benchmark_offsets else "direct",
+              "encoder_convention": "wrist_mount_corrected" if args.wrist_roll_offset_deg else "diagnostic_mapping" if diagnostic_mapping else "benchmark" if args.benchmark_offsets else "direct",
+              "wrist_roll_mount_offset_deg": args.wrist_roll_offset_deg,
               "mapping": "q_replay_model_rad = q_recorded_rad + radians(joint_zero_offset_deg)",
               "robot_joint_states_prescribed": True,
               "keyboard_joint_states_prescribed": False, "physical_events": events_real,

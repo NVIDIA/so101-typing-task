@@ -75,7 +75,7 @@ class FixedCartesianCommandsCfg:
         letter_xyz_b_m=FROZEN_AZ_XYZ_B_M,
         target_xyz_mean_b_m=FROZEN_AZ_XYZ_MEAN_B_M,
         target_xyz_std_b_m=FROZEN_AZ_XYZ_STD_B_M,
-        tip_body="gripper_link",
+        tip_body="gripper",
         tip_offset_m=FIXED_JAW_TIP_OFFSET_M,
         key_down_fraction=0.50,
         key_up_fraction=0.25,
@@ -175,7 +175,7 @@ class FixedCartesianRewardsCfg:
         weight=-0.5,
         params={
             "command_name": "typing",
-            "tip_body": "gripper_link",
+            "tip_body": "gripper",
             "tip_offset": FIXED_JAW_TIP_OFFSET_M,
             "clearance_m": 0.004,
             "lateral_speed_m_s": 0.04,
@@ -223,7 +223,7 @@ class FixedCartesianTerminationsCfg:
         func=mdp.fixed_jaw_scrape,
         params={
             "command_name": "typing",
-            "tip_body": "gripper_link",
+            "tip_body": "gripper",
             "tip_offset": FIXED_JAW_TIP_OFFSET_M,
             "clearance_m": 0.004,
             "lateral_speed_m_s": 0.04,

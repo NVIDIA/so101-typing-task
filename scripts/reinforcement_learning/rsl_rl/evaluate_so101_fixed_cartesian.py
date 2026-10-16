@@ -43,6 +43,7 @@ with contextlib.suppress(ImportError):
 P0_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-AnchorBench-P0"
 P1A_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-AnchorBench-P1A"
 BASELINE_P1A_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-Baseline-P1A"
+GTC_BERLIN_P1A_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-P1A"
 USD_DRIVE_P1A_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-USDDrive-P1A"
 P1B_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-AnchorBench-P1B"
 P1C_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-AnchorBench-P1C"
@@ -51,9 +52,16 @@ P1D_TRANSIT15_TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-Fixed
 BASELINE_P1D_TRANSIT15_TASK = (
     "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-Baseline-P1D-Transit15"
 )
+GTC_BERLIN_P1D_TRANSIT15_TASK = (
+    "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-P1D-Transit15"
+)
 USD_DRIVE_P1D_TRANSIT15_TASK = (
     "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-USDDrive-P1D-Transit15"
 )
+PHRASE_TASK = "Isaac-Keyboard-SO101-MX-GTCBerlin-State-IsaacLabPhrase"
+PHRASE_PREFIX_TASKS = {
+    length: f"{PHRASE_TASK}-Prefix{length}" for length in (3, 6, 10)
+}
 
 
 @dataclass(frozen=True)
@@ -68,8 +76,13 @@ TASK_CONTRACTS = {
     P1A_TASK: TaskContract(2, "physical_calibrated_20260718_fixed_cartesian_anchorbench_p1a_letters2_v0"),
     BASELINE_P1A_TASK: TaskContract(
         2,
-        "physical_calibrated_20260718_fixed_cartesian_baseline_p1a_letters2_v0",
+        "physical_calibrated_20260718_fixed_cartesian_baseline_p1a_letters2_camera_top_v1",
         actuator_profile="baseline",
+    ),
+    GTC_BERLIN_P1A_TASK: TaskContract(
+        2,
+        "physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1a_letters2_camera_top_v1",
+        actuator_profile="gtc_berlin",
     ),
     USD_DRIVE_P1A_TASK: TaskContract(
         2,
@@ -84,14 +97,22 @@ TASK_CONTRACTS = {
     ),
     BASELINE_P1D_TRANSIT15_TASK: TaskContract(
         6,
-        "physical_calibrated_20260718_fixed_cartesian_baseline_p1d_transit15_letters6_v0",
+        "physical_calibrated_20260718_fixed_cartesian_baseline_p1d_transit15_letters6_camera_top_v1",
         actuator_profile="baseline",
+    ),
+    GTC_BERLIN_P1D_TRANSIT15_TASK: TaskContract(
+        6,
+        "physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1d_transit15_letters6_camera_top_v1",
+        actuator_profile="gtc_berlin",
     ),
     USD_DRIVE_P1D_TRANSIT15_TASK: TaskContract(
         6,
         "physical_calibrated_20260718_fixed_cartesian_usd_drive_p1d_transit15_letters6_v0",
         actuator_profile="usd_drive",
     ),
+    PHRASE_TASK: TaskContract(13, "physical_calibrated_gtc_berlin_state_isaac_lab_3p0_v1", actuator_profile="gtc_berlin"),
+    **{task: TaskContract(length, f"physical_calibrated_gtc_berlin_state_isaac_lab_3p0_prefix{length}_v1", actuator_profile="gtc_berlin")
+       for length, task in PHRASE_PREFIX_TASKS.items()},
 }
 FAILURE_TERMS = (
     "time_out",
@@ -108,6 +129,8 @@ FAILURE_TERMS = (
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--physics-config", type=Path, help="Matching public physics JSON from training params")
 parser.add_argument("--task-config", type=Path, help="Matching public task JSON")
+parser.add_argument("--viewer-camera", type=Path, help="Saved overview eye_m/lookat_m JSON")
+parser.add_argument("--white-base-config", type=Path, help="Visual white rectangle; training ground collision retained")
 parser.add_argument("--perturbation-config", type=Path, help="Explicit fixed-policy reset robustness experiment")
 parser.add_argument("--task", choices=tuple(TASK_CONTRACTS), required=True)
 parser.add_argument("--agent", default="rsl_rl_cfg_entry_point")
@@ -123,6 +146,7 @@ parser.add_argument("--env-config", type=Path, required=True, help="The params/e
 parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--trace-policy-actions", type=int, default=0)
 parser.add_argument("--video", action="store_true")
+parser.add_argument("--export-replay", action="store_true", help="Save exact rollout body transforms as animated USD")
 parser.add_argument("--video-length", type=int, default=0)
 parser.add_argument("--step-sleep", type=float, default=0.0)
 parser.add_argument("--viewer-hold-seconds", type=float, default=0.0)
@@ -215,6 +239,17 @@ def _configure_protocol(env_cfg: ManagerBasedRLEnvCfg) -> tuple[int, int]:
 def _build_target_bank(command, target_length: int) -> tuple[torch.Tensor, str, dict[str, int], dict[str, object]]:
     labels = tuple(str(label) for label in command.cfg.slot_labels)
     candidates = tuple(int(slot) for slot in command.cfg.target_slots)
+    if args_cli.task == PHRASE_TASK or args_cli.task in PHRASE_PREFIX_TASKS.values():
+        from so101_typing.tasks.phrase_targets import TARGET_SLOTS, TARGET_TEXT
+        target_text = TARGET_TEXT[:target_length]
+        target_slots = TARGET_SLOTS[:target_length]
+        if args_cli.target is not None and args_cli.target != target_text:
+            raise ValueError(f"phrase task requires {target_text!r}, got {args_cli.target!r}")
+        if tuple(command.cfg.fixed_target_slots) != target_slots:
+            raise ValueError("phrase task target slots do not match the calibrated target")
+        bank = torch.tensor(target_slots, dtype=torch.long).expand(command.num_envs, -1).clone()
+        bank_bytes = bank.contiguous().numpy().tobytes()
+        return bank.to(command.device), hashlib.sha256(bank_bytes).hexdigest(), {target_text: command.num_envs}, {"mode": "repeated_sequence", "target": target_text}
     if len(candidates) != 26:
         raise ValueError(f"expected 26 A-Z candidates, got {len(candidates)}")
 
@@ -361,6 +396,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
     if args_cli.physics_config:
         from public_physics import apply_config, load_config
         apply_config(env_cfg, load_config(args_cli.physics_config))
+    appearance = None
+    if args_cli.white_base_config:
+        from recorded_tabletop import apply_white_base, load_config as load_tabletop
+        appearance = apply_white_base(env_cfg, load_tabletop(args_cli.white_base_config))
     target_length, step_budget = _configure_protocol(env_cfg)
     artifact_contract = _validate_artifact_contract(env_cfg)
     perturbation = None
@@ -376,11 +415,22 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
     agent_cfg = handle_deprecated_rsl_rl_cfg(agent_cfg, metadata.version("rsl-rl-lib"))
 
     if args_cli.video:
-        # Frame the whole keyboard and arm for the public quickstart video.
-        env_cfg.video_recorder.eye = (0.85, -0.35, 0.60)
-        env_cfg.video_recorder.lookat = (0.16, 0.04, 0.08)
+        # Close framing with the full robot and keyboard in view.
+        env_cfg.viewer.eye = (0.65, -0.30, 0.40)
+        env_cfg.viewer.lookat = (0.17, 0.02, 0.15)
+    if args_cli.viewer_camera:
+        camera = json.loads(args_cli.viewer_camera.read_text())
+        env_cfg.viewer.eye = tuple(float(x) for x in camera["eye_m"])
+        env_cfg.viewer.lookat = tuple(float(x) for x in camera["lookat_m"])
+        if len(env_cfg.viewer.eye) != 3 or len(env_cfg.viewer.lookat) != 3:
+            raise ValueError("viewer camera eye_m and lookat_m must have three components")
     video_length = args_cli.video_length or step_budget
     with launch_simulation(env_cfg, args_cli):
+        if args_cli.video and "kit" in (args_cli.visualizer or []):
+            from isaaclab_visualizers.kit import KitVisualizerCfg
+            # Capture resolves its camera from this config, rather than viewer.eye.
+            env_cfg.sim.visualizer_cfgs = KitVisualizerCfg(
+                eye=env_cfg.viewer.eye, lookat=env_cfg.viewer.lookat)
         base_env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
         try:
             if args_cli.video:
@@ -393,6 +443,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                     name_prefix=args_cli.out.stem,
                 )
             env = RslRlVecEnvWrapper(base_env, clip_actions=agent_cfg.clip_actions)
+            if args_cli.video:
+                # The wrapper has reset the env; warm RGB capture before stepping.
+                for _ in range(6):
+                    base_env.render()
             runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
             runner.load(str(checkpoint))
             policy = runner.get_inference_policy(device=env.unwrapped.device)
@@ -427,6 +481,11 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
             if len(initial_observation) != 22:
                 raise RuntimeError(f"expected the fixed-Cartesian 22-D observation, got {len(initial_observation)}")
 
+            replay = None
+            if args_cli.export_replay:
+                from record_replay_usd import ReplayUsdRecorder
+                replay = ReplayUsdRecorder(env.unwrapped, args_cli.out.parent / "replay.usdc")
+
             executed_steps = 0
             with torch.inference_mode():
                 for step in range(step_budget):
@@ -440,6 +499,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                             }
                         )
                     observations, _, _, _ = env.step(actions)
+                    if replay is not None:
+                        replay.capture()
                     executed_steps = step + 1
                     pending_ids = torch.where(stats["pending"])[0]
                     _accumulate_events(command, stats, pending_ids)
@@ -480,6 +541,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                 "checkpoint_sha256": _sha256(checkpoint),
                 "evaluator_sha256": _sha256(Path(__file__).resolve()),
                 "artifact_contract": artifact_contract,
+                "appearance": appearance,
                 "evaluation_mode": "fixed_policy_reset_robustness" if perturbation else "matched_training_contract",
                 "perturbation_config": perturbation,
                 "task": args_cli.task,
@@ -495,6 +557,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                 "raw_completion_rate": float(stats["terminal_completed"].float().mean().item()),
                 "typed_exact_rate": float(stats["terminal_typed_exact"].float().mean().item()),
                 "incomplete_rate": float((stats["character_index"] < target_length).float().mean().item()),
+                "mean_character_index": float(stats["character_index"].float().mean().item()),
+                "character_index_histogram": {str(i): int(count) for i, count in enumerate(torch.bincount(stats["character_index"], minlength=target_length + 1).cpu().tolist()) if count},
                 "wrong_key_rate": float(stats["terminal_wrong_key"].float().mean().item()),
                 "overlap_rate": float(stats["terminal_overlap"].float().mean().item()),
                 "initially_held_rate": float(stats["terminal_initially_held"].float().mean().item()),
@@ -529,6 +593,12 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                     "physics": "newton_mjwarp",
                 },
             }
+            if replay is not None:
+                report["replay_export"] = replay.save()
+            # Kit may exit the process during shutdown; save before closing its app.
+            args_cli.out.parent.mkdir(parents=True, exist_ok=True)
+            args_cli.out.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+            print(f'EVALUATION COMPLETE: success={report["successes"]}/{env.num_envs}; report={args_cli.out}', flush=True)
             if args_cli.viewer_hold_seconds:
                 deadline = time.monotonic() + args_cli.viewer_hold_seconds
                 while time.monotonic() < deadline:

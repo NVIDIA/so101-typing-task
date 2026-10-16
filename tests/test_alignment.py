@@ -106,6 +106,52 @@ def environment(c):
                                   'velocity_limits_rad_s': list(bundle.JOINT_RATE_LIMITS_RAD_S), 'q_reset_ref': trajectory.RESET.tolist()}}}
 
 
+def vision_mapping(e, monkeypatch, *, candidate=False):
+    env = environment(e.candidate['contract'])
+    env['actuator_profile'] = 'gtc_berlin'
+    env['actions']['action']['control_dt_s'] = .04
+    export(e, e.alignment if candidate else qualify(e), monkeypatch, env=env, candidate=candidate)
+    return e.root/'bundle', env
+
+
+def test_vision_mapping_revalidates_qualified_bundle(evidence, monkeypatch):
+    from so101_typing.hardware.run_vision_policy_handoff import load_mapping
+    folder, env = vision_mapping(evidence, monkeypatch)
+    _, _, data = load_mapping(folder, env, 'test_robot')
+    assert data['mapping_selection'] == 'qualified_alignment'
+    (folder/'alignment/Q_hardware.jsonl').write_text('{}\n')
+    with pytest.raises(ValueError, match='evidence path/hash'):
+        load_mapping(folder, env, 'test_robot')
+
+
+def test_vision_candidate_requires_experimental_opt_in(evidence, monkeypatch):
+    from so101_typing.hardware.run_vision_policy_handoff import load_mapping
+    folder, env = vision_mapping(evidence, monkeypatch, candidate=True)
+    with pytest.raises(ValueError, match='requires a qualified'):
+        load_mapping(folder, env, 'test_robot')
+    _, _, data = load_mapping(folder, env, 'test_robot', experimental=True)
+    assert data['mapping_selection'] == 'unqualified_alignment'
+
+
+@pytest.mark.parametrize('changed', ['calibration', 'profile', 'checkpoint', 'environment', 'schema'])
+def test_vision_mapping_rejects_stale_or_tampered_bundle(evidence, monkeypatch, changed):
+    from so101_typing.hardware.run_vision_policy_handoff import load_mapping
+    folder, env = vision_mapping(evidence, monkeypatch, candidate=True)
+    if changed == 'calibration':
+        evidence.calibration.write_text('{}')
+    elif changed in ('checkpoint', 'environment'):
+        (folder/('checkpoint.pt' if changed == 'checkpoint' else 'env.yaml')).write_text('changed')
+    else:
+        data = json.loads((folder/'deployment.json').read_text())
+        if changed == 'profile':
+            data['profile']['joint_zero_offset_deg'][0] += 1
+        else:
+            data['schema_version'] = 99
+        dump(folder/'deployment.json', data)
+    with pytest.raises(ValueError):
+        load_mapping(folder, env, 'test_robot', experimental=True)
+
+
 def export(e, qualification, monkeypatch, env=None, candidate=False):
     checkpoint = e.root/'model.pt'; checkpoint.write_bytes(b'synthetic-policy-test-only')
     env_path = e.root/'env.yaml'; env_path.write_text(yaml.safe_dump(env or environment(e.candidate['contract'])))
@@ -522,3 +568,13 @@ def test_hardware_replays_saved_rows_and_detects_keys(artifact, monkeypatch, wro
     else:
         assert runner.execute(plan, path, args, path) == 0
         np.testing.assert_allclose(np.deg2rad(np.array(sent[-len(plan['rows']):])+offset), [r["q_rad"] for r in plan["rows"]], atol=1e-15)
+
+
+def test_vectorized_scene_mapping_fk_matches_scalar_workshop_fk():
+    from so101_typing.hardware.audit_scene_mapping import batch_fk
+    from so101_typing.hardware.so101_kinematics import FIXED_JAW_TYPING_TIP_SITE_POS, site_position
+    samples = np.array([[0., 0., np.deg2rad(6.4), 0., 0., 0.],
+                        [-.08, -.14, .02, 1.15, .04, -.17],
+                        [.2, -.3, .4, .1, -.2, .7]])
+    expected = np.array([site_position(q, site_pos=FIXED_JAW_TYPING_TIP_SITE_POS) for q in samples])
+    np.testing.assert_allclose(batch_fk(samples), expected, atol=1e-10, rtol=0)

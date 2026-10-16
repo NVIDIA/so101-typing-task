@@ -34,6 +34,15 @@ COPY pyproject.toml /workspace/isaaclab/pyproject.toml
 COPY LICENSE THIRD_PARTY_NOTICES.md /workspace/isaaclab/
 COPY licenses/ /workspace/isaaclab/licenses/
 RUN ./isaaclab.sh -p -m pip install --no-deps --no-build-isolation --editable .
+RUN ./isaaclab.sh -p scripts/build_workshop_so101_asset.py \
+    --manifest source/so101_typing/tasks/SO101/data/workshop_asset_sources.json \
+    --overrides source/so101_typing/tasks/SO101/data/workshop_overrides.usda \
+    --cache /tmp/workshop-usd --out /opt/so101/assets/workshop_so101.usdc \
+    && chmod 644 /opt/so101/assets/workshop_so101.* && rm -rf /tmp/workshop-usd
+ENV SO101_TYPING_USD=/opt/so101/assets/workshop_so101.usdc
+# Fonts used by the reproducible replay compositor.
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-core fonts-noto-core \
+    && rm -rf /var/lib/apt/lists/*
 ENV ACCEPT_EULA=Y NO_NUCLEUS=Y OMNI_KIT_ALLOW_ROOT=1 PYTHONUNBUFFERED=1
 ARG SOURCE_SHA256
 LABEL org.so101.source-sha256=${SOURCE_SHA256}

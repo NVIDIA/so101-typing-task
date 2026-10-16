@@ -42,7 +42,7 @@ def main(env_cfg, agent_cfg):
     letter = plan["letter"]
     if args.task != plan["task"]:
         raise ValueError("trajectory task mismatch")
-    if digest(Path(os.environ["SO101_ROBOT_USD"])) != plan["robot_usd_sha256"]:
+    if digest(Path(os.environ["SO101_TYPING_USD"])) != plan["robot_usd_sha256"]:
         raise ValueError("robot USD differs from the planned model")
     apply_config(env_cfg, plan["task_config"])
     env_cfg.scene.num_envs = 1
@@ -58,7 +58,7 @@ def main(env_cfg, agent_cfg):
         env_cfg.video_recorder.lookat = (.21, .08, .06)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     report = {"status": "failed", "trajectory_sha256": digest(args.trajectory),
-              "physics": "newton_mjwarp", "actuator": "anchorbench", "policy_used": False,
+              "physics": "newton_mjwarp", "actuator": "gtc_berlin", "policy_used": False,
               "keyboard_state_written": False, "joint_zero_offset_deg": [0]*5,
               "phase_timeouts_s": [120]*3, "events": [], "max_command_error_rad": 0.,
               "max_fk_model_error_m": 0., "max_contact_force_n": 0.,

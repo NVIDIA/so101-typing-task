@@ -18,38 +18,28 @@ ARM_JOINT_NAMES = (
     "wrist_roll",
 )
 JOINT_NAMES = (*ARM_JOINT_NAMES, "gripper")
+# This chain is extracted from the pinned Workshop USD joint local frames.
+# The typing scene rotates its root +90 degrees about Z so the arm faces +X.
 BODY_NAMES = (
-    "base_link",
-    "shoulder_link",
-    "upper_arm_link",
-    "lower_arm_link",
-    "wrist_link",
-    "gripper_link",
-    "moving_jaw_so101_v1_link",
+    "base", "shoulder", "upper_arm", "lower_arm", "wrist", "gripper", "moving_jaw_so101_v1",
 )
-_BODY_NAME_TO_KINEMATIC = {
-    "base_link": "base",
-    "shoulder_link": "shoulder",
-    "upper_arm_link": "upper_arm",
-    "lower_arm_link": "lower_arm",
-    "wrist_link": "wrist",
-    "gripper_link": "gripper",
-    "moving_jaw_so101_v1_link": "moving_jaw_so101_v1",
-}
+_BODY_NAME_TO_KINEMATIC = {name: name for name in BODY_NAMES}
+_ROOT_ROTATION_WXYZ = (math.sqrt(0.5), 0.0, 0.0, math.sqrt(0.5))
 
-# Each entry is child body, parent-to-joint translation, parent-to-joint quaternion (wxyz), and joint index.
+# Child body, parent-to-joint translation, parent-to-joint quaternion (wxyz), joint index.
+# The Workshop joint child frames are identity, with all six axes along local Z.
 _BODY_CHAIN = (
-    ("shoulder", (0.0388353, -8.97657e-09, 0.0624), (3.56167e-16, 1.22818e-15, -1.0, -4.14635e-16), 0),
-    ("upper_arm", (-0.0303992, -0.0182778, -0.0542), (0.5, -0.5, -0.5, -0.5), 1),
-    ("lower_arm", (-0.11257, -0.028, 1.73763e-16), (0.707107, -5.98613e-17, -2.58051e-17, 0.707107), 2),
-    ("wrist", (-0.1349, 0.0052, 3.62355e-17), (0.707107, 9.58722e-16, -7.51313e-16, -0.707107), 3),
-    ("gripper", (5.55112e-17, -0.0611, 0.0181), (0.0172091, -0.0172091, 0.706897, 0.706897), 4),
+    ("shoulder", (0.0207909, -0.0230745, 0.0948817), (8.963205e-7, -0.7071055, -0.7071081, 8.9632374e-7), 0),
+    ("upper_arm", (-0.0303992, -0.0182778, -0.0542), (0.4999982, -0.5, -0.5, -0.50000185), 1),
+    ("lower_arm", (-0.11257, -0.028, 2.46331e-16), (0.7454748, -6.239807e-16, -2.6585315e-16, 0.6665338), 2),
+    ("wrist", (-0.1349, 0.0052, 1.65232e-16), (0.7071055, 2.1600662e-15, -1.3619623e-16, -0.7071081), 3),
+    ("gripper", (0.0, -0.0611, 0.0181), (8.631542e-7, 9.2948994e-7, 0.7071081, 0.7071055), 4),
 )
 _MOVING_JAW_POS = (0.0202, 0.0188, -0.0234)
-_MOVING_JAW_QUAT_WXYZ = (0.707107, 0.707107, -1.85362e-08, 1.85362e-08)
+_MOVING_JAW_QUAT_WXYZ = (0.7071055, 0.7071081, -4.92038e-15, -4.8840093e-15)
 _BODY_COM_POS = {
-    "base": (0.0137179, -5.19711e-05, 0.0334843),
-    "shoulder": (-0.0307604, -1.66727e-05, -0.0252713),
+    "base": (0.020739, 0.0020428703, 0.065966),
+    "shoulder": (-0.0307604, -0.0000166727, -0.0252713),
     "upper_arm": (-0.0898471, -0.00838224, 0.0184089),
     "lower_arm": (-0.0980701, 0.00324376, 0.0182831),
     "wrist": (-0.000103312, -0.0386143, 0.0281156),
@@ -57,20 +47,21 @@ _BODY_COM_POS = {
     "moving_jaw_so101_v1": (-0.00157495, -0.0300244, 0.0192755),
 }
 
+# Retained fixed-jaw tip sites; verify their physical contact point during replay calibration.
 FIXED_JAW_SITE_POS = (-0.0079, -0.000218121, -0.0981274)
 TYPING_TIP_SITE_POS = (0.010028509, -0.000102324, -0.105400003)
 FIXED_JAW_TYPING_TIP_SITE_POS = (-0.0106769063594562, -0.0005212273838322845, -0.10413855748835771)
 WRIST_ROLL_MOUNT_ALIGNMENT_RAD = 0.0
+# Keep the LeRobot percent-to-jaw convention; both endpoints lie within the Workshop joint limits.
 GRIPPER_MODEL_MIN_RAD = math.radians(-10.0)
 GRIPPER_MODEL_MAX_RAD = math.radians(100.0)
 ARM_JOINT_LIMITS_RAD = (
-    (math.radians(-110.0), math.radians(110.0)),
-    (math.radians(-100.0), math.radians(100.0)),
-    (-1.69, 1.69),
-    (-1.65806, 1.65806),
-    (-2.74385, 2.84121),
+    (math.radians(-109.99987030029297), math.radians(109.99987030029297)),
+    (math.radians(-100.00003814697266), math.radians(100.00003814697266)),
+    (math.radians(-90.42986297607422), math.radians(103.22987365722656)),
+    (math.radians(-94.99983215332031), math.radians(94.99983215332031)),
+    (math.radians(-157.2110137939453), math.radians(162.78932189941406)),
 )
-
 
 def lerobot_position_to_model_rad(position: np.ndarray | list[float]) -> np.ndarray:
     """Convert LeRobot arm degrees plus gripper percent to model joint radians."""
@@ -157,7 +148,7 @@ def body_poses(q_rad: np.ndarray | list[float]) -> dict[str, tuple[np.ndarray, n
         raise ValueError("joint positions must be finite")
 
     position = np.zeros(3, dtype=np.float64)
-    orientation = np.asarray((1.0, 0.0, 0.0, 0.0), dtype=np.float64)
+    orientation = np.asarray(_ROOT_ROTATION_WXYZ, dtype=np.float64)
     poses: dict[str, tuple[np.ndarray, np.ndarray]] = {"base": (position.copy(), orientation.copy())}
     for body, origin, fixed_quat, joint_index in _BODY_CHAIN:
         position = position + _rotate(orientation, np.asarray(origin, dtype=np.float64))

@@ -1,0 +1,20 @@
+{
+  "target": "NEWTON",
+  "episodes": 1024,
+  "success_rate": 0.9921875,
+  "checkpoint": "newton_ckpt.pt",
+  "checkpoint_sha256": "d6d78ca17dcb943d37bdc0dfdb19f4abfdd751e612831abde54c44f39d725d21",
+  "domain_strength": 1.0,
+  "seed": 926807,
+  "started_at": 1792042106.8842652,
+  "finished_at": 1792042535.9791558,
+  "failure_counts": {
+    "excessive_contact": 2,
+    "phase_timeout": 3,
+    "scrape": 2,
+    "invalid_key": 1
+  },
+  "teacher": false,
+  "mean_completed_letters": 5.9697265625,
+  "source_checkpoint": "output/vision_ppo/20261014_newton_ovrtx_height2mm_from24950/generation_000/model_38000.pt"
+}

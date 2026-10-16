@@ -97,7 +97,7 @@ class fixed_jaw_scrape(ManagerTermBase):
         super().__init__(cfg, env)
         asset_cfg: SceneEntityCfg = cfg.params.get("asset_cfg", SceneEntityCfg("robot"))
         self.robot = env.scene[asset_cfg.name]
-        self._tip_body = self.robot.body_names.index(cfg.params.get("tip_body", "gripper_link"))
+        self._tip_body = self.robot.body_names.index(cfg.params.get("tip_body", "gripper"))
         self._tip_offset = torch.tensor(cfg.params["tip_offset"], device=env.device).expand(env.num_envs, 3)
         self._clearance_m = float(cfg.params.get("clearance_m", 0.004))
         self._lateral_speed_m_s = float(cfg.params.get("lateral_speed_m_s", 0.04))
@@ -113,7 +113,7 @@ class fixed_jaw_scrape(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
         command_name: str,
-        tip_body: str = "gripper_link",
+        tip_body: str = "gripper",
         tip_offset: tuple[float, float, float] = (0.0, 0.0, 0.0),
         clearance_m: float = 0.004,
         lateral_speed_m_s: float = 0.04,

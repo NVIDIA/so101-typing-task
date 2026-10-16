@@ -1,0 +1,18 @@
+{
+  "source_repository": "isaac-sim/Sim-to-Real-SO-101-Workshop",
+  "source_revision": "33f56e38a2edaf73f7cef6ea32f03597b84b33ee",
+  "source_config": "source/sim_to_real_so101/tasks/task_env_cfg.py:camera_wrist",
+  "source_asset": "Workshop SO101 Sensor=sensors USD variant",
+  "camera_path": "{ENV_REGEX_NS}/Robot/gripper/wowrobo_2MP_camera",
+  "native_resolution": [640, 480],
+  "training_resolution": [160, 120],
+  "fx": 339.26593017578125,
+  "fy": 338.8200988769531,
+  "cx": 323.55810546875,
+  "cy": 250.2736053466797,
+  "k1": 0.0770232230424881,
+  "k2": -0.13605453073978424,
+  "k3": 0.05163218826055527,
+  "p1": -0.00024938001297414303,
+  "p2": -0.0017500600079074502
+}

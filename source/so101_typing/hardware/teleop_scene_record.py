@@ -20,6 +20,8 @@ import os
 from pathlib import Path
 import time
 
+from scripts.robot_model_identity import WORKSHOP_USD_SHA256
+
 from .fk_probe_trajectory import ROOT, TASK, digest
 from .hardware_lock import RobotBusLock
 from .so101_kinematics import JOINT_NAMES, lerobot_position_to_model_rad
@@ -296,6 +298,19 @@ def run_session(follower_bus, leader_bus, report, keyboard, *, seconds=120., hz=
             except BaseException as error:
                 report['hold_error'] = f'{type(error).__name__}: {error}; existing goal retained'
                 report['status'] = 'failed'
+        if started_writes and follower_bus.is_connected:
+            try:
+                off = dict.fromkeys(JOINT_NAMES, 0)
+                follower_bus.sync_write('Torque_Enable', off, normalize=False, num_retry=0)
+                observed = read_raw(follower_bus, 'Torque_Enable')
+                if observed != off:
+                    raise ValueError(f'follower torque-off readback mismatch: {observed}')
+                report['follower_torque_off_verified'] = True
+                emit({'kind': 'follower_torque_off_verified', 'torque_enable': observed,
+                      'monotonic_s': clock.monotonic()})
+            except BaseException as error:
+                report['follower_torque_off_error'] = f'{type(error).__name__}: {error}'
+                report['status'] = 'failed'
         for label, bus in (('leader', leader_bus), ('follower', follower_bus)):
             if bus.is_connected:
                 try:
@@ -331,7 +346,7 @@ def offline_preflight(args):
               'task_config': load_config(args.task_config), 'task_config_sha256': digest(args.task_config),
               'source_sha256': {name: digest(ROOT/name) for name in sources},
               'recorder_sha256': digest(Path(__file__)),
-              'robot_usd_sha256': 'c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462',
+              'robot_usd_sha256': WORKSHOP_USD_SHA256,
               'robot_id': args.robot_id, 'port': port, 'calibration': follower_data,
               'calibration_file': str(calibration), 'calibration_sha256': digest(calibration),
               'leader': {'robot_id': args.leader_id, 'port': leader_port, 'calibration': leader_data,
@@ -342,7 +357,7 @@ def offline_preflight(args):
                           'max_gap_s': MAX_GAP_S, 'startup_alignment_check_deg': START_ALIGNMENT_DEG,
                           'leader_lag_abort_deg': None,
                           'gripper': 'not commanded; preserve initial closed pose and torque state',
-                          'exit': 'hold fresh measured arm pose; arm torque stays enabled'},
+                          'exit': 'hold fresh measured arm pose, then disable and verify follower torque on all six motors'},
               'limits': 'Encoder-derived poses, not independent calibrated 3D measurements.',
               'samples': [], 'events': [], 'status': 'offline_checked'}
     # Constructors load files only; connect/configure methods are never called here.
@@ -416,11 +431,13 @@ def main(argv=None):
         else:
             if report.get('hold_error'):
                 raise RuntimeError(report['hold_error'])
+            if report.get('follower_torque_off_error'):
+                raise RuntimeError(report['follower_torque_off_error'])
             final_torque = report.get('live', {}).get('follower', {}).get('registers_after', {}).get('Torque_Enable', {})
-            if report.get('final_hold_measured') and all(final_torque.get(name) == 1 for name in ARM):
-                print('Final goal verified at fresh measured pose; arm torque remains ON. Leader and gripper unchanged.')
+            if report.get('follower_torque_off_verified') and all(final_torque.get(name) == 0 for name in JOINT_NAMES):
+                print('Follower torque OFF verified on all six motors after recording.')
             elif report.get('final_hold_measured'):
-                print('Final goal verified at fresh measured pose; arm torque is not confirmed ON.')
+                raise RuntimeError('Follower torque-off verification missing after recording')
             else:
                 print('Stopped before follower commands; no motor state was changed.')
             if len(report['samples']) >= 2:

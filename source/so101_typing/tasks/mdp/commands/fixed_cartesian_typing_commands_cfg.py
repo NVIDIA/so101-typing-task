@@ -24,12 +24,13 @@ class FixedCartesianTypingCommandCfg(LetterTypingCommandCfg):
 
     q_reset_ref: tuple[float, float, float, float, float] = MISSING
     letter_slots: tuple[int, ...] = MISSING
+    fixed_target_slots: tuple[int, ...] | None = None
     letter_xyz_b_m: tuple[tuple[float, float, float], ...] = MISSING
     target_xyz_mean_b_m: tuple[float, float, float] = MISSING
     target_xyz_std_b_m: tuple[float, float, float] = MISSING
     action_name: str = "action"
 
-    tip_body: str = "gripper_link"
+    tip_body: str = "gripper"
     tip_offset_m: tuple[float, float, float] = (
         -0.0106769063594562,
         -0.0005212273838322845,

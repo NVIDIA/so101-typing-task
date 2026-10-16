@@ -15,45 +15,27 @@ from isaaclab.actuators import ImplicitActuatorCfg
 
 SO101_ACTUATOR_PROFILES: dict[str, dict[str, Any]] = {
     "usd_drive": {
-        # Effective drive values authored by the robot USD loaded by this task.
-        # The generated 17.8/0 converter artifact is not the loaded asset and
-        # must not be used as a training profile.
-        "label": "loaded_so101_usd_drive",
-        "source": (
-            "https://huggingface.co/datasets/nvidia/Anchor-Lab/resolve/main/robot_assets/so101_no_camera_new_calib.usd"
-        ),
-        "source_sha256": "c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462",
-        "fit_id": None,
-        "effort_limit_sim": 10.0,
-        "velocity_limit_sim": 10.0,
-        "stiffness": {
-            name: 100.0
-            for name in (
-                "shoulder_pan",
-                "shoulder_lift",
-                "elbow_flex",
-                "wrist_flex",
-                "wrist_roll",
-                "gripper",
-            )
-        },
-        "damping": {
-            name: 1.0
-            for name in (
-                "shoulder_pan",
-                "shoulder_lift",
-                "elbow_flex",
-                "wrist_flex",
-                "wrist_roll",
-                "gripper",
-            )
-        },
-        # These properties are unauthored in the loaded USD, so Newton's
-        # effective value is zero rather than the AnchorBench fitted values.
+        # Native Workshop USD drives. Newton imports gains, armature and Coulomb friction;
+        # the pinned importer needs explicit velocity and viscous-friction bridges.
+        "label": "workshop_so101_usd_drive",
+        "source": "source/so101_typing/tasks/SO101/data/workshop_asset_sources.json",
+        "source_sha256": "893963bb1d4e79bf120885355357a8a0d62186a45cf84a11cd267a8f5db97be3",
+        "fit_id": "04_multiseed_seed42_camera_6p53mm_ACTIVE",
+        "effort_limit_sim": None,
+        "velocity_limit_sim": 30.0,
+        "stiffness": None,
+        "damping": None,
         "armature": None,
         "friction": None,
         "dynamic_friction": None,
-        "viscous_friction": None,
+        "viscous_friction": {
+            "shoulder_pan": 1.590709,
+            "shoulder_lift": 0.561425,
+            "elbow_flex": 0.796639,
+            "wrist_flex": 1.071871,
+            "wrist_roll": 1.637671,
+            "gripper": 0.958565,
+        },
     },
     "baseline": {
         # Exact SO-101 Workshop profile used as the baseline arm in the A/B.
@@ -79,12 +61,72 @@ SO101_ACTUATOR_PROFILES: dict[str, dict[str, Any]] = {
             "gripper": 0.3,
         },
         # The workshop profile does not override these physical properties.
-        # The shared robot USD leaves them unauthored, so Newton resolves them
-        # to zero for the baseline arm.
+        # The Workshop USD provides the passive terms for this profile.
         "armature": None,
         "friction": None,
         "dynamic_friction": None,
         "viscous_friction": None,
+    },
+    "gtc_berlin": {
+        # 2026-10-12 position-MSE fit; exact source YAML is copied beside this module.
+        "label": "gtc_berlin_sysid_oct12",
+        "source": "source/so101_typing/tasks/SO101/data/gtc_berlin.yaml",
+        "source_sha256": "7231ab90db35368e1506fec94bccad88187e5e2bf5d5304f1a113c24de977b6d",
+        "fit_id": "sysid_Oct12",
+        "metric": "position_mse",
+        "best_mse": 0.0001072153189590853,
+        # The fit does not contain motor limits; retain the Workshop limits.
+        "effort_limit_sim": 3.35,
+        "velocity_limit_sim": 30.0,
+        "stiffness": {
+            "shoulder_pan": 48.93682087435154,
+            "shoulder_lift": 51.336503963086734,
+            "elbow_flex": 18.565405780730025,
+            "wrist_flex": 43.03380653711947,
+            "wrist_roll": 47.135886076886166,
+            "gripper": 50.83054002253434,
+        },
+        "damping": {
+            "shoulder_pan": 2.309705389862818,
+            "shoulder_lift": 2.7829628172221677,
+            "elbow_flex": 0.534694353676958,
+            "wrist_flex": 2.7191323580266284,
+            "wrist_roll": 1.7895194158608136,
+            "gripper": 2.345108101123728,
+        },
+        "armature": {
+            "shoulder_pan": 0.058228342618297214,
+            "shoulder_lift": 0.04425337526513037,
+            "elbow_flex": 0.054507128694178224,
+            "wrist_flex": 0.05110346770103517,
+            "wrist_roll": 0.05138195786130317,
+            "gripper": 0.04338043435613245,
+        },
+        # Map fitted dry friction to Newton friction and PhysX dynamic friction.
+        "friction": {
+            "shoulder_pan": 0.2154699280851669,
+            "shoulder_lift": 0.3181311647624241,
+            "elbow_flex": 0.4018746873200306,
+            "wrist_flex": 0.29646325177526045,
+            "wrist_roll": 0.2827718443928624,
+            "gripper": 0.31151570694796027,
+        },
+        "dynamic_friction": {
+            "shoulder_pan": 0.2154699280851669,
+            "shoulder_lift": 0.3181311647624241,
+            "elbow_flex": 0.4018746873200306,
+            "wrist_flex": 0.29646325177526045,
+            "wrist_roll": 0.2827718443928624,
+            "gripper": 0.31151570694796027,
+        },
+        "viscous_friction": {
+            "shoulder_pan": 1.0732503444852939,
+            "shoulder_lift": 0.8773707044105059,
+            "elbow_flex": 0.4925605028705261,
+            "wrist_flex": 0.51747384516758,
+            "wrist_roll": 0.4502010515484256,
+            "gripper": 1.1389592259244838,
+        },
     },
     "anchorbench": {
         # Exact SO-101 AnchorBench table used by the workshop A/B comparison.
