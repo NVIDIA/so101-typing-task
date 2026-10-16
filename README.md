@@ -96,5 +96,6 @@ saved rest pose and verifies torque off. See [deployment instructions](docs/tuto
 - [RTX replay and advanced options](docs/replay.md)
 - [Runtime setup](docs/setup.md)
 - [Checkpoint packaging](docs/tutorial_release.md)
+- [Checkpoint trust and security boundaries](docs/security.md)
 
 Generated runs and recordings stay under ignored `output/`. The two selected checkpoints under `models/` are the only tracked weight files.

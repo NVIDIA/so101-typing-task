@@ -1,0 +1,10 @@
+# NVIDIA binary wheels only; fetched exclusively from https://pypi.nvidia.com.
+# Other dependencies are resolved separately from PyPI.
+ovrtx==0.5.1.385782 \
+    --hash=sha256:232d46d872401d2870d1a6118ee256ba63db966bd9c1877ebe3e11a9cdd96091 \
+    --hash=sha256:314d35886253bc8a946d25b059c1fbe8516d3ede7c4bcfa9ccd503f5a6f204c5 \
+    --hash=sha256:6148b082942ad0f967e661482bdab970fe8f3533dc6283b6eae56ea035ad2546
+ovstage==0.2.1.385922 \
+    --hash=sha256:19b5549260f6088678ec5ff914517fd18a5629319bbb531401fff8ebf3fe5c5d \
+    --hash=sha256:35f7ffb5ba1e97388d63882839577af5097e5f8d5331f7d5d225f65f1752df27 \
+    --hash=sha256:ddf7f5723926e12a1d332315e4be4c224366396e4d321c8d314f4296e96a00d5

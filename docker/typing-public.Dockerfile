@@ -11,12 +11,16 @@ RUN echo '9d2a9a9ea37bff991a32c8ce597a13b7915211a6c4fcd88732a62efa6bf31d84  /tmp
 RUN rm -rf /workspace/isaaclab/source /workspace/isaaclab/scripts && tar -xzf /tmp/isaaclab.tar.gz --strip-components=1 -C /workspace/isaaclab
 COPY runtime/benchmark-runtime.patch /tmp/benchmark-runtime.patch
 RUN git apply /tmp/benchmark-runtime.patch
+COPY runtime/warp.lock /tmp/warp.lock
 RUN ./isaaclab.sh -p -m pip install --no-cache-dir \
     hydra-core==1.3.4 llvmlite==0.46.0 numba==0.63.1 numpy==2.3.1 rsl-rl-lib==5.4.1 \
     && ./isaaclab.sh -p -m pip install --no-cache-dir --no-deps \
     'newton[sim] @ git+https://github.com/ooctipus/newton.git@5205aa49fb900e124f06122bf7e82ed7686a1fde' \
-    && ./isaaclab.sh -p -m pip install --no-cache-dir --extra-index-url https://pypi.nvidia.com \
-    warp-lang==1.15.0.dev20260626 newton-usd-schemas==0.3.1
+    && ./isaaclab.sh -p -m pip download --no-cache-dir --no-deps --only-binary=:all: \
+       --require-hashes --index-url https://pypi.nvidia.com --dest /tmp/warp-wheels -r /tmp/warp.lock \
+    && ./isaaclab.sh -p -m pip install --no-cache-dir --index-url https://pypi.org/simple \
+       /tmp/warp-wheels/*.whl newton-usd-schemas==0.3.1 \
+    && rm -rf /tmp/warp-wheels /tmp/warp.lock
 ADD https://huggingface.co/datasets/nvidia/Anchor-Lab/resolve/647edd5787cd764cdc041103ad282dc59214d919/robot_assets/so101_no_camera_new_calib.usd /opt/so101/assets/so101.usd
 RUN echo 'c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462  /opt/so101/assets/so101.usd' | sha256sum -c -
 RUN chmod 644 /opt/so101/assets/so101.usd
