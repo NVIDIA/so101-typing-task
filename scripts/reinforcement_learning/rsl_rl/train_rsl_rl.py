@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+from so101_typing.checkpoints import load_runner_checkpoint
 import argparse
 import contextlib
 import importlib.metadata as metadata
@@ -207,7 +208,7 @@ def run(argv: list[str]) -> None:
         runner.add_git_repo_to_log(__file__)
         if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
             print(f"[INFO]: Loading model checkpoint from: {resume_path}")
-            runner.load(resume_path)
+            load_runner_checkpoint(runner, resume_path)
 
         dump_train_configs(log_dir, env_cfg, agent_cfg)
         if task_data is not None:

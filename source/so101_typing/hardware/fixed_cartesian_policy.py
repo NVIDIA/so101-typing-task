@@ -412,7 +412,7 @@ class FixedCartesianPolicy:
         except ImportError as exc:
             raise RuntimeError("Torch is required to run a fixed-Cartesian checkpoint") from exc
 
-        checkpoint = torch.load(self.path, map_location="cpu", weights_only=False)
+        checkpoint = torch.load(self.path, map_location="cpu", weights_only=True)
         state = checkpoint.get("actor_state_dict") if isinstance(checkpoint, dict) else None
         if not isinstance(state, Mapping):
             raise ValueError("checkpoint does not contain actor_state_dict")

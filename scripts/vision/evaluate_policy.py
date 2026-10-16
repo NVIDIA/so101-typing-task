@@ -4,6 +4,7 @@
 """Evaluate a vision or state checkpoint across seeds, or view its exact USD rollouts in Kit RTX."""
 from __future__ import annotations
 
+from so101_typing.checkpoints import load_runner_checkpoint
 import argparse
 import hashlib
 import json
@@ -100,7 +101,7 @@ def evaluate(args):
             raw._vision_height_curriculum = args.domain_strength
             raw.reset(seed=args.seed)
             runner = OnPolicyRunner(env, config, log_dir=None, device='cuda:0')
-            runner.load(str(args.checkpoint), load_cfg={'actor': True, 'critic': True, 'optimizer': False})
+            load_runner_checkpoint(runner, str(args.checkpoint), load_cfg={'actor': True, 'critic': True, 'optimizer': False})
             policy = runner.get_inference_policy()
             command = raw.command_manager.get_term('typing')
             alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ('0123456789 .' if len(command.cfg.letter_slots) == 38 else '')

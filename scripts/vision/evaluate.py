@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Strict target-sequence evaluation on held-out full-domain camera episodes."""
+from so101_typing.checkpoints import load_runner_checkpoint
 from runtime import parser, make_config, create_env
 from agent import runner_config, load_teacher
 from state import write_json
@@ -36,7 +37,7 @@ with launch_simulation(cfg,args):
         path=args.teacher
     else:
         runner=OnPolicyRunner(env,runner_config(),log_dir=None,device='cuda:0')
-        runner.load(str(args.checkpoint),load_cfg={'actor':True,'critic':True})
+        load_runner_checkpoint(runner, str(args.checkpoint),load_cfg={'actor':True,'critic':True})
         policy=runner.get_inference_policy()
         path=args.checkpoint
     original_reset=command.reset

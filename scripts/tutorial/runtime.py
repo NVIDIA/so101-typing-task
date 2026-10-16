@@ -4,6 +4,7 @@
 """Docker runtime for state teacher training and comparable teacher/vision evaluation."""
 from __future__ import annotations
 
+from so101_typing.checkpoints import load_runner_checkpoint
 import argparse
 import copy
 import json
@@ -105,7 +106,7 @@ def main():
             else:
                 config = merge_config(runner_config(), json.loads((args.checkpoint.parent / 'agent.json').read_text()))
                 runner = OnPolicyRunner(env, config, log_dir=None, device='cuda:0')
-                runner.load(str(args.checkpoint), load_cfg={'actor':True, 'critic':True, 'optimizer':False})
+                load_runner_checkpoint(runner, str(args.checkpoint), load_cfg={'actor':True, 'critic':True, 'optimizer':False})
                 policy = runner.get_inference_policy()
             command = raw.command_manager.get_term('typing')
             original_compute = raw.termination_manager.compute

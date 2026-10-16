@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Loop the wrist-vision student in the interactive Newton viewer."""
+from so101_typing.checkpoints import load_runner_checkpoint
 from runtime import parser, make_config, create_env
 from agent import runner_config
 from state import write_json
@@ -36,7 +37,7 @@ def main():
         raw._vision_eval_word = 'NEWTON'
         raw._vision_curriculum = args.domain_strength
         runner = OnPolicyRunner(env, runner_config(), log_dir=None, device='cuda:0')
-        runner.load(str(args.checkpoint), load_cfg={'actor': True, 'critic': True})
+        load_runner_checkpoint(runner, str(args.checkpoint), load_cfg={'actor': True, 'critic': True})
         policy = runner.get_inference_policy()
         command = raw.command_manager.get_term('typing')
         original_reset = command.reset
