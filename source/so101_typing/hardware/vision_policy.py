@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .fixed_cartesian_policy import FixedCartesianTypingState
+from so101_typing.vision_contract import supports_vision_task
 
 import hashlib
 import json
@@ -16,9 +17,6 @@ from threading import Event, Lock, Thread
 import time
 
 import numpy as np
-
-
-EXPECTED_TASK_PREFIX = "vision_ppo_gtc_berlin_6letters_ovrtx_v1"
 
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -109,8 +107,7 @@ class VisionActor:
             raise ValueError("unsupported vision actor input or control contract")
         if meta.get("rgb_order") != "RGB float32 [0,1]; previous frame followed by current frame":
             raise ValueError("unsupported wrist RGB history order")
-        prefix = EXPECTED_TASK_PREFIX if characters == ALPHABET else "vision_ppo_gtc_berlin_isaac_lab_3p0_ovrtx_v1"
-        if not str(env.get("task_contract", "")).startswith(prefix) or env.get("actuator_profile") != "gtc_berlin":
+        if not supports_vision_task(env.get("task_contract", ""), len(characters)) or env.get("actuator_profile") != "gtc_berlin":
             raise ValueError("environment does not match the GTC Berlin vision task")
         if actor_path.name != meta.get("actor_file"):
             raise ValueError("vision actor filename mismatch")

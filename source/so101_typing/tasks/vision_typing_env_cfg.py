@@ -6,6 +6,7 @@ from isaaclab.managers import ObservationGroupCfg, ObservationTermCfg, EventTerm
 from isaaclab.sensors import CameraCfg
 from isaaclab.utils.configclass import configclass
 from isaaclab_ov.renderers import OVRTXRendererCfg
+from so101_typing.vision_contract import NEWTON_VISION_TASK_CONTRACT, PHRASE_VISION_TASK_CONTRACT
 
 from .physical_calibrated_20260718_env_cfg import SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg
 from .fixed_cartesian_env_cfg import FixedCartesianObservationsCfg
@@ -37,7 +38,7 @@ class VisionObservationsCfg:
 @configclass
 class VisionTypingEnvCfg(SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg):
     observations: VisionObservationsCfg = VisionObservationsCfg()
-    task_contract: str = 'vision_ppo_gtc_berlin_6letters_ovrtx_v1'
+    task_contract: str = NEWTON_VISION_TASK_CONTRACT
 
     def __post_init__(self):
         super().__post_init__()
@@ -60,7 +61,7 @@ class VisionTypingEnvCfg(SO101KeyboardMXPhysicalCalibrated20260718FixedCartesian
 class VisionIsaacLabPhraseEnvCfg(VisionTypingEnvCfg):
     """Random 13-character camera-policy training; ISAAC LAB 3.0 at evaluation."""
 
-    task_contract: str = 'vision_ppo_gtc_berlin_random13_38keys_ovrtx_v2'
+    task_contract: str = PHRASE_VISION_TASK_CONTRACT
 
     def __post_init__(self):
         super().__post_init__()
