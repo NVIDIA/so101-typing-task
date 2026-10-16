@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Record the robot arm MJPEG feed beside a teleoperation recording.
 
 Frame timestamps use the host monotonic clock at the MJPEG reader. They can be

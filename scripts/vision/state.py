@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Atomic progress records and convergence rules (no simulator dependencies)."""
 import math
 import json

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Render one 2x2 or 8x8 Newton replay grid through the isolated OVRTX image.
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

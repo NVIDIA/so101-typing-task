@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Export and validate the vision CNN for CPU inference; never opens hardware."""
 import argparse
 import hashlib

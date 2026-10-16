@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Regenerate the small host-side drawing asset inside the pinned container.
 
 Requires the container's numpy and pxr; ordinary `so101 fixture` is stdlib-only.

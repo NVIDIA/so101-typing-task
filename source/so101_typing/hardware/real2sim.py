@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Fit and check a typing scene from hand-guided recordings; never moves hardware."""
 from __future__ import annotations
 

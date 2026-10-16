@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Initialize a wrist-camera actor with a state teacher, then train with PPO."""
 from __future__ import annotations
 

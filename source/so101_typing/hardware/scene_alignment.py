@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Prepare a scene mapping and qualify it from recorded evidence; no hardware I/O.
 
 Qualification checks representative contacts, not policy performance. Evidence

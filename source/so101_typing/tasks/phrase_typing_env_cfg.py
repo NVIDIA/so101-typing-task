@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """State-based Newton task for the exact 13-key phrase ISAAC LAB 3.0."""
 from isaaclab.utils.configclass import configclass
 

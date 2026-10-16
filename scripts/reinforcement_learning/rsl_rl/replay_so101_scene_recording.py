@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Prescribed measured-pose replay for scene inspection, not an actuator/policy test.
 
 Robot joint states are set from the recording at every physics step. Keyboard

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Run the GTC Berlin wrist-vision typing actor on the physical SO-101.
 
 All camera and keyboard readers start before the five-second motion countdown.

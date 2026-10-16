@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Calibrated main-block targets for the fixed ISAAC LAB 3.0 task."""
 from __future__ import annotations
 

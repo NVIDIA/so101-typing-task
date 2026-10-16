@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Render a posed USD snapshot with OVRTX in its isolated Docker Python."""
 import argparse
 import hashlib

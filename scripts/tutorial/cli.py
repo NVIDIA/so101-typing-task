@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Host orchestration for the tutorial. ML runs in the repository's Docker runtime."""
 from __future__ import annotations
 

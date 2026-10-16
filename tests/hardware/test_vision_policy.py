@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """No-motion checks for the physical wrist-vision observation contract."""
 import dataclasses
 from pathlib import Path

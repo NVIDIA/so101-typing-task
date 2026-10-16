@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Wrist-camera observations and deterministic CPU actor for physical typing."""
 
 from __future__ import annotations

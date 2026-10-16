@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Recorded-motion scene fitting, joint mapping and replay validation."""
 
 from copy import deepcopy

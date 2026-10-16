@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Run staged public training, held-out evaluation and optional software-only export.
 
 This host-side supervisor uses the public ./so101 CLI. It never enables hardware.

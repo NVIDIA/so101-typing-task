@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Regression tests for the expensive-run stopping and restart decisions."""
 import importlib.util
 from pathlib import Path

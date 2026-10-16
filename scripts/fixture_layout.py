@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Offline fixture drawing and three-landmark rigid placement fit (standard library only)."""
 import hashlib
 import html

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # SO-101 typing calibration: arm video, all servo telemetry, keyboard events.
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

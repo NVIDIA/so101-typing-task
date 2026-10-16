@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # OVRTX training runtime, isolated from Kit's USD shared libraries.
 ARG SIM_IMAGE=so101-typing-public:dev
 FROM ${SIM_IMAGE}

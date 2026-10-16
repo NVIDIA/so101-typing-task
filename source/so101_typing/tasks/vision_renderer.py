@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Render the authored Workshop camera with scaled OpenCV calibration."""
 from isaaclab_ov.renderers.ovrtx_renderer import OVRTXRenderer
 from pxr import Gf, Usd, UsdGeom

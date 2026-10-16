@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Online OVRTX teacher warmup followed by asymmetric PPO; externally supervised."""
 from runtime import parser, make_config, create_env
 from agent import runner_config, load_teacher

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Record exact Newton body poses for camera rendering without rerunning physics."""
 import json
 from pathlib import Path

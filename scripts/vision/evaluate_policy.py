@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Evaluate a vision or state checkpoint across seeds, or view its exact USD rollouts in Kit RTX."""
 from __future__ import annotations
 

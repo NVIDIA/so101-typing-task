@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Host launcher only; simulator/trainer/evaluator all run in the defined Docker image.
 set -euo pipefail
 vision_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Diagnostic XY/yaw keyboard fit from encoder poses, with held-out letters.
 
 Recorded height and tilt stay fixed. Optional historical offsets are fixed,

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Physical event filtering: preserve timing and raw evidence, never hide other keys."""
 from copy import deepcopy
 

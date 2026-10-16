@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Host-only contract checks: never start Docker or connect to hardware."""
 import importlib.machinery
 import importlib.util

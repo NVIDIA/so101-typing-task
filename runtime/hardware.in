@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Standard LeRobot SO-101 support, pinned source revision.
 lerobot[feetech] @ git+https://github.com/huggingface/lerobot.git@b6ec0060779550c0a157ae34feb89e0cf86012a8
 # Policy inference runs on CPU; no simulator is required for physical deployment.

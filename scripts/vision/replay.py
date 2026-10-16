@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Loop the wrist-vision student in the interactive Newton viewer."""
 from runtime import parser, make_config, create_env
 from agent import runner_config

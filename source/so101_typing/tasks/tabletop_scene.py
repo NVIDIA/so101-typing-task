@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """White tabletop and three backdrop panels estimated from the trimmed camera takes.
 
 All user dimensions are millimetres in the robot-base frame. The table surface

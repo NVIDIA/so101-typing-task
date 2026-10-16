@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Render a wrist-camera movie from an exported Newton rollout in isolated OVRTX."""
 import argparse
 import hashlib

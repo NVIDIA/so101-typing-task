@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Release debouncing shared by recording, replay and physical typing feedback.
 
 Preserve the original first-down and final-up timestamps. A same-key re-press

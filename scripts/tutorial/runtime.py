@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Docker runtime for state teacher training and comparable teacher/vision evaluation."""
 from __future__ import annotations
 

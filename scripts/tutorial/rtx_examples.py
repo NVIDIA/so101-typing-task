@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Host launcher: evaluate the state policy, then display its motion in an RTX grid."""
 import argparse
 from datetime import datetime, timezone

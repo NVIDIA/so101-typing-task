@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Run a prepared typing bundle. Defaults to software dry-run; operator runs --execute."""
 from datetime import datetime, timezone
 import argparse

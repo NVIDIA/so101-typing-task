@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 from runtime import parser, make_config, create_env
 from isaaclab.app import launch_simulation
 import torch

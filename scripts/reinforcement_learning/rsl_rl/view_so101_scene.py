@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Inspect a stationary SO-101 scene in an interactive Newton or Isaac Sim viewport."""
 import argparse
 import hashlib

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 """Export a frozen Newton scene for the isolated OVRTX renderer."""
 from pathlib import Path
 import json

@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Foreground teacher warmup + PPO on one GPU; Ctrl-C stops the process.
 set -euo pipefail
 simple_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)

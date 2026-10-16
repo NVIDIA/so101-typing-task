@@ -1,3 +1,6 @@
+# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Optional RTX renderer: keep its USD libraries separate from Isaac Sim's Python.
 ARG SIM_IMAGE=so101-typing-public:dev
 FROM ${SIM_IMAGE}
