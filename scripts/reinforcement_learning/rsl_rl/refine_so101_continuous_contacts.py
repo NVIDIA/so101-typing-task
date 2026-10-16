@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Parallel local search of scene/joint parameters using complete recorded replays.
 
 All supplied recordings are optimization data. Never sends hardware commands.
@@ -52,7 +49,7 @@ def main(env_cfg, agent_cfg):
     spec = json.loads(args.trajectory.read_text())
     records = [load_recording(args.trajectory.parent/p) for p in spec['recordings']]
     reports = [json.loads((args.trajectory.parent/p).read_text()) for p in spec['starting_reports']]
-    if any(digest(Path(os.environ['SO101_ROBOT_USD'])) != r['robot_usd_sha256'] for r in records):
+    if any(digest(Path(os.environ['SO101_TYPING_USD'])) != r['robot_usd_sha256'] for r in records):
         raise ValueError('runtime USD differs from recording')
     apply_config(env_cfg, reports[0]['task_config'])
     count = len(records)

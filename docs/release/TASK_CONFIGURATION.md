@@ -27,6 +27,12 @@ layout. For a setup arranged to that reference, save a starting estimate:
 This writes `task.json`, `birdseye.svg`, predicted landmarks and a blank measurement
 form. Check the drawing against your physical placement before recording contacts.
 
+The current fixture drawing and FK probe use the pinned Workshop SO-101 USD
+with the robot root rotated 90 degrees toward the keyboard. The September
+reference and its published AnchorBench policy belong to the earlier robot
+asset. Use your newly measured Q/P/Z coordinates and record fresh contacts for
+this model; an old fitted pose or checkpoint does not establish alignment.
+
 For a **different placement**, instead measure released Q, P and Z keycap rim
 centres. The helper uses the repository's MX Keys keyboard and `base_so101_v2`
 plastic base; a different keyboard, base or jaw needs matching asset geometry.

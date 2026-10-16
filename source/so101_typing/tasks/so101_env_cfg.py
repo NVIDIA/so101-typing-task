@@ -1,6 +1,5 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -82,13 +81,13 @@ class SO101SceneCfg(InteractiveSceneCfg):
     # (see the preset's docstring). The ``physics=`` selector resolves it before the scene is built.
     keyboard: ArticulationCfg = KeyboardAssetCfg()
 
-    # Contact sensor on ALL robot bodies (every link ends in ``_link``; keyboard keys are named after
+    # Contact sensor on all Workshop robot bodies (keyboard keys are named after
     # characters, so this pattern excludes them). Reports the net contact force per body, used to drive the
     # >10 N over-force termination (see TerminationsCfg). Needs ``history_length >= 1`` because
     # ``mdp.illegal_contact`` reads ``net_forces_w_history``, and the robot spawn must set
     # ``activate_contact_sensors=True`` (done in the env __post_init__).
     robot_contact = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*_link",
+        prim_path="{ENV_REGEX_NS}/Robot/.*",
         update_period=0.0,
         history_length=1,
         track_pose=False,
@@ -147,7 +146,7 @@ class CommandsCfg:
             ik=mdp.DifferentialInverseKinematicsActionCfg(
                 asset_name="robot",
                 joint_names=["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll"],
-                body_name="gripper_link",
+                body_name="gripper",
                 controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=False, ik_method="dls"),
                 body_offset=mdp.DifferentialInverseKinematicsActionCfg.OffsetCfg(
                     pos=(-0.0079, -0.000218121, -0.0981274)

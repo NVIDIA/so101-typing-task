@@ -191,10 +191,20 @@ accessible. Begin with controlled validation and stop on unexpected motion or a
 wrong key. The runner enforces measured reset arrival and strict press/release
 judging. Logs are written to the bundle's `runs/` directory.
 
+Before a physical policy run, save a measured leader-matched follower rest pose
+in the ignored `local/post_eval_home.json` (or pass `--post-eval-home`). Include the
+five `pose_deg` arm joints, the follower calibration SHA-256, the robot ID, and
+`typing_keyboard_device`. The runner verifies that the selected keyboard resolves
+to that saved device before it commands the robot. On this workstation, the typing
+receiver uses the stable `by-path` link to `event9`; the other Logitech receiver is
+`event2` and must not be used for policy feedback.
+
 During policy execution, press **Esc on the selected typing keyboard** to request
-a controlled stop. The runner then attempts its configured return-to-rest motion
-before releasing keyboard capture. Motor torque remains enabled after exit.
-For an immediate motion stop, switch off motor power; be ready to support the arm.
+a controlled stop. After a normal or interrupted run, the runner returns the
+follower to the saved rest pose, checks its joint error, then disables and verifies
+torque off on all six follower motors. The log records both checks. The trained
+fixed reset remains the starting pose for the policy. For an immediate motion stop,
+switch off motor power; be ready to support the arm.
 
 Keep the robot calibration, fixed jaw and physical fixture unchanged after
 alignment. Recalibration, moving the fixture or replacing the jaw requires new

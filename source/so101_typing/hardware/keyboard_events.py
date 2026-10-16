@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Physical USB keyboard event capture and scoring.
 
 This replaces the old preflight logger behavior that silently converted

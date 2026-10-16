@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "table": {
+    "center_xy_mm": [
+      179.9375,
+      30.0
+    ],
+    "size_mm": [
+      690.125,
+      800.0,
+      25.0
+    ]
+  },
+  "panels": {
+    "front_x_mm": -155.125,
+    "back_x_mm": 500.0,
+    "left_y_mm": 400.0,
+    "right_y_mm": -340.0,
+    "height_mm": 508.0,
+    "thickness_mm": 6.0
+  },
+  "color_rgb": [
+    0.94,
+    0.94,
+    0.92
+  ],
+  "camera": {
+    "eye_mm": [
+      -220.0,
+      -270.0,
+      700.0
+    ],
+    "lookat_mm": [
+      160.0,
+      50.0,
+      100.0
+    ]
+  },
+  "robot_color_rgb": [
+    0.95,
+    0.24,
+    0.025
+  ]
+}

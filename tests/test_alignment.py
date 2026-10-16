@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Alignment qualification, export and shared FK replay contracts."""
 
 import copy
@@ -522,3 +519,13 @@ def test_hardware_replays_saved_rows_and_detects_keys(artifact, monkeypatch, wro
     else:
         assert runner.execute(plan, path, args, path) == 0
         np.testing.assert_allclose(np.deg2rad(np.array(sent[-len(plan['rows']):])+offset), [r["q_rad"] for r in plan["rows"]], atol=1e-15)
+
+
+def test_vectorized_scene_mapping_fk_matches_scalar_workshop_fk():
+    from so101_typing.hardware.audit_scene_mapping import batch_fk
+    from so101_typing.hardware.so101_kinematics import FIXED_JAW_TYPING_TIP_SITE_POS, site_position
+    samples = np.array([[0., 0., np.deg2rad(6.4), 0., 0., 0.],
+                        [-.08, -.14, .02, 1.15, .04, -.17],
+                        [.2, -.3, .4, .1, -.2, .7]])
+    expected = np.array([site_position(q, site_pos=FIXED_JAW_TYPING_TIP_SITE_POS) for q in samples])
+    np.testing.assert_allclose(batch_fk(samples), expected, atol=1e-10, rtol=0)

@@ -1,0 +1,15 @@
+{
+  "description": "Close, elevated oblique side view, robot on right and keyboard on left",
+  "coordinate_frame": "simulation world",
+  "units": "metres",
+  "eye_m": [
+    -0.28,
+    0.32,
+    0.48
+  ],
+  "lookat_m": [
+    0.13,
+    0.04,
+    0.15
+  ]
+}

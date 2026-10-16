@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Public SO-101 simulation entry point (host Python standard library only)."""
 import argparse
 import datetime
@@ -16,7 +13,7 @@ import time
 
 ROOT = Path(__file__).resolve().parent
 IMAGE = 'so101-typing-public:dev'
-PROFILES = {'anchorbench': 'AnchorBench', 'usd': 'USDDrive'}
+PROFILES = {'gtc_berlin': 'GTCBerlin', 'anchorbench': 'AnchorBench', 'usd': 'USDDrive'}
 STAGES = {'p1a': 'P1A', 'transit15': 'P1D-Transit15'}
 
 
@@ -58,12 +55,15 @@ def report_outputs(output):
 
 
 def main():
+    from scripts.tutorial.cli import handles, main as tutorial_main
+    if handles(sys.argv[1:]):
+        return tutorial_main(sys.argv[1:])
     if len(sys.argv) > 1 and sys.argv[1] == 'alignment':
         python = os.environ.get('SO101_LEROBOT_PYTHON', str(ROOT / '.venv-hardware/bin/python'))
         if not Path(python).is_file():
             raise SystemExit('run ./so101 setup-hardware first or set SO101_LEROBOT_PYTHON')
         return subprocess.call([python, '-m', 'so101_typing.hardware.scene_alignment', *sys.argv[2:]], cwd=ROOT)
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Tutorial: setup; debug; train teacher|vision; evaluate teacher|vision; replay; hardware configure|calibrate|save-rest|check; deploy --model; bundle pack|import. Run each command with --help.')
     sub = parser.add_subparsers(dest='command', required=True)
     sub.add_parser('build', help='build the public runtime (requires Docker)')
     download = sub.add_parser('download', help='download the September calibrated-scene policy and matching evidence')
@@ -97,9 +97,11 @@ def main():
     deploy.add_argument('--experimental-clearance-m', type=float, default=None, help='candidate experiment clearance before advancing')
     deploy.add_argument('--port')
     deploy.add_argument('--keyboard-device')
+    deploy.add_argument('--post-eval-home', type=Path,
+                        help='locally measured rest pose and typing keyboard identity for post-run shutdown')
     for operation in ('train', 'evaluate', 'play', 'video', 'probe', 'scene'):
         p = sub.add_parser(operation)
-        p.add_argument('--actuator', choices=PROFILES, default='anchorbench')
+        p.add_argument('--actuator', choices=PROFILES, default='gtc_berlin')
         p.add_argument('--task-config', type=Path, help='Keyboard pose/DR JSON; restores checkpoint sidecar; fresh train/probe/scene default to the fitted September example')
         p.add_argument('--physics-config', type=Path, help='Newton MJWarp JSON; evaluation discovers params/public_physics.json automatically')
         p.add_argument('--solver', choices=['mjwarp'], default='mjwarp')
@@ -109,7 +111,13 @@ def main():
         p.add_argument('--plan', action='store_true', help='print command without executing or writing output')
         p.add_argument('--image', default=IMAGE)
         p.add_argument('--output-dir', type=Path, help='New directory for this run; must not already exist')
+        if operation in ('scene', 'play'):
+            p.add_argument('--viewer', choices=('newton', 'kit'), default='newton',
+                           help='Interactive Newton OpenGL or Isaac Sim RTX viewport')
         if operation == 'scene':
+            p.add_argument('--tabletop-config', type=Path, help='Recorded tabletop and backdrop JSON in mm')
+            p.add_argument('--export-scene', action='store_true', help='Export posed scene.usdc for OVRTX')
+            p.add_argument('--snapshot', action='store_true', help='Save the initial Newton view as scene.png')
             p.add_argument('--frames', type=int, default=0, help='Scene-only rendering; 0 stays open until the window closes')
             p.add_argument('--zero-mapping', type=Path, help='Diagnostic four-joint report: compare arm-zero conventions in the viewer only')
             p.add_argument('--zero-pose', choices=['usd', 'lerobot-direct', 'lerobot-fit'], default='usd',
@@ -126,7 +134,13 @@ def main():
             p.add_argument('--perturbation-config', type=Path,
                            help='explicit fixed-policy reset robustness experiment; nominal actor map stays frozen')
         if operation in ('play', 'video'):
+            p.add_argument('--viewer-camera', type=Path, help='Saved overview eye_m/lookat_m JSON')
+            p.add_argument('--white-base-config', type=Path, help='Use only the table dimensions from a tabletop JSON as a visual white base')
             p.add_argument('--target', help='letters to type; defaults to HE or NEWTON for the selected stage')
+        if operation == 'play':
+            p.add_argument('--export-replay', action='store_true', help='Export the same rollout as animated USD for offline OVRTX camera rendering')
+            p.add_argument('--record-video', action='store_true', help='Save the active viewer replay as an MP4 under the run videos directory')
+            p.add_argument('--viewer-hold-seconds', type=float, default=0.0, help='Keep the viewport open after the rollout')
         if operation == 'probe':
             p.add_argument('--physical-contact-target', metavar='LETTER',
                            help='run the FK-planned simulated hover/press/release probe for one A-Z key')
@@ -164,6 +178,7 @@ def main():
             if args.experimental_clearance_m is not None: command += ['--experimental-clearance-m', str(args.experimental_clearance_m)]
             if args.port: command += ['--port', args.port]
             if args.keyboard_device: command += ['--keyboard-device', args.keyboard_device]
+            if args.post_eval_home: command += ['--post-eval-home', str(args.post_eval_home.resolve())]
         return subprocess.call(command, cwd=ROOT)
     if args.command == 'build':
         return subprocess.call(['docker', 'build', '-f', 'docker/typing-public.Dockerfile', '--build-arg', 'SOURCE_SHA256=' + source_fingerprint(), '-t', IMAGE, '.'], cwd=ROOT)
@@ -229,13 +244,13 @@ def main():
             load_perturbation(args.perturbation_config)
         except (ValueError, OSError) as error:
             parser.error(str(error))
-    for name in ('checkpoint', 'env_config', 'physics_config', 'task_config', 'perturbation_config', 'zero_mapping'):
+    for name in ('checkpoint', 'env_config', 'physics_config', 'task_config', 'perturbation_config', 'zero_mapping', 'tabletop_config', 'white_base_config', 'viewer_camera'):
         path = getattr(args, name, None)
         if path is not None:
             path = path.expanduser().resolve()
             if not path.is_file():
                 parser.error(f'{name} is not a file: {path}')
-            destination = '/inputs/' + {'checkpoint': 'checkpoint.pt', 'env_config': 'env.yaml', 'physics_config': 'physics.json', 'task_config': 'task.json', 'perturbation_config': 'perturbation.json', 'zero_mapping': 'zero-mapping.json'}[name]
+            destination = '/inputs/' + {'checkpoint': 'checkpoint.pt', 'env_config': 'env.yaml', 'physics_config': 'physics.json', 'task_config': 'task.json', 'perturbation_config': 'perturbation.json', 'zero_mapping': 'zero-mapping.json', 'tabletop_config': 'tabletop.json', 'white_base_config': 'white-base.json', 'viewer_camera': 'viewer-camera.json'}[name]
             cmd += ['--mount', f'type=bind,src={path},dst={destination},readonly']
             artifacts[name] = {'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
     if args.command in ('play', 'scene'):
@@ -243,9 +258,17 @@ def main():
             parser.error(f'{args.command} requires DISPLAY and an accessible X11 display')
         cmd += ['-e', 'DISPLAY=' + os.environ['DISPLAY'], '-e', 'NVIDIA_DRIVER_CAPABILITIES=all',
                 '-v', '/tmp/.X11-unix:/tmp/.X11-unix:ro']
-        authority = os.environ.get('XAUTHORITY')
+        authority = os.environ.get('XAUTHORITY') or f'/run/user/{os.getuid()}/gdm/Xauthority'
         if authority and Path(authority).is_file():
             cmd += ['-v', f'{authority}:/tmp/typing.xauthority:ro', '-e', 'XAUTHORITY=/tmp/typing.xauthority']
+    if args.command in ('scene', 'play') and args.viewer == 'kit':
+        # The image's Kit cache/data directories belong to its build-time user.
+        # Keep generated files writable for the host UID used by the launcher.
+        for name in ('cache', 'data', 'logs'):
+            directory = ROOT / 'output' / '.kit-viewer' / name
+            if not args.plan:
+                directory.mkdir(parents=True, exist_ok=True)
+            cmd += ['--mount', f'type=bind,src={directory},dst=/isaac-sim/kit/{name}']
     cmd += [args.image]
     if args.command == 'train':
         cmd += ['train', '--rl_library', 'rsl_rl', '--task', task, '--num_envs', str(args.num_envs),
@@ -255,13 +278,21 @@ def main():
     elif args.command == 'scene':
         if args.num_envs != 1 or args.frames < 0:
             parser.error('scene requires --num-envs 1 and --frames >= 0')
+        if args.zero_mapping and args.viewer != 'newton':
+            parser.error('--zero-mapping comparison controls require --viewer newton')
         if args.zero_pose != 'usd' and not args.zero_mapping:
             parser.error('--zero-pose requires --zero-mapping')
         if args.zero_mapping and not args.task_config:
             parser.error('--zero-mapping requires the matching --task-config')
         cmd += ['-p', 'scripts/reinforcement_learning/rsl_rl/view_so101_scene.py',
                 '--task', task, '--seed', str(args.seed), '--frames', str(args.frames),
-                '--out', '/results/scene.json', '--visualizer', 'newton']
+                '--out', '/results/scene.json', '--visualizer', args.viewer]
+        if args.tabletop_config:
+            cmd += ['--tabletop-config', '/inputs/tabletop.json']
+        if args.export_scene:
+            cmd += ['--export-scene']
+        if args.snapshot:
+            cmd += ['--snapshot']
         if args.zero_mapping:
             cmd += ['--zero-mapping', '/inputs/zero-mapping.json', '--zero-pose', args.zero_pose]
     elif args.command == 'probe':
@@ -283,11 +314,20 @@ def main():
                 '--num-envs', str(args.num_envs), '--seed', str(args.seed), '--out', '/results/evaluation.json']
         cmd += ['--trace-policy-actions', str(args.trace_policy_actions)]
         if args.command == 'play':
-            cmd += ['--target', args.target, '--visualizer', 'newton', '--step-sleep', '0.04']
+            cmd += ['--target', args.target, '--visualizer', args.viewer, '--step-sleep', '0.04',
+                    '--viewer-hold-seconds', str(args.viewer_hold_seconds)]
+            if args.record_video:
+                cmd += ['--video']
+            if args.export_replay:
+                cmd += ['--export-replay']
         elif args.command == 'video':
             cmd += ['--target', args.target, '--video', '--headless']
         else:
             cmd += ['--headless']
+    if getattr(args, 'viewer_camera', None):
+        cmd += ['--viewer-camera', '/inputs/viewer-camera.json']
+    if getattr(args, 'white_base_config', None):
+        cmd += ['--white-base-config', '/inputs/white-base.json']
     if args.task_config:
         cmd += ['--task-config', '/inputs/task.json']
         if args.command == 'probe':

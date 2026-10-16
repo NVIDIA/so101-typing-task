@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """One offline joint trajectory, shared by the Newton and physical F probes."""
 from __future__ import annotations
 
@@ -9,6 +6,8 @@ import json
 from pathlib import Path
 
 import numpy as np
+
+from scripts.robot_model_identity import WORKSHOP_USD_SHA256
 
 from .source_identity import source_hash_matches
 from .so101_kinematics import (
@@ -21,7 +20,7 @@ DT = 0.04
 RESET = np.array([-.08285519086390664, -.13809964128766555, .020637904096827316,
                   1.1561739160158462, .03759170696603171])
 RATES = np.array([.3, 1.1, .75, .2, .1])
-TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-AnchorBench-P1D-Transit15"
+TASK = "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-P1D-Transit15"
 
 
 def digest(path: Path) -> str:
@@ -98,7 +97,7 @@ def generate(task_path: Path, destination: Path, *, letter="F", hover_mm=15.0, p
     plan = {"schema_version": 1, "kind": "so101_fk_joint_replay", "task": TASK,
             "task_config": task, "task_config_sha256": digest(task_path),
             "source_sha256": {name: digest(ROOT/name) for name in source_files},
-            "robot_usd_sha256": "c6c82840925ace388b0ff0acb7d8538c2b419d92fbe01dc70fe833b974d6d462",
+            "robot_usd_sha256": WORKSHOP_USD_SHA256,
             "letter": letter, "joint_names": list(ARM_JOINT_NAMES), "control_dt_s": DT,
             "joint_zero_offset_deg": [0.0]*5, "gripper_percent": 0.0,
             "initial_q_rad": RESET.tolist(), "rim_xyz_b_m": rim.tolist(),

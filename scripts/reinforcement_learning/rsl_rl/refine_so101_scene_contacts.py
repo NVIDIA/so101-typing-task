@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Offline Newton first-contact refinement with a reset between recorded keys.
 
 Each recorded press is replayed in its own reset environment. All five joint
@@ -42,7 +39,7 @@ sys.argv = [sys.argv[0]]+remaining
 def main(env_cfg, agent_cfg):
     spec = json.loads(args.trajectory.read_text())
     records = [load_recording(args.trajectory.parent/p) for p in spec['recordings']]
-    if any(digest(Path(os.environ['SO101_ROBOT_USD'])) != r['robot_usd_sha256'] for r in records):
+    if any(digest(Path(os.environ['SO101_TYPING_USD'])) != r['robot_usd_sha256'] for r in records):
         raise ValueError('runtime USD differs from the recorded model')
     starts = [json.loads((args.trajectory.parent/p).read_text()) for p in spec['starting_reports']]
     apply_config(env_cfg, starts[0]['task_config'])

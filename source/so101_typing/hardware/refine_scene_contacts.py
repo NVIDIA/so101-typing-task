@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Refine freshly fitted scene candidates using actual Newton first-key contacts.
 
 Every supplied recording becomes fitting data. Continuous replay is a separate

@@ -1,0 +1,6 @@
+{
+  "kind": "state",
+  "target": "ISAAC LAB 3.0",
+  "domain_strength": 0.0,
+  "source_checkpoint": "output/phrase_state_isaac_lab_3p0/train/rsl_rl/so101_gtc_berlin_state_isaac_lab_3p0/2026-10-14_23-48-32/model_5999.pt"
+}

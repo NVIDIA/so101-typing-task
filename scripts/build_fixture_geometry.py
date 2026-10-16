@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Regenerate the small host-side drawing asset inside the pinned container.
 
 Requires the container's numpy and pxr; ordinary `so101 fixture` is stdlib-only.
@@ -14,6 +11,7 @@ from pathlib import Path
 import numpy as np
 from pxr import Usd, UsdGeom
 from scipy.spatial import ConvexHull
+from scripts.robot_model_identity import DEFAULT_TYPING_USD, WORKSHOP_USD_SHA256
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = 'source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/'
@@ -42,7 +40,7 @@ def rotation(q):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--robot-usd', type=Path, default=Path('/opt/so101/assets/so101.usd'))
+    parser.add_argument('--robot-usd', type=Path, default=Path(DEFAULT_TYPING_USD))
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     cfg = ROOT / CONFIG / 'physical_calibrated_20260718_env_cfg.py'
@@ -64,11 +62,15 @@ def main():
     cache = UsdGeom.XformCache()
     base = None
     for prim in Usd.PrimRange.Stage(stage, Usd.TraverseInstanceProxies()):
-        if prim.IsA(UsdGeom.Mesh) and '/base_link/visuals/base_so101_v2/' in str(prim.GetPath()):
+        if prim.IsA(UsdGeom.Mesh) and '/base/visuals/base_so101_v2/' in str(prim.GetPath()):
             points = np.asarray(UsdGeom.Mesh(prim).GetPointsAttr().Get())
             base = (np.c_[points, np.ones(len(points))] @ np.array(cache.GetLocalToWorldTransform(prim)))[:, :3]
     if base is None or UsdGeom.GetStageMetersPerUnit(stage) != 1 or UsdGeom.GetStageUpAxis(stage) != 'Z':
         raise ValueError('expected pinned Z-up metre SO-101 base mesh')
+    if hashlib.sha256(args.robot_usd.read_bytes()).hexdigest() != WORKSHOP_USD_SHA256:
+        raise ValueError('fixture geometry requires the pinned Workshop SO-101 USD')
+    # The typing scene rotates the robot root +90 degrees about world Z.
+    base = base @ rotation((0, 0, np.sqrt(.5), np.sqrt(.5))).T
     datum = [float(base[:, 0].max()), 0.0, float(base[:, 2].min())]
     keys = []
     for i, label in enumerate(manifest['slot_labels']):
@@ -85,7 +87,7 @@ def main():
     cases = np.concatenate([asset['case_points_0'], asset['case_points_1']]) @ rot.T + position
     data = {'schema_version': 1, 'robot_usd_sha256': hashlib.sha256(args.robot_usd.read_bytes()).hexdigest(),
             'source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-                              for p in (cfg, asset_path)},
+                              for p in (cfg, asset_path, ROOT / 'source/so101_typing/hardware/so101_kinematics.py')},
             'reference_position_m': position.tolist(), 'reference_rotation_xyzw': quat,
             'datum_m': datum, 'base_outline_xy_m': hull(base[:, :2]),
             'case_hull_m': cases[ConvexHull(cases).vertices].tolist(), 'keys': keys}

@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Prepare a scene mapping and qualify it from recorded evidence; no hardware I/O.
 
 Qualification checks representative contacts, not policy performance. Evidence
@@ -31,6 +28,16 @@ PROBE_KEYS = frozenset('QGP')
 CLOSED_MAX_PERCENT = 2.0
 CLEARANCE_M = .015
 CLEARANCE_TICKS = 2
+CAMERA_TOP_EXPERIMENT_TASK_SHA256 = frozenset({
+    'f1aa039c96695432543efb7eb84dc9ec2c2f95a85cc6360ee4d5386080b0608b',
+    'e2469567ab12c967a8ac00a9f7ff27552f76d1927e6e5bb86c3dd992491a1a1a',
+})
+CAMERA_TOP_TRAINING_CONTRACTS = frozenset({
+    'physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1d_transit15_letters6_'
+    'camera_top_v1_task_ce38714723686af99350ecc9b5c2d1ca9fcc36ffa0f2c9e338360a8767085b33',
+    'physical_calibrated_20260718_fixed_cartesian_gtc_berlin_p1a_letters2_'
+    'camera_top_v1_task_a196e1ee55e2f983ff62c742c7d64e72bca2eaf81c1806c58c760829a33b80a3',
+})
 
 
 def fingerprint(value):
@@ -144,7 +151,18 @@ def validate_candidate(data, robot_id):
             raise ValueError(f'alignment model/jaw identity changed: {field}')
     if c.get('joint_order') != list(ARM_JOINT_NAMES):
         raise ValueError('alignment joint order changed')
-    validate_mapping_offsets(c['joint_zero_offset_deg'])
+    camera_top_replay = (
+        c.get('task_config_sha256') in CAMERA_TOP_EXPERIMENT_TASK_SHA256
+        and c.get('mapping', {}).get('kind') == 'camera_top_recording_replay_experiment'
+        and c.get('mapping', {}).get('experimental') is True
+        and c.get('mapping', {}).get('fixture_geometry_unchanged') is True
+        and c.get('joint_zero_offset_deg') == [0.0, 0.0, 0.0, 0.0, -90.0]
+    )
+    if c.get('mapping', {}).get('kind') == 'camera_top_recording_replay_experiment':
+        if not camera_top_replay:
+            raise ValueError('camera-top experimental mapping requires its pinned task and -90 degree wrist offset')
+    else:
+        validate_mapping_offsets(c['joint_zero_offset_deg'])
     return c
 
 
@@ -328,11 +346,14 @@ def validate_environment(contract, profile, env):
     position, rotation, points, _ = nominal_geometry(geometry['reference_position_m'], geometry['reference_rotation_xyzw'],
                                                     REFERENCE.az_xyz_b_m, contract['task_config'].get('keyboard', {}))
     state = env['scene']['keyboard']['init_state']
+    expected_reset = RESET.copy()
+    if env['task_contract'] in CAMERA_TOP_TRAINING_CONTRACTS:
+        expected_reset[4] -= np.pi / 2
     if (not np.allclose(np.asarray(state['pos'], dtype=float), position, atol=1e-8, rtol=0)
             or not (np.allclose(np.asarray(state['rot'], dtype=float), rotation, atol=1e-8, rtol=0)
                     or np.allclose(np.asarray(state['rot'], dtype=float), -np.array(rotation), atol=1e-8, rtol=0))
             or not np.allclose(profile.az_xyz_b_m, points, atol=1e-8, rtol=0)
-            or not np.allclose(profile.q_reset_rad, RESET, atol=1e-8, rtol=0)
+            or not np.allclose(profile.q_reset_rad, expected_reset, atol=1e-8, rtol=0)
             or not np.allclose(profile.joint_zero_offset_deg, contract['joint_zero_offset_deg'], atol=1e-9, rtol=0)):
         raise ValueError('qualified scene, reset or mapping differs from trained environment')
 

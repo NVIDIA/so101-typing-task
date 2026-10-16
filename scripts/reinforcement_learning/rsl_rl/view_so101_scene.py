@@ -1,7 +1,4 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""Inspect a stationary SO-101 scene until the Newton window closes."""
+"""Inspect a stationary SO-101 scene in an interactive Newton or Isaac Sim viewport."""
 import argparse
 import hashlib
 import json
@@ -19,11 +16,15 @@ from isaaclab_tasks.utils import setup_preset_cli
 from isaaclab_tasks.utils.hydra import hydra_task_config
 from public_task import apply_config, load_config
 from public_physics import apply_config as apply_physics, load_config as load_physics
+from recorded_tabletop import apply_config as apply_tabletop, load_config as load_tabletop
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--task', required=True)
 parser.add_argument('--task-config', type=Path)
 parser.add_argument('--physics-config', type=Path)
+parser.add_argument('--tabletop-config', type=Path, help='Recorded white table and backdrop dimensions in mm')
+parser.add_argument('--export-scene', action='store_true', help='Export posed scene.usdc for OVRTX')
+parser.add_argument('--snapshot', action='store_true', help='Save the initial Newton view as scene.png')
 parser.add_argument('--seed', type=int, default=1307)
 parser.add_argument('--frames', type=int, default=0)
 parser.add_argument('--out', type=Path, required=True)
@@ -34,6 +35,8 @@ args, remaining = setup_preset_cli(parser)
 if args.frames < 0 or args.headless:
     parser.error('use a visible viewer and --frames >= 0 (0 means unlimited)')
 sys.argv = [sys.argv[0]] + remaining
+if args.snapshot:
+    args.enable_cameras = True
 
 
 class ZeroComparison:
@@ -55,7 +58,7 @@ class ZeroComparison:
             raise ValueError('zero comparison requires five finite offsets within +/-15 degrees')
         if not args.task_config or self.report.get('task_config_sha256') != hashlib.sha256(args.task_config.read_bytes()).hexdigest():
             raise ValueError('zero comparison scene differs from the fitted scene')
-        if self.report.get('identities', {}).get('robot_usd_sha256') != hashlib.sha256(Path(os.environ['SO101_ROBOT_USD']).read_bytes()).hexdigest():
+        if self.report.get('identities', {}).get('robot_usd_sha256') != hashlib.sha256(Path(os.environ['SO101_TYPING_USD']).read_bytes()).hexdigest():
             raise ValueError('zero comparison robot USD differs from the fitted model')
         self.selected = self.modes.index(args.zero_pose)
         self.applied = None
@@ -110,24 +113,32 @@ def main(env_cfg, agent_cfg):
         apply_config(env_cfg, load_config(args.task_config))
     if args.physics_config:
         apply_physics(env_cfg, load_physics(args.physics_config))
+    tabletop = apply_tabletop(env_cfg, load_tabletop(args.tabletop_config)) if args.tabletop_config else None
     env_cfg.scene.num_envs = 1
     env_cfg.seed = args.seed
     if args.device:
         env_cfg.sim.device = args.device
     with launch_simulation(env_cfg, args):
-        env = gym.make(args.task, cfg=env_cfg).unwrapped
+        env = gym.make(args.task, cfg=env_cfg, render_mode='rgb_array' if args.snapshot else None).unwrapped
         frames = 0
         try:
             env.reset()
             env.sim.forward()
-            env.sim.set_camera_view((.62, .48, .42), (.20, .06, .07))
+            eye, lookat = (env_cfg.viewer.eye, env_cfg.viewer.lookat) if tabletop else ((.62, .48, .42), (.20, .06, .07))
+            env.sim.set_camera_view(eye, lookat)
+            if tabletop:
+                args.out.parent.mkdir(parents=True, exist_ok=True)
+                (args.out.parent/'tabletop.json').write_text(json.dumps(tabletop, indent=2)+'\n')
             # Keep references: SimulationContext removes closed viewers from its list.
             viewers = tuple(env.sim._visualizers)
             if not viewers:
-                raise RuntimeError('Newton viewer did not initialize')
+                raise RuntimeError('Scene viewer did not initialize')
             assets = {name: env.scene[name] for name in ('robot', 'keyboard')}
             initial = {name: (asset.data.joint_pos.torch.clone(), asset.data.root_pos_w.torch.clone(),
                               asset.data.root_quat_w.torch.clone()) for name, asset in assets.items()}
+            if args.export_scene:
+                from export_tabletop_usd import export_scene
+                export_scene(env, args.out.parent/'scene.usdc', eye, lookat)
             initial_steps = env.sim.get_physics_step_count()
             comparison = ZeroComparison(env, viewers) if args.zero_mapping else None
             print('SCENE READY: stationary robot and keyboard; close the viewer or press Ctrl-C to exit.', flush=True)
@@ -138,6 +149,11 @@ def main(env_cfg, agent_cfg):
                     # Rendering pumps camera/window input without advancing physics or task state.
                     env.sim.render()
                     frames += 1
+                    if args.snapshot and frames == 5:
+                        import imageio.v2 as imageio
+                        args.out.parent.mkdir(parents=True, exist_ok=True)
+                        imageio.imwrite(args.out.parent/'scene.png', env.render())
+                        print(f'SCENE SNAPSHOT: {args.out.parent / "scene.png"}', flush=True)
                     if args.frames and frames >= args.frames:
                         break
                     time.sleep(1 / 30)
@@ -150,7 +166,8 @@ def main(env_cfg, agent_cfg):
             pose_matches = comparison is None or torch.equal(comparison.expected, assets['robot'].data.joint_pos.torch)
             physics_steps = env.sim.get_physics_step_count() - initial_steps
             report = {'mode': 'zero_convention_comparison' if comparison else 'static_scene_viewer',
-                      'frames': frames, 'policy_used': False, 'physics_steps_during_view': physics_steps,
+                      'visualizers': [type(viewer).__name__ for viewer in viewers],
+                      'frames': frames, 'policy_used': False, 'tabletop': tabletop, 'physics_steps_during_view': physics_steps,
                       'task_config': load_config(args.task_config) if args.task_config else None,
                       'task_config_sha256': hashlib.sha256(args.task_config.read_bytes()).hexdigest()
                       if args.task_config else None}

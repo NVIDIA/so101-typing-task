@@ -1,24 +1,10 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""Exact identities for metadata-only asset and copyright updates.
+"""Exact identities for one metadata-only keyboard asset cleanup.
 
 The public NPZ removes the converter's workstation source path. All other NPY
 member payloads are byte-identical. The drawing JSON changes only that asset's
 source hash. Preserve original evidence hashes; accept only these two known
 representations when comparing model identity, never arbitrary asset changes.
-The calibration configuration also has two exact representations differing only
-by its added NVIDIA copyright notice. Historical evidence keeps its original hash.
 """
-
-CALIBRATION_SOURCE_PATHS = frozenset((
-    'source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/physical_calibrated_20260718_env_cfg.py',
-    'source/so101_typing/tasks/physical_calibrated_20260718_env_cfg.py',
-))
-CALIBRATION_SOURCE_HASHES = frozenset((
-    'edb76ea369fd29426fbfe45db9759ed98a5b10bf5b6389e0bbb95721cdf9dd8e',
-    '9e28338432f7cd79ef62f0185e1da0fd0243e771aa957c3070504f8c82abc48e',
-))
 
 KEYBOARD_ASSET_PATHS = frozenset((
     'source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/config/so101/keyboards/data/mx_keys/mx_keys_asset.npz',
@@ -37,9 +23,6 @@ DRAWING_HASHES = frozenset((
 def source_hash_matches(name, actual, expected):
     if actual == expected:
         return True
-    if (name in CALIBRATION_SOURCE_PATHS and isinstance(actual, str)
-            and isinstance(expected, str)):
-        return actual in CALIBRATION_SOURCE_HASHES and expected in CALIBRATION_SOURCE_HASHES
     return (name in KEYBOARD_ASSET_PATHS and isinstance(actual, str)
             and isinstance(expected, str)
             and actual in KEYBOARD_ASSET_HASHES and expected in KEYBOARD_ASSET_HASHES)

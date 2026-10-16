@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Reject infrastructure-specific files, machine paths and credential material."""
 from pathlib import Path
 import argparse

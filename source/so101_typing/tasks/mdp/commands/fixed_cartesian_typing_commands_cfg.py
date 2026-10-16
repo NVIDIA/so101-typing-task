@@ -1,6 +1,5 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -24,12 +23,13 @@ class FixedCartesianTypingCommandCfg(LetterTypingCommandCfg):
 
     q_reset_ref: tuple[float, float, float, float, float] = MISSING
     letter_slots: tuple[int, ...] = MISSING
+    fixed_target_slots: tuple[int, ...] | None = None
     letter_xyz_b_m: tuple[tuple[float, float, float], ...] = MISSING
     target_xyz_mean_b_m: tuple[float, float, float] = MISSING
     target_xyz_std_b_m: tuple[float, float, float] = MISSING
     action_name: str = "action"
 
-    tip_body: str = "gripper_link"
+    tip_body: str = "gripper"
     tip_offset_m: tuple[float, float, float] = (
         -0.0106769063594562,
         -0.0005212273838322845,

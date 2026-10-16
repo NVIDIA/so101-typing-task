@@ -1,0 +1,104 @@
+{
+  "root_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/so101_new_calib.usda",
+  "root_path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/so101_new_calib.usda",
+  "files": {
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/so101_new_calib.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/so101_new_calib.usda",
+      "sha256": "d4067639489ecc99f7da2637de72098fd6155a2d54f32a8a49afe412a291612c",
+      "bytes": 8787
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/base.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/base.usda",
+      "sha256": "f7125f84967821eb2540a3b6d5674f2681be722dec2f5343ba5718d474412205",
+      "bytes": 47194
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/robot.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/robot.usda",
+      "sha256": "a073a9d69ea97a32d5e3a4b83c372a9d1e19692a30f603969d0fe72f8a2fab46",
+      "bytes": 5508
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/materials.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/materials.usda",
+      "sha256": "92a576efc9e6f642b23c3fb44c1dc71fe578f1141bb8a5980de91bc6d34f7f09",
+      "bytes": 7186
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/instances.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/instances.usda",
+      "sha256": "bd026f2b4cb445c2eeee8acbb489886484e0928aaca006b1520140c84b3e159c",
+      "bytes": 35191
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/geometries.usd": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/geometries.usd",
+      "sha256": "2fb01028b0866a3f3f9c38fa3d56eb9ba174a93810ab460621a4e639aa7cafec",
+      "bytes": 23256984
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Sensor/sensors.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Sensor/sensors.usda",
+      "sha256": "be447310348d89308a09706dfa6b61540e441e85095d65c0b39f8cc4f3e03f93",
+      "bytes": 201
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/SO-101_camera_mount.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/SO-101_camera_mount.usda",
+      "sha256": "e5f5acbf93fce4ffad87ceefcc982a0b9552060ff46c6e07ca67ca27b65617a2",
+      "bytes": 13310
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/base.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/base.usda",
+      "sha256": "678c619c6125b587747bf570741bfcb8968dcfebda15a0e1405162ecd85fe73b",
+      "bytes": 20340
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/materials.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/materials.usda",
+      "sha256": "19b6e7dc1331d76ccec313ae6f17d53acb64f74e9bcd7bde2180c5e03f615ac8",
+      "bytes": 6982
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/instances.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/instances.usda",
+      "sha256": "f625094f7a97e2d971ddef19ca4dbea0d0eb86ef2ef9648ec50cd3bb203c34a3",
+      "bytes": 5598
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/geometries.usd": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/so101-camera_mount/payloads/geometries.usd",
+      "sha256": "ac913f1be2c235ae27214a5d6f6008f206491d31c6e844f937da5ec27fe3b653",
+      "bytes": 4523233
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Sensor/none.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Sensor/none.usda",
+      "sha256": "a3a99296dd3f23ebee8ac93aaa9ed39077d32346eaf51766c31599804a471522",
+      "bytes": 117
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Robot/robot.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Robot/robot.usda",
+      "sha256": "a3fd163e24ad42fa534085b089f7f579b29254c709a043e0f68c8bf8aea704d4",
+      "bytes": 5073
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Robot/none.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Robot/none.usda",
+      "sha256": "a3a99296dd3f23ebee8ac93aaa9ed39077d32346eaf51766c31599804a471522",
+      "bytes": 117
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/physx.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/physx.usda",
+      "sha256": "478fc4568b13906897027c683a11c382fd0b1d81f9d79229fbd35956b00cd1af",
+      "bytes": 1491
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/physics.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/physics.usda",
+      "sha256": "859dfddc29fd5e4c0ec753f6842d87d26d3fcd381f5efa9722d68a4789a3ae27",
+      "bytes": 11945
+    },
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/none.usda": {
+      "path": "Assets/Isaac/6.1/Isaac/Robots_Multiphysics/RobotStudio/so101_new_calib_SysID/payloads/Physics/none.usda",
+      "sha256": "a3a99296dd3f23ebee8ac93aaa9ed39077d32346eaf51766c31599804a471522",
+      "bytes": 117
+    }
+  },
+  "workshop_commit": "33f56e38a2edaf73f7cef6ea32f03597b84b33ee",
+  "workshop_source": "Sim-to-Real-SO-101-Workshop",
+  "variants": {
+    "Robot": "robot",
+    "Sensor": "sensors",
+    "Physics": "physics"
+  },
+  "expected_asset_sha256": "893963bb1d4e79bf120885355357a8a0d62186a45cf84a11cd267a8f5db97be3"
+}

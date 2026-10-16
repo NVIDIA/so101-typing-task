@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Run a prepared typing bundle. Defaults to software dry-run; operator runs --execute."""
 from datetime import datetime, timezone
 import argparse
@@ -22,6 +19,7 @@ def main():
     p.add_argument('--experimental-clearance-m', type=float, default=None)
     p.add_argument('--port')
     p.add_argument('--keyboard-device')
+    p.add_argument('--post-eval-home', type=Path)
     a=p.parse_args()
     if a.execute and (not a.port or not a.keyboard_device):
         p.error('--execute requires your --port and --keyboard-device explicitly')
@@ -49,6 +47,7 @@ def main():
              '--enable-robot' if a.execute else '--dry-run']
     if a.port:command+=['--port',a.port]
     if a.keyboard_device:command+=['--device',a.keyboard_device]
+    if a.post_eval_home:command+=['--post-eval-home',str(a.post_eval_home.resolve())]
     if a.experimental:command+=['--experimental']
     if a.experimental_clearance_m is not None: command += ['--experimental-clearance-m', str(a.experimental_clearance_m)]
     return subprocess.call(command)

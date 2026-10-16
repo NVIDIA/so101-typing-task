@@ -1,6 +1,5 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -26,7 +25,9 @@ def _register_physical_fixed_cartesian_task(
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
         disable_env_checker=True,
         kwargs={
-            "env_cfg_entry_point": (f"{__name__}.physical_calibrated_20260718_env_cfg:{env_cfg_name}"),
+            "env_cfg_entry_point": (f"{__name__}.phrase_typing_env_cfg:{env_cfg_name}"
+            if env_cfg_name.startswith("SO101KeyboardMXGTCBerlinIsaacLabPhrase")
+            else f"{__name__}.physical_calibrated_20260718_env_cfg:{env_cfg_name}"),
             "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:{runner_cfg_name}",
         },
     )
@@ -82,3 +83,27 @@ _register_physical_fixed_cartesian_task(
     "SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianUSDDriveP1DTransit15EnvCfg",
     "SO101PhysicalCalibrated20260718FixedCartesianUSDDriveP1DTransit15PPORunnerCfg",
 )
+
+_register_physical_fixed_cartesian_task(
+    "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-P1A",
+    "SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1AEnvCfg",
+    "SO101PhysicalCalibrated20260718FixedCartesianGTCBerlinP1APPORunnerCfg",
+)
+_register_physical_fixed_cartesian_task(
+    "Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-P1D-Transit15",
+    "SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg",
+    "SO101PhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15PPORunnerCfg",
+)
+
+_register_physical_fixed_cartesian_task(
+    "Isaac-Keyboard-SO101-MX-GTCBerlin-State-IsaacLabPhrase",
+    "SO101KeyboardMXGTCBerlinIsaacLabPhraseEnvCfg",
+    "SO101GTCBerlinIsaacLabPhrasePPORunnerCfg",
+)
+
+for _length in (3, 6, 10):
+    _register_physical_fixed_cartesian_task(
+        f"Isaac-Keyboard-SO101-MX-GTCBerlin-State-IsaacLabPhrase-Prefix{_length}",
+        f"SO101KeyboardMXGTCBerlinIsaacLabPhrasePrefix{_length}EnvCfg",
+        "SO101GTCBerlinIsaacLabPhrasePPORunnerCfg",
+    )

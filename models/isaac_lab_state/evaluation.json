@@ -1,0 +1,116 @@
+{
+  "action": {
+    "max_abs": 0.9941214919090271,
+    "mean_abs": 0.4287094473838806,
+    "mean_near_saturation_fraction": 0.08184284716844559,
+    "near_saturation_episode_rate": 1.0,
+    "out_of_bounds_episode_rate": 0.0
+  },
+  "actuator_profile": "gtc_berlin",
+  "appearance": null,
+  "artifact_contract": {
+    "path": "/inputs/env.yaml",
+    "sha256": "6aa02a47a9d0499436aa5182155b290bc7a56171ffbe33f7d824fcdbff6b157c",
+    "task_contract": "physical_calibrated_gtc_berlin_state_isaac_lab_3p0_v1",
+    "validated": true
+  },
+  "character_index_histogram": {
+    "13": 256
+  },
+  "checkpoint": "/inputs/checkpoint.pt",
+  "checkpoint_sha256": "788c3ede8ad62ce683e9dcaeb838778213a88c3e591b3261efe1ed81c47c552a",
+  "evaluation_mode": "matched_training_contract",
+  "evaluator_sha256": "efe6835eca08f404b990db9889f1cb054d7435d287dc160b281dca981d2a1607",
+  "event_count_mismatch_rate": 0.0,
+  "event_trace_env0": [],
+  "incomplete_rate": 0.0,
+  "initial_observation_env0": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.6896154284477234,
+    -0.4516805410385132,
+    70.6766128540039,
+    1.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "initially_held_rate": 0.0,
+  "keyboard_profile": "mx_keys_powered_az_20260718",
+  "kind": "so101_physical_calibrated_fixed_cartesian_strict_evaluation",
+  "max_target_depression_fraction": 1.314874291419983,
+  "mean_character_index": 13.0,
+  "num_envs": 256,
+  "overall_success_rate": 1.0,
+  "overlap_rate": 0.0,
+  "perturbation_config": null,
+  "protocol": {
+    "clearance_control_ticks": 2,
+    "clearance_m": 0.015,
+    "exact_model_rest": true,
+    "fresh_empty_typed_buffer": true,
+    "keyboard_pose_randomization": false,
+    "keyboard_reset_ranges": {
+      "x_range_m": [
+        0,
+        0
+      ],
+      "y_range_m": [
+        0,
+        0
+      ],
+      "yaw_range_rad": [
+        0.0,
+        0.0
+      ]
+    },
+    "physics": "newton_mjwarp",
+    "required_sequence": "target down -> matching up -> 2 15 mm clearance ticks",
+    "reset_joint_position_range_rad": [
+      0,
+      0
+    ],
+    "zero_joint_velocity": true
+  },
+  "raw_completion_rate": 1.0,
+  "raw_policy_action_trace": [],
+  "seed": 1307,
+  "steps_budget": 3750,
+  "steps_executed": 370,
+  "successes": 256,
+  "target_bank_sha256": "888397f1863aeee046ea7b492daf684f6481130a1ce752ab5097230903f554ce",
+  "target_descriptor": {
+    "mode": "repeated_sequence",
+    "target": "ISAAC LAB 3.0"
+  },
+  "target_histogram": {
+    "ISAAC LAB 3.0": 256
+  },
+  "target_length": 13,
+  "task": "Isaac-Keyboard-SO101-MX-GTCBerlin-State-IsaacLabPhrase",
+  "termination_rates": {
+    "abnormal_robot": 0.0,
+    "action_contract": 0.0,
+    "excessive_contact": 0.0,
+    "invalid_key": 0.0,
+    "map_invalid": 0.0,
+    "phase_timeout": 0.0,
+    "scrape": 0.0,
+    "time_out": 0.0
+  },
+  "typed_exact_rate": 1.0,
+  "wrong_key_rate": 0.0
+}

@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Artifact downloads, checkpoint pairing and portable source integrity."""
 
 import ast
@@ -193,24 +190,6 @@ def test_identity_alias_is_exact_and_scoped_to_one_asset():
     assert not source_identity.identity_matches('source_sha256', None, None)
 
 
-def test_calibration_notice_preserves_exact_source_identity():
-    notice = b'# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.\n'
-    current = (ROOT / 'source/so101_typing/tasks/physical_calibrated_20260718_env_cfg.py').read_bytes()
-    assert current.count(notice) == 1
-    original = current.replace(notice, b'', 1)
-    old_hash = hashlib.sha256(original).hexdigest()
-    new_hash = hashlib.sha256(current).hexdigest()
-    assert old_hash != new_hash
-    assert {old_hash, new_hash} == source_identity.CALIBRATION_SOURCE_HASHES
-    for name in source_identity.CALIBRATION_SOURCE_PATHS:
-        assert source_identity.source_hash_matches(name, old_hash, new_hash)
-        assert source_identity.source_hash_matches(name, new_hash, old_hash)
-        changed = hashlib.sha256(current + b'\n# changed\n').hexdigest()
-        assert not source_identity.source_hash_matches(name, changed, old_hash)
-        assert not source_identity.source_hash_matches(name, PUBLIC, old_hash)
-    assert not source_identity.source_hash_matches('unrelated.py', old_hash, new_hash)
-
-
 def test_old_recording_loads_without_rewriting_its_original_hash(tmp_path, monkeypatch):
     root = tmp_path / 'checkout'
     asset = root / ASSET
@@ -246,18 +225,22 @@ def test_old_fk_plan_accepts_only_the_equivalent_asset(tmp_path):
         fk_probe_trajectory.validate(plan)
 
 
-def test_old_alignment_preserves_contract_and_rejects_other_changes(tmp_path, monkeypatch):
+def test_alignment_accepts_equivalent_keyboard_asset_but_rejects_old_robot_geometry(tmp_path, monkeypatch):
     calibration = tmp_path / 'calibration.json'
     calibration.write_text('{}')
     monkeypatch.setattr(scene_alignment, 'require_calibration', lambda _: calibration)
     task = ROOT / 'configs/tasks/physical-reference-20260915.json'
     data = scene_alignment.prepare(task, 'test_robot', tmp_path / 'alignment', convention='lerobot')
     data['contract']['source_sha256'][ASSET] = ORIGINAL
-    data['contract']['geometry_sha256'] = ORIGINAL_DRAWING
     data['contract_sha256'] = scene_alignment.fingerprint(data['contract'])
     before = copy.deepcopy(data)
     assert scene_alignment.validate_candidate(data, 'test_robot') == data['contract']
     assert data == before
+    old = copy.deepcopy(data)
+    old['contract']['geometry_sha256'] = ORIGINAL_DRAWING
+    old['contract_sha256'] = scene_alignment.fingerprint(old['contract'])
+    with pytest.raises(ValueError, match='geometry_sha256'):
+        scene_alignment.validate_candidate(old, 'test_robot')
     for field in ('source_sha256', 'geometry_sha256', 'robot_usd_sha256'):
         broken = copy.deepcopy(data)
         if field == 'source_sha256':

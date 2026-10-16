@@ -11,15 +11,6 @@ evaluation scripts in `scripts/reinforcement_learning/rsl_rl/`, and
 BSD-3-Clause license notices. File headers identify the applicable copyright
 years and The Isaac Lab Project Developers.
 
-NVIDIA additions and modifications also carry the NVIDIA copyright notice,
-alongside the original Isaac Lab notice. The [source attribution inventory](licenses/isaac-lab-source.json)
-compares the 57 files that previously carried only Isaac Lab notices with the
-pinned source ancestor. `scripts/reinforcement_learning/rsl_rl/cli_args.py` and
-the header-only `source/so101_typing/tasks/agents/__init__.py` are byte-identical
-copies. The remaining 55 files carry both notices: two modify corresponding
-ancestor files, and 53 are project-specific paths absent from that ancestor.
-This path classification does not exclude upstream-derived code within a file.
-
 The runtime source ancestor is
 [`ooctipus/IsaacLab` at `6f991d4becf764b151e0a1c775561ddd9c406f72`](https://github.com/ooctipus/IsaacLab/tree/6f991d4becf764b151e0a1c775561ddd9c406f72).
 Its [license](https://github.com/ooctipus/IsaacLab/blob/6f991d4becf764b151e0a1c775561ddd9c406f72/LICENSE)
@@ -103,3 +94,13 @@ The dataset card at the revision recorded in
 [docs/release/artifact_revision.json](docs/release/artifact_revision.json)
 does not declare a license for those artifacts. This repository's source
 license does not establish a license for the downloaded weights or data.
+
+## Workshop SO-101 SysID USD
+
+The Docker image assembles the SO-101 SysID asset from NVIDIA's public Isaac 6.1
+content collection. Pinned dependency URLs and hashes are recorded in
+`source/so101_typing/tasks/SO101/data/workshop_asset_sources.json`.
+`scripts/build_workshop_so101_asset.py` flattens those layers, applies the
+Workshop joint overrides, and converts constant MDL colors for local viewing.
+Original upstream asset and NVIDIA content terms apply; the repository license
+does not replace them. The assembled USD is not included in Git.

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "training": {
+    "sequence_length": 13,
+    "vocabulary": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .",
+    "random_sequences": true,
+    "num_envs": 2,
+    "teacher_iterations": 2,
+    "vision_iterations": 2,
+    "warmup": 1,
+    "learning_rate": 0.0001,
+    "save_interval": 1,
+    "domain_strength": 0.0,
+    "seed": 4811
+  },
+  "evaluation": {"target": "ISAAC LAB 3.0", "episodes": 2, "seed": 900001},
+  "task_config": "configs/tasks/gtc-berlin-vision.json"
+}

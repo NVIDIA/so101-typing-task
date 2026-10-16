@@ -22,7 +22,7 @@ mkdir -p output/sim-example
 cp configs/tasks/replay-calibrated-20260917.json output/sim-example/task.json
 ./so101 fixture --task-config output/sim-example/task.json --out-dir output/sim-example-view
 ./so101 probe --task-config output/sim-example/task.json
-./so101 train --actuator anchorbench --stage p1a \
+./so101 train --actuator gtc_berlin --stage p1a \
   --task-config output/sim-example/task.json --num-envs 64 --iterations 10
 ```
 

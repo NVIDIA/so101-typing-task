@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Leader/follower recording and launcher routing without serial access."""
 
 from copy import deepcopy
@@ -86,7 +83,7 @@ class Bus:
         assert normalize is False and num_retry == 0 and self.is_connected
         # This assertion makes any extra register/jaw write a test failure.
         assert register in ('Goal_Position', 'Torque_Enable')
-        assert set(values) == set(recorder.ARM)
+        assert set(values) == set(recorder.ARM) or (register == 'Torque_Enable' and set(values) == set(recorder.JOINT_NAMES))
         assert all(type(value) is int and 0 <= value <= 4095 for value in values.values())
         self.writes.append((register, deepcopy(values)))
         self.registers[register].update(values)
@@ -237,7 +234,7 @@ def test_large_tracking_transient_is_recorded_and_fresh_pose_is_held(fixture):
         shoulder_pan=2048 if bus.reads == 1 else 2150 if bus.reads == 2 else 2160)
     run(fixture)
     assert report['status'] == 'recorded'
-    assert follower.writes[-1][1]['shoulder_pan'] == 2160
+    assert [values for register, values in follower.writes if register == 'Goal_Position'][-1]['shoulder_pan'] == 2160
     assert report['final_hold_measured']['raw_counts']['shoulder_pan'] == 2160
     assert follower.closed == leader.closed == [False]
     assert not leader.writes
@@ -252,7 +249,7 @@ def test_sampling_gap_aborts_and_holds(fixture):
     assert follower.closed == leader.closed == [False]
 
 
-def test_ctrl_c_stops_without_torque_off(fixture):
+def test_ctrl_c_stops_and_verifies_torque_off(fixture):
     follower, leader, report, keyboard, _ = fixture
     original = keyboard.poll
     def interrupt():
@@ -262,7 +259,8 @@ def test_ctrl_c_stops_without_torque_off(fixture):
     keyboard.poll = interrupt
     run(fixture)
     assert report['stop_reason'] == 'ctrl_c' and len(report['samples']) == 3
-    assert all(follower.registers['Torque_Enable'][name] == 1 for name in recorder.ARM)
+    assert report['follower_torque_off_verified'] is True
+    assert all(follower.registers['Torque_Enable'][name] == 0 for name in recorder.JOINT_NAMES)
     assert follower.closed == leader.closed == [False]
 
 
@@ -272,7 +270,7 @@ def test_gripper_motion_stops_without_commanding_it(fixture):
     with pytest.raises(ValueError, match='gripper moved'):
         run(fixture)
     assert report['stop_reason'] == 'error'
-    assert all('gripper' not in goals for _, goals in follower.writes)
+    assert all('gripper' not in goals for register, goals in follower.writes if register == 'Goal_Position')
 
 
 def test_large_startup_lag_is_recorded_while_follower_catches_up(fixture):

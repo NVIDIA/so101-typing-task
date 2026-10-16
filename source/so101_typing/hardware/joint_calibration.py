@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Offline encoder-to-model calibration fitting. Never connects to a robot."""
 from __future__ import annotations
 import argparse

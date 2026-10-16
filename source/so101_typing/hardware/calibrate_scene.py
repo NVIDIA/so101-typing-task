@@ -1,6 +1,3 @@
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-
 """Fit a new effective scene from measured key-downs; offline, no hardware I/O.
 
 Fit lift/elbow/wrist flex and keyboard XYZ/yaw by default. Optional pan fitting

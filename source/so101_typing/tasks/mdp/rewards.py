@@ -1,6 +1,5 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -147,7 +146,7 @@ class fixed_jaw_low_clearance_lateral_motion(ManagerTermBase):
         super().__init__(cfg, env)
         asset_cfg: SceneEntityCfg = cfg.params.get("asset_cfg", SceneEntityCfg("robot"))
         self.robot = env.scene[asset_cfg.name]
-        self._tip_body = self.robot.body_names.index(cfg.params.get("tip_body", "gripper_link"))
+        self._tip_body = self.robot.body_names.index(cfg.params.get("tip_body", "gripper"))
         self._tip_offset = torch.tensor(cfg.params["tip_offset"], device=env.device).expand(env.num_envs, 3)
         self._clearance_m = float(cfg.params.get("clearance_m", 0.004))
         self._speed_m_s = float(cfg.params.get("lateral_speed_m_s", 0.04))
@@ -173,7 +172,7 @@ class fixed_jaw_low_clearance_lateral_motion(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
         command_name: str,
-        tip_body: str = "gripper_link",
+        tip_body: str = "gripper",
         tip_offset: tuple[float, float, float] = (0.0, 0.0, 0.0),
         clearance_m: float = 0.004,
         lateral_speed_m_s: float = 0.04,

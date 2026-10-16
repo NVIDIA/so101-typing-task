@@ -1,6 +1,5 @@
 # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 # All rights reserved.
-# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -8,6 +7,7 @@
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import gymnasium as gym
@@ -29,6 +29,7 @@ from isaaclab_tasks.core.dexsuite.config.so101.physical_calibrated_20260718_env_
     PHYSICAL_CALIBRATED_KEYBOARD_POSITION_B_M,
     PHYSICAL_CALIBRATED_KEYBOARD_ROTATION_XYZW,
     PHYSICAL_CALIBRATED_POLICY_Q_RESET_RAD,
+    GTC_BERLIN_CAMERA_TOP_WRIST_ROLL_RAD,
     PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD,
     PHYSICAL_CALIBRATED_TARGET_MAP_SHA256,
     PHYSICAL_CALIBRATION_DATASET_SHA256,
@@ -176,3 +177,32 @@ def test_p1a_changes_only_sequence_budget_from_calibrated_p0() -> None:
     assert p0_runner.clip_actions is p1_runner.clip_actions is None
     assert isinstance(p0_runner.actor.distribution_cfg, BoundedBetaDistributionCfg)
     assert isinstance(p1_runner.actor.distribution_cfg, BoundedBetaDistributionCfg)
+
+
+def test_gtc_berlin_tasks_are_registered_with_distinct_contracts() -> None:
+    from isaaclab_tasks.core.dexsuite.config.so101.physical_calibrated_20260718_env_cfg import (
+        SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1AEnvCfg,
+        SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg,
+    )
+    from isaaclab_tasks.core.dexsuite.config.so101.SO101.actuator_profiles import actuator_profile_manifest
+
+    for stage, config_type in (
+        ("P1A", SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1AEnvCfg),
+        ("P1D-Transit15", SO101KeyboardMXPhysicalCalibrated20260718FixedCartesianGTCBerlinP1DTransit15EnvCfg),
+    ):
+        spec = gym.spec(f"Isaac-Keyboard-SO101-MX-Physical-Calibrated-20260718-FixedCartesian-GTCBerlin-{stage}")
+        cfg = config_type()
+        profile = actuator_profile_manifest("gtc_berlin")
+        assert "GTCBerlin" in spec.kwargs["env_cfg_entry_point"]
+        assert "GTCBerlin" in spec.kwargs["rsl_rl_cfg_entry_point"]
+        assert cfg.actuator_profile == "gtc_berlin"
+        assert cfg.scene.robot.actuators["all"].stiffness == profile["stiffness"]
+        assert cfg.scene.robot.actuators["all"].friction == profile["friction"]
+        assert "gtc_berlin" in cfg.task_contract
+        assert "camera_top_v1" in cfg.task_contract
+        expected_roll = PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD["wrist_roll"] - math.pi / 2
+        assert math.isclose(GTC_BERLIN_CAMERA_TOP_WRIST_ROLL_RAD, expected_roll, abs_tol=1e-12)
+        assert cfg.scene.robot.init_state.joint_pos["wrist_roll"] == expected_roll
+        roll_index = tuple(PHYSICAL_CALIBRATED_POLICY_REST_JOINT_POS_RAD).index("wrist_roll")
+        assert cfg.actions.action.q_reset_ref[roll_index] == expected_roll
+        assert cfg.commands.typing.q_reset_ref[roll_index] == expected_roll
