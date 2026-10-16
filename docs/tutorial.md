@@ -131,6 +131,13 @@ compatibility, validates the keyboard identity and rest calibration, and records
 fresh camera frames without opening the robot connection. Deployment repeats
 preflight before offering the start prompt. Inspect the reset wrist image and
 confirm in the terminal when ready. Each motion stage has a five-second countdown.
+The mapping directory must contain its complete prepared deployment bundle,
+including `checkpoint.pt`, `env.yaml`, and alignment evidence. Preflight rechecks
+the follower calibration and evidence hashes. Qualified alignment is required
+by default. For a supervised candidate-mapping experiment, explicitly pass
+`--experimental` to both `hardware check` and `deploy`; calibration and integrity
+checks still apply.
+
 Esc on the selected keyboard or Ctrl-C stops execution. The reset review expires
 after 90 seconds, returning home and disabling torque.
 

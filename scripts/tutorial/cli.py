@@ -191,12 +191,14 @@ def main(argv=None):
     hardware.add_argument('--profile', type=Path, default=ROOT / 'local/robot.json')
     hardware.add_argument('--model')
     hardware.add_argument('--plan', action='store_true')
+    hardware.add_argument('--experimental', action='store_true')
     deploy = sub.add_parser('deploy')
     deploy.add_argument('--model', required=True)
     deploy.add_argument('--profile', type=Path, required=True)
     deploy.add_argument('--target', default='ISAAC LAB 3.0')
     deploy.add_argument('--tolerate-expected-repeat', action='store_true')
     deploy.add_argument('--plan', action='store_true')
+    deploy.add_argument('--experimental', action='store_true')
     args = p.parse_args(argv)
     try:
         if args.command == 'debug':

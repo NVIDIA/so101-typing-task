@@ -20,8 +20,9 @@ import time
 import numpy as np
 
 from .constants import ARM_JOINT_NAMES
-from .fixed_cartesian_policy import (CONTROL_HZ, FixedCartesianDeploymentProfile,
+from .fixed_cartesian_policy import (CONTROL_HZ,
                                      FixedCartesianTypingState, integrate_command)
+from .deployment_bundle import validate_manifest, validate_execution_mode
 from .keyboard_debounce import DEFAULT_KEYBOARD_DEBOUNCE_MS, KeyboardDebouncer
 from .keyboard_events import _suppress_terminal_echo
 from .policy_runtime import KeyboardMonitor, PolicyContractError, PressGate, append_jsonl, load_rest_pose
@@ -44,13 +45,19 @@ DEFAULT_MAPPING_DIR = ROOT / 'output/gtc_camera_top_experimental_bundle_20261013
 DEFAULT_OUTPUT = ROOT / 'output/vision_ppo/real_evals'
 
 
-def load_mapping(mapping_dir: Path, environment: dict, robot_id: str):
-    bundle = json.loads((mapping_dir/'deployment.json').read_text())
+def load_mapping(mapping_dir: Path, environment: dict, robot_id: str, *, experimental=False):
+    # A state-policy bundle supplies the measured joint/scene mapping, not the
+    # vision actor. Validate its own checkpoint, environment and alignment
+    # evidence before comparing the physical contract with the vision task.
+    profile, bundle = validate_manifest(mapping_dir/'deployment.json',
+                                        mapping_dir/'checkpoint.pt', mapping_dir/'env.yaml', robot_id)
+    if not bundle.get('lerobot_calibration_sha256'):
+        raise PolicyContractError('mapping must pin the follower calibration')
+    validate_execution_mode(bundle, experimental=experimental)
     if bundle.get('robot_id') != robot_id or bundle.get('actuator_profile') != 'gtc_berlin':
         raise PolicyContractError('camera-top mapping robot or actuator profile mismatch')
     if bundle.get('task_contract', '').split('_task_')[-1] != environment['task_contract'].split('_task_')[-1]:
         raise PolicyContractError('camera-top mapping task geometry differs from vision training')
-    profile = FixedCartesianDeploymentProfile(**bundle['profile'])
     action_cfg = environment['actions']['action']
     if not np.allclose(profile.q_reset_rad, action_cfg['q_reset_ref'], atol=1e-12, rtol=0):
         raise PolicyContractError('camera-top mapping reset differs from vision checkpoint')
@@ -78,7 +85,9 @@ def _is_expected_repeat(state: FixedCartesianTypingState, char: object, transiti
 
 def _prepare(args, out: Path):
     actor = VisionActor(args.actor, args.actor_metadata, args.environment)
-    profile, rest, bundle = load_mapping(args.mapping_dir, actor.environment, args.id)
+    experimental = getattr(args, 'experimental', False)
+    profile, rest, bundle = load_mapping(args.mapping_dir, actor.environment, args.id,
+                                         experimental=experimental)
     state = VisionTypingState.from_environment(args.target, profile, actor.environment, actor.goal_characters)
     if args.max_duration > float(actor.environment['episode_length_s']):
         raise PolicyContractError('Requested duration exceeds trained episode limit')
@@ -87,8 +96,6 @@ def _prepare(args, out: Path):
     required_node = getattr(args, 'required_keyboard_node', '/dev/input/event9')
     if required_node and node != required_node:
         raise PolicyContractError(f'typing keyboard moved from required {required_node} to {node}')
-    if bundle.get('mapping_selection') not in ('unqualified_alignment', 'qualified_alignment'):
-        raise PolicyContractError('unexpected camera-top mapping status')
     manifest = {
         'kind':'vision_physical_eval', 'target':state.target, 'robot_id':args.id,
         'actor_sha256':actor.metadata['actor_sha256'],
@@ -97,6 +104,7 @@ def _prepare(args, out: Path):
         'environment_sha256':hashlib.sha256(args.environment.read_bytes()).hexdigest(),
         'mapping_sha256':hashlib.sha256((args.mapping_dir/'deployment.json').read_bytes()).hexdigest(),
         'mapping_status':bundle.get('mapping_selection'),
+        'execution_mode':validate_execution_mode(bundle, experimental=experimental),
         'keyboard_event_node':node, 'wrist_camera':args.wrist_device,
         'external_camera':args.external_url, 'control_hz':CONTROL_HZ,
         'return_home':str(args.post_eval_home),
@@ -129,6 +137,7 @@ def main() -> int:
     p.add_argument('--return-to-rest-s',type=float,default=6.0)
     p.add_argument('--out',type=Path,default=None)
     p.add_argument('--preflight-only',action='store_true',help='Check actor, keyboard and both cameras; no robot connection')
+    p.add_argument('--experimental',action='store_true',help='Explicitly use a validated unqualified mapping for a supervised experiment')
     p.add_argument('--review-reset',action='store_true',help='Hold at trained reset for wrist-frame inspection before policy')
     p.add_argument('--tolerate-expected-repeat',action='store_true',help='Allow repeated press of current target key during release/clearance')
     args=p.parse_args()

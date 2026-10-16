@@ -41,6 +41,8 @@ def dispatch(args):
                '--actor',actor_dir/'vision_actor.pt','--actor-metadata',actor_dir/'vision_actor.json',
                '--environment',chosen.parent/'environment.json','--hardware-profile',args.profile,
                '--target',target,'--max-duration',str(read(chosen.parent/'environment.json')['episode_length_s'])]
+    if getattr(args, 'experimental', False):
+        command += ['--experimental']
     if args.command == 'hardware':
         execute(command+['--preflight-only','--out',output/'preflight'],args.plan,env=env)
     else:
