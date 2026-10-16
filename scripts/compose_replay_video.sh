@@ -11,7 +11,7 @@ replay_output="$(realpath "$1")"
 shift
 [[ -f "$replay_output/evaluation.json" ]] || { echo 'Missing evaluation.json' >&2; exit 2; }
 docker image inspect so101-typing-public:dev >/dev/null 2>&1 || { echo 'Run ./so101 build first' >&2; exit 2; }
-docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e PYTHONPYCACHEPREFIX=/tmp/pycache \
+docker run --cap-drop=ALL --security-opt=no-new-privileges --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e PYTHONPYCACHEPREFIX=/tmp/pycache \
   -v "$replay_output:/results" -v "$repo_root/scripts/rendering:/render-scripts:ro" \
   --entrypoint /workspace/isaaclab/_isaac_sim/python.sh so101-typing-public:dev \
   /render-scripts/compose_replay_video.py /results "$@"

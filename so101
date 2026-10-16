@@ -197,7 +197,7 @@ def main():
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
     output = args.output_dir.expanduser().resolve() if args.output_dir else ROOT / 'output' / 'public' / (stamp + '-' + args.command)
     cache = (Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache')) / 'so101-typing').expanduser().resolve()
-    cmd = ['docker', 'run', '--rm', '--gpus', 'all', '--ipc=host',
+    cmd = ['docker', 'run', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--rm', '--gpus', 'all', '--ipc=private', '--shm-size=16g',
            '--user', f'{os.getuid()}:{os.getgid()}', '-e', 'HOME=/tmp/so101-home',
            '-e', 'USER=so101', '-e', 'LOGNAME=so101',
            '-e', 'OMNICLIENT_HUB_MODE=disabled',

@@ -45,7 +45,8 @@ def simulate(path, *, video=False,
         raise ValueError("Newton viewer needs DISPLAY; run from your desktop terminal or use --video")
     cache = Path(os.environ.get("XDG_CACHE_HOME", str(Path.home()/".cache")))/"so101-typing"
     cache.mkdir(parents=True, exist_ok=True)
-    cmd = ["docker", "run", "--rm", "--gpus", "all", "--ipc=host", "--user", f"{os.getuid()}:{os.getgid()}",
+    cmd = ["docker", "run", "--cap-drop=ALL", "--security-opt=no-new-privileges",
+           "--rm", "--gpus", "all", "--ipc=private", "--shm-size=16g", "--user", f"{os.getuid()}:{os.getgid()}",
            "-e", "HOME=/tmp/so101-home", "-e", "USER=so101", "-e", "LOGNAME=so101",
            "-e", "OMNICLIENT_HUB_MODE=disabled", "-v", f"{cache}:/tmp/so101-home",
            "-v", f"{path.parent}:/results", "-v", f"{path.parent}:/workspace/isaaclab/logs"]

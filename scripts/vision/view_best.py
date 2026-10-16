@@ -45,14 +45,15 @@ def main():
     inside = lambda path: '/repo/' + str(path.relative_to(ROOT))
     camera = json.loads((ROOT / 'configs/vision/replay_camera.json').read_text())
     (directory / 'viewer-camera.json').write_text(json.dumps(camera, indent=2) + '\n')
-    cmd = ['docker', 'run', '-d', '--name', name + '-viewer', '--gpus', 'device=1',
-           '--ipc=host', '--shm-size=16g', '--no-healthcheck',
+    cmd = ['docker', 'run', '--cap-drop=ALL', '--security-opt=no-new-privileges', '-d', '--name', name + '-viewer', '--gpus', 'device=1',
+           '--ipc=private', '--shm-size=16g', '--user', f'{os.getuid()}:{os.getgid()}',
+           '-e', 'HOME=/tmp', '-e', 'USER=so101', '-e', 'LOGNAME=so101', '--no-healthcheck',
            '--log-opt', 'max-size=20m', '--log-opt', 'max-file=2',
            '-e', 'NVIDIA_DRIVER_CAPABILITIES=all', '-e', 'OMP_NUM_THREADS=8',
            '-e', 'DISPLAY=' + os.environ['DISPLAY'], '-e', 'XAUTHORITY=/tmp/typing.xauthority',
            '-v', f'{authority}:/tmp/typing.xauthority:ro', '-v', '/tmp/.X11-unix:/tmp/.X11-unix:ro',
            '-v', f'{ROOT}:/repo:ro', '-v', f'{out}:{inside(out)}',
-           '-v', f'{out}/cache_gpu1:/root/.cache',
+           '-v', f'{out}/cache_gpu1:/tmp/.cache',
            '-v', f'{ROOT}/scripts/vision/replay.py:/workspace/isaaclab/scripts/vision/replay.py:ro']
     for folder in ('nv_shadercache', 'texturecache', 'DerivedDataCache'):
         cache = out / 'renderer_gpu1' / folder

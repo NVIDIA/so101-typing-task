@@ -52,7 +52,7 @@ def view_grid(scene, gpu, seconds=0, plan=False):
         if not plan:
             directory.mkdir(parents=True, exist_ok=True)
         mounts += ['-v', f'{directory}:{destination}']
-    execute(['docker', 'run', '--rm', '--init', '--gpus', f'device={gpu}',
+    execute(['docker', 'run', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--rm', '--init', '--gpus', f'device={gpu}',
              '--ipc=private', '--shm-size=16g', '--user', f'{os.getuid()}:{os.getgid()}',
              '-e', 'DISPLAY', '-e', 'NVIDIA_DRIVER_CAPABILITIES=all', '-e', 'OMNICLIENT_HUB_MODE=disabled',
              '-e', 'HOME=/tmp/so101-home', '-e', 'USER=so101', '-e', 'LOGNAME=so101', '-e', 'XAUTHORITY=/tmp/typing.xauthority',

@@ -20,7 +20,7 @@ for cache in nv_shadercache texturecache DerivedDataCache; do
   mkdir -p "$render_output/.renderer-cache/$cache"
   cache_mounts+=(-v "$render_output/.renderer-cache/$cache:/opt/ovrtx/lib/python3.12/site-packages/ovrtx/bin/cache/$cache")
 done
-docker run --rm --gpus "device=${SO101_RENDER_GPU:-0}" --ipc=host \
+docker run --cap-drop=ALL --security-opt=no-new-privileges --rm --gpus "device=${SO101_RENDER_GPU:-0}" --ipc=private --shm-size=16g \
   --user "$(id -u):$(id -g)" -e HOME=/results/.renderer-home -e USER=so101 -e LOGNAME=so101 \
   -e OMNICLIENT_HUB_MODE=disabled -e NVIDIA_DRIVER_CAPABILITIES=all \
   -v "$render_output:/results" "${cache_mounts[@]}" \

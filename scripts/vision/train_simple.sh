@@ -31,7 +31,8 @@ if ! docker image inspect so101-typing-public:dev >/dev/null 2>&1; then
   ./so101 build
 fi
 docker build -f docker/vision-ppo.Dockerfile -t so101-vision-simple:dev .
-docker run --rm --init --gpus "device=${SO101_TRAIN_GPU:-0}" --ipc=host \
+docker run --cap-drop=ALL --security-opt=no-new-privileges --rm --init --gpus "device=${SO101_TRAIN_GPU:-0}" --ipc=private \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp -e USER=so101 -e LOGNAME=so101 \
   --shm-size=16g --no-healthcheck \
   -e NVIDIA_DRIVER_CAPABILITIES=all -e OMP_NUM_THREADS=8 \
   -v "$simple_root:/repo:ro" -v "$simple_output:$simple_output" \

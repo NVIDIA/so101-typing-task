@@ -80,7 +80,7 @@ def ensure_image(image, plan=False, force=False):
 
 
 def docker(gpu, image, script, options):
-    return ['docker','run','--rm','--init','--gpus',f'device={gpu}','--ipc=private','--shm-size=16g',
+    return ['docker','run','--cap-drop=ALL','--security-opt=no-new-privileges','--rm','--init','--gpus',f'device={gpu}','--ipc=private','--shm-size=16g',
             '--user',f'{os.getuid()}:{os.getgid()}',
             '-e','HOME=/tmp','-e','USER=so101','-e','LOGNAME=so101',
             '-e','OMNICLIENT_HUB_MODE=disabled',
@@ -125,7 +125,7 @@ def debug(args):
         authority = Path(os.environ.get('XAUTHORITY', f'/run/user/{os.getuid()}/gdm/Xauthority'))
         checks['display'] = {'ok':bool(os.environ.get('DISPLAY')) and authority.is_file(), 'detail':str(authority)}
     if checks['docker']['ok']:
-        command = ['docker','run','--rm','--gpus',f'device={args.gpu}',args.image,'-c',
+        command = ['docker','run','--cap-drop=ALL','--security-opt=no-new-privileges','--rm','--gpus',f'device={args.gpu}',args.image,'-c',
                    'import torch,ovrtx,ovstage; from pathlib import Path; '
                    'assert torch.cuda.is_available(); '
                    'assert Path("/opt/so101/assets/workshop_so101.usdc").is_file(); '
