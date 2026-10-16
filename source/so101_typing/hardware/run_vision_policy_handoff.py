@@ -312,6 +312,7 @@ def main() -> int:
         print(f'ERROR: {summary["error"]}',file=sys.stderr,flush=True)
         return 1
     finally:
+        cleanup_failed=False
         if robot is not None:
             try:
                 if torque_enabled:
@@ -321,13 +322,19 @@ def main() -> int:
                     observed=robot.bus.sync_read('Torque_Enable',list(ALL_MOTOR_NAMES),normalize=False,num_retry=3)
                     result={'torque_enable_after':observed,'torque_off_verified':observed==dict.fromkeys(ALL_MOTOR_NAMES,0)}
                 summary['post_eval_cleanup']=result
-                if not result.get('torque_off_verified'):
-                    summary['status']='cleanup_failed'
+                cleanup_failed=bool(result.get('home_error') or result.get('hold_error')
+                                    or not result.get('torque_off_verified'))
             except BaseException as exc:
                 summary['post_eval_cleanup_error']=f'{type(exc).__name__}: {exc}'
-                summary['status']='cleanup_failed'
+                cleanup_failed=True
             finally:
-                robot.disconnect()
+                try:
+                    robot.disconnect()
+                except BaseException as exc:
+                    summary['disconnect_error']=f'{type(exc).__name__}: {exc}'
+                    cleanup_failed=True
+        if cleanup_failed:
+            summary['status']='cleanup_failed'
         if (out_dir/'cameras'/'wrist.mp4').is_file():
             try:
                 summary['realtime_videos']=retime_cameras(out_dir/'cameras', names=('wrist',) if args.no_external_camera else ('wrist','external'))
@@ -336,6 +343,8 @@ def main() -> int:
         summary['ended_unix_ns']=time.time_ns()
         append_jsonl(log,summary)
         (out_dir/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+        if cleanup_failed:
+            raise RuntimeError('post-evaluation return home or follower torque-off verification failed; see summary.json')
 
 
 if __name__=='__main__':
