@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: '3.12'
       - name: Check public source boundary
         run: python3 scripts/check_public_release.py
       - name: Check Python syntax
@@ -14,6 +17,7 @@ jobs:
       - name: Install host test dependencies
         run: |
           python3 -m pip install pytest==8.4.2 pytest-subtests==0.14.2 numpy==2.3.1 scipy==1.17.0 PyYAML==6.0.2
+          python3 -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.11.0+cpu
           python3 -m pip install --no-deps --editable .
       - name: Validate CLI and deployment contracts without hardware
         run: python3 -m pytest -q tests
