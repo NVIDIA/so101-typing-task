@@ -61,11 +61,12 @@ def main():
             (renderer/cache_name).mkdir(exist_ok=True)
         container=train_name if gpu==0 else eval_name
         docker('rm',container,check=False)
-        command=['run','-d','--name',container,'--gpus',f'device={gpu}', '--ipc=host',
-            '--shm-size=16g','--no-healthcheck','--log-opt','max-size=50m','--log-opt','max-file=4',
+        command=['run','--cap-drop=ALL','--security-opt=no-new-privileges','-d','--name',container,'--gpus',f'device={gpu}', '--ipc=private',
+            '--shm-size=16g','--user',f'{os.getuid()}:{os.getgid()}',
+            '-e','HOME=/tmp','-e','USER=so101','-e','LOGNAME=so101','--no-healthcheck','--log-opt','max-size=50m','--log-opt','max-file=4',
             '-e','NVIDIA_DRIVER_CAPABILITIES=all','-e','OMP_NUM_THREADS=8',
             '-v',f'{ROOT}:/repo:ro','-v',f'{out}:{inside(out)}',
-            '-v',f'{cache}:/root/.cache',
+            '-v',f'{cache}:/tmp/.cache',
             *[item for cache_name in ('nv_shadercache','texturecache','DerivedDataCache')
               for item in ('-v',f'{renderer}/{cache_name}:/opt/vision/lib/python3.12/site-packages/ovrtx/bin/cache/{cache_name}')],
             image,f'/workspace/isaaclab/scripts/vision/{script}.py','--headless',

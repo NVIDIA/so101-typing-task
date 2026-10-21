@@ -27,7 +27,7 @@ def load_teacher(obs, path, device):
     config.pop('class_name')
     config['distribution_cfg']={'class_name':'BetaDistribution','action_range':[-1.,1.]}
     teacher=MLPModel(obs, {'teacher':['policy']}, 'teacher',5,**config).to(device)
-    checkpoint=torch.load(path,map_location=device,weights_only=False)
+    checkpoint=torch.load(path,map_location=device,weights_only=True)
     teacher.load_state_dict(checkpoint['actor_state_dict'])
     teacher.eval().requires_grad_(False)
     return teacher,checkpoint

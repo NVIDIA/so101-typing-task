@@ -32,7 +32,7 @@ def main():
     torch.manual_seed(124)
     cfg = runner_config()['actor'].copy()
     cfg.pop('class_name')
-    checkpoint = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
+    checkpoint = torch.load(args.checkpoint, map_location='cpu', weights_only=True)
     dim = int(checkpoint['actor_state_dict']['obs_normalizer._mean'].shape[-1])
     if dim not in (45, 57):
         raise ValueError(f'Unsupported proprio dimension: {dim}')
@@ -40,7 +40,6 @@ def main():
     n = len(characters)
     obs = TensorDict({'proprio': torch.zeros(1,dim), 'rgb': torch.zeros(1,6,120,160)}, batch_size=[1])
     model = CNNModel(obs, {'actor':['proprio','rgb']}, 'actor', 5, **cfg)
-    checkpoint = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
     model.load_state_dict(checkpoint['actor_state_dict'], strict=True)
     model.eval().requires_grad_(False)
     exported = torch.jit.script(VisionActor(model).eval())

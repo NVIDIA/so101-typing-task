@@ -20,6 +20,11 @@ copies. The remaining 55 files carry both notices: two modify corresponding
 ancestor files, and 53 are project-specific paths absent from that ancestor.
 This path classification does not exclude upstream-derived code within a file.
 
+`runtime/benchmark-runtime.patch` also adds the NVIDIA modification copyright
+to the 16 code files it modifies or adds under the Isaac Lab, Isaac Lab Newton,
+and DexSuite trees. Those paths and hashes are in
+[licenses/runtime-patch-source.json](licenses/runtime-patch-source.json).
+
 The runtime source ancestor is
 [`ooctipus/IsaacLab` at `6f991d4becf764b151e0a1c775561ddd9c406f72`](https://github.com/ooctipus/IsaacLab/tree/6f991d4becf764b151e0a1c775561ddd9c406f72).
 Its [license](https://github.com/ooctipus/IsaacLab/blob/6f991d4becf764b151e0a1c775561ddd9c406f72/LICENSE)
@@ -96,13 +101,12 @@ The pinned dataset card declares Apache-2.0. The SO-ARM100 attribution above
 also identifies the underlying robot design. This USD is downloaded during
 the build; the original model sources are linked above.
 
-Checkpoints and evaluation bundles fetched by
-`scripts/download_benchmark_artifacts.sh` are published separately in
-[`VigneshBhavan/so101-keyboard-typing-benchmark`](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark).
-The dataset card at the revision recorded in
-[docs/release/artifact_revision.json](docs/release/artifact_revision.json)
-does not declare a license for those artifacts. This repository's source
-license does not establish a license for the downloaded weights or data.
+`scripts/download_benchmark_artifacts.sh` does not download the separately
+published checkpoints and evaluation bundles in
+[`VigneshBhavan/so101-keyboard-typing-benchmark`](https://huggingface.co/datasets/VigneshBhavan/so101-keyboard-typing-benchmark)
+at revision `44d8ad43e2619e0d6e89528fea07f887de93678e`. That dataset card does
+not declare a license for those artifacts. This repository's source license
+does not establish one, so the download stays disabled until a license is recorded.
 
 ## Workshop SO-101 SysID USD
 

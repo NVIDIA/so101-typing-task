@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "source_ancestor": {
+    "repository": "https://github.com/ooctipus/IsaacLab",
+    "revision": "6f991d4becf764b151e0a1c775561ddd9c406f72"
+  },
+  "benchmark_snapshot": "1b8cb7e8176021685325724b62c41b1fe394c25a",
+  "patch": "runtime/benchmark-runtime.patch",
+  "comparison": "Hashes of the 16 code files modified or added by the runtime patch, before and after the NVIDIA modification copyright. The changelog fragment is not code and is excluded.",
+  "files": [
+    {
+      "path": "source/isaaclab/isaaclab/app/app_launcher.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab/isaaclab/app/app_launcher.py",
+      "before_notice_sha256": "928c3608c5f673e68ad736b2ada0f19c5cdb38cb3e73bce8324a04650301b358",
+      "sha256": "5c81bbd5c8fc3081637106fb26e66ec605f4acfd170e185842edff036f93909e"
+    },
+    {
+      "path": "source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py",
+      "before_notice_sha256": "338280233421be6996a082d0a9e73a7fb6ea37c8b87dd3034a7bb9705703b223",
+      "sha256": "8757c03bb0660772e860467516263b05f6ae1eef648b7bc07221e56a238756b7"
+    },
+    {
+      "path": "source/isaaclab/isaaclab/envs/manager_based_rl_env.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab/isaaclab/envs/manager_based_rl_env.py",
+      "before_notice_sha256": "3f76ebc63c00a8f5a8661da14539ba24825845d4463cd40659db3e095741c841",
+      "sha256": "ea78ce62c1b508601a47880c393ec4ad07b7fa3b3973d0108d3c94e0309d2df1"
+    },
+    {
+      "path": "source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py",
+      "before_notice_sha256": "05c1a7de1f5254b399572003bb8a18f71c47dc569a106f1e7f677b7134d4c73b",
+      "sha256": "c6c3561ff1b265ff3ff3dc80fa84e88dd14e458601563dfebfaf7f2e368dbe83"
+    },
+    {
+      "path": "source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi",
+      "before_notice_sha256": "1745707839f099c50bade1c4898cd276fe0e7a67e5dca4836cb42dd6ad90fdb2",
+      "sha256": "2eac26c7d49f30be978ad5baea03497b8f7f35bf432adac1562bd85a0abef1f2"
+    },
+    {
+      "path": "source/isaaclab_newton/isaaclab_newton/physics/debug_state_buffer.py",
+      "classification": "added",
+      "ancestor_path": null,
+      "before_notice_sha256": "624401219d04137aa62c9a2b72d7c6e2975936dc61505f82e0c0f8f59ae7a83a",
+      "sha256": "5e3812f5a853933c167aa6cd48dadd43657100b7410323e6090e150d1c4e7d13"
+    },
+    {
+      "path": "source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py",
+      "before_notice_sha256": "9b6392c992df62422175f7e44ab28a413c30363e270d76ea2ff6cab74795d6db",
+      "sha256": "37f124c8a38885c8d62506eb8300038da0b81086dd244c7ca993c5b6cbfa7342"
+    },
+    {
+      "path": "source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py",
+      "before_notice_sha256": "3fb68be14c089af3c77c0ba86f0cc99ae91534ffbe2688d55ffb9e5295356d7b",
+      "sha256": "8edbbd3b17c2aa616805b4ee39058480865bb167dc4ab918789e2c08e663807c"
+    },
+    {
+      "path": "source/isaaclab_newton/test/assets/test_articulation_viscous_friction.py",
+      "classification": "added",
+      "ancestor_path": null,
+      "before_notice_sha256": "0888aa94ae9da54a0c71313a5ef3e81c3de7ebf98957aabe0db22cba3a8291b2",
+      "sha256": "c6361b0f953eee2fbe5b5ff8a62b442708b39cf68621491e7947c21e6e7cb565"
+    },
+    {
+      "path": "source/isaaclab_newton/test/physics/test_debug_state_buffer.py",
+      "classification": "added",
+      "ancestor_path": null,
+      "before_notice_sha256": "6597ab3b78c35aa83adb1db234d39524de0c5b49f9c4627c6f675ced87973713",
+      "sha256": "0cc5f6754d99108d1b0d35f915c0e393cf8801998b8d99da52ce86ab9d81e807"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py",
+      "before_notice_sha256": "ef4748090911da5cb51db6874d6bd4df8c530c78428cfa9aefda7b4b60144f1e",
+      "sha256": "ecd0458384df5b197bbe424b5cd3c3575ce6458bc63efee71830d93c3664febf"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py",
+      "before_notice_sha256": "bdd46d2d06596322b81ba145065129ae4d2f2a16ce08032d7199b0526757aa1f",
+      "sha256": "7ef82f564d53b1916a69dd7661eefa194ff1258635853255ed8286a773db5510"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi",
+      "before_notice_sha256": "ee8c3a1bbeaa631a3520ea5f3379eb8600edc62bbc9d24134f3253c066f7b6a6",
+      "sha256": "0c0105d53fae60a7684cd68c6cff56bd55063796828e99242b88bea124fea009"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py",
+      "before_notice_sha256": "815f9f2819d8bef079ea814504df8fb0dfea71f042b513ffd714385554a45dfe",
+      "sha256": "1b54f9d932fbacf6c359120caeb22d19fcdf840e31d9e7c0449d4990daabde3f"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py",
+      "before_notice_sha256": "2cbeee9c72b1a3c2e0c5ac30ce0188dc9a63a106a894458d1d28cc74a845acdc",
+      "sha256": "df613d4079deb2048676f65144193f80fbd39735a5b9bc82dc5df4540a1693eb"
+    },
+    {
+      "path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py",
+      "classification": "modified",
+      "ancestor_path": "source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py",
+      "before_notice_sha256": "17646e75e60b394091bfe8272b7b980a263054e2528af9b3fc58bb385d44fc6e",
+      "sha256": "02e52732d8869c587406240587bf65d0c84629ccb3869c1339ef60b2cef417a1"
+    }
+  ]
+}

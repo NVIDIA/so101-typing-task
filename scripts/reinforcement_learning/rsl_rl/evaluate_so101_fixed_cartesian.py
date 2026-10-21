@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from so101_typing.checkpoints import load_runner_checkpoint
 import argparse
 import contextlib
 import hashlib
@@ -448,7 +449,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg) -> None:
                 for _ in range(6):
                     base_env.render()
             runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
-            runner.load(str(checkpoint))
+            load_runner_checkpoint(runner, str(checkpoint))
             policy = runner.get_inference_policy(device=env.unwrapped.device)
             command = env.unwrapped.command_manager.get_term("typing")
             bank, bank_sha256, target_histogram, target_descriptor = _build_target_bank(command, target_length)

@@ -1,0 +1,7 @@
+# NVIDIA binary wheels only; fetched exclusively from https://pypi.nvidia.com.
+# Other dependencies are resolved separately from PyPI.
+warp-lang==1.15.0.dev20260626 \
+    --hash=sha256:351cb3e0679767f29a7d1fd639537fe40f66fe9f29355d4d19c5cbde8959916d \
+    --hash=sha256:81b2328cc5bfafc70776cad651d99d28d280d3f544bd5e555400d1d379528de4 \
+    --hash=sha256:d87dc2f286372cbb2c1c66857e7b9ee62a9d485ecf01b193349ecb6f5b4d938c \
+    --hash=sha256:e43f8eedb80300bd4e024a50d2bf9b5177bb16a838d936f1d4a0a2499cf531e2

@@ -7,7 +7,11 @@ Benchmark source snapshot: `1b8cb7e8176021685325724b62c41b1fe394c25a`.
 The public source ancestor is fetched by the Dockerfile. The task source is
 already included in this repository. `benchmark-runtime.patch` carries the
 additional Isaac Lab / Newton integration and shared DexSuite changes required
-by that snapshot. It preserves upstream copyright and license headers.
+by that snapshot. It preserves upstream copyright and license headers, and adds
+`Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.`
+below those headers on each of the 16 modified or added code files. Those
+paths and hashes are in `licenses/runtime-patch-source.json`. The changelog
+fragment in the patch is not code.
 
 The patch was generated with `git diff PUBLIC_ANCESTOR BENCHMARK_SNAPSHOT` over:
 - `source/isaaclab`

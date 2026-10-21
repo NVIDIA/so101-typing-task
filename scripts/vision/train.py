@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Online OVRTX teacher warmup followed by asymmetric PPO; externally supervised."""
+from so101_typing.checkpoints import load_runner_checkpoint
 from runtime import parser, make_config, create_env
 from agent import runner_config, load_teacher
 from state import write_json
@@ -45,7 +46,7 @@ with launch_simulation(cfg,args):
     raw=env.unwrapped
     teacher, teacher_ckpt=load_teacher(env.get_observations(),args.teacher,'cuda:0')
     if args.checkpoint:
-        source=torch.load(args.checkpoint,map_location='cpu',weights_only=False)
+        source=torch.load(args.checkpoint,map_location='cpu',weights_only=True)
         source_actor=source['actor_state_dict']
         target_actor=runner.alg._raw_actor.state_dict()
         if source_actor['obs_normalizer._mean'].shape != target_actor['obs_normalizer._mean'].shape:
@@ -61,7 +62,7 @@ with launch_simulation(cfg,args):
                 'critic_initialized_from_phrase_teacher':True,
                 'wrist_cnn_weights_preserved':True})
         else:
-            runner.load(str(args.checkpoint),load_cfg={'actor':True,'critic':True,'optimizer':False,'iteration':True})
+            load_runner_checkpoint(runner, str(args.checkpoint),load_cfg={'actor':True,'critic':True,'optimizer':False,'iteration':True})
             runner.current_learning_iteration+=1
     else:
         runner.alg._raw_critic.load_state_dict(teacher_ckpt['critic_state_dict'])

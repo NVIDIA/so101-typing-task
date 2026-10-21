@@ -16,7 +16,8 @@ REFERENCE_PAIR = (
     '239d93c99cd282e9add019f4ac952407c97fde2879821103a2aa7bd7a307a15f',
     'd4766dacb28a4ffc0fc75efe8e5abed162e656b338b110e8d498cc808e31ef8b',
 )
-# Same immutable payload hashes as scripts/download_benchmark_artifacts.sh.
+# Same immutable payload hashes recorded in scripts/download_benchmark_artifacts.sh.
+# That script refuses to fetch them until the dataset card declares a license.
 RELEASED_ENVIRONMENTS = {
     REFERENCE_PAIR[0]: REFERENCE_PAIR[1],  # July AnchorBench 19k
     'cc7f128e15a282a6f2fcc68e97f67c2e6f81bf6e03347b6a3cbf0b9a02d072a4':

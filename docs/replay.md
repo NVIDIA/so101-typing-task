@@ -3,15 +3,18 @@
 The main command runs Newton physics with the selected policy observations,
 then opens the captured episode in an interactive RTX viewer. It does not
 connect to physical hardware. Vision policies use OVRTX wrist-camera images;
-the included state policy uses simulator state without image observations.
+the ISAAC LAB 3.0 state policy uses simulator state without image observations.
+This revision does not include the two selected checkpoints. Pass a checkpoint
+from a local training run. Provenance for the withheld files is in
+[models/README.md](../models/README.md).
 
 ```bash
-./so101 replay --model models/newton_vision/newton_ckpt.pt
-./so101 replay --model models/isaac_lab_state/isaac_lab_ckpt.pt
+./so101 replay --model /absolute/path/to/newton_ckpt.pt
+./so101 replay --model /absolute/path/to/isaac_lab_ckpt.pt
 # Save an MP4 without opening a window.
-./so101 replay --model models/newton_vision/newton_ckpt.pt --video
+./so101 replay --model /absolute/path/to/newton_ckpt.pt --video
 # Export the rollout without a viewer or video rendering.
-./so101 replay --model models/newton_vision/newton_ckpt.pt --no-viewer
+./so101 replay --model /absolute/path/to/newton_ckpt.pt --no-viewer
 ```
 
 Use `--gpu 1` for a second GPU, `--episodes N` for multiple episodes, or
@@ -27,7 +30,7 @@ Pass a vision checkpoint from a training run, keeping `environment.json`,
 `agent.json` and `run.json` beside it:
 
 ```bash
-scripts/vision/evaluate_policy.sh models/newton_vision/newton_ckpt.pt
+scripts/vision/evaluate_policy.sh /absolute/path/to/newton_ckpt.pt
 ```
 
 The launcher loads the saved actor and environment, evaluates one deterministic
@@ -49,7 +52,7 @@ typed result, failures, and aggregate success percentage. A single episode is a 
 
 ```bash
 # Export evaluation.json and all episode replays without opening a window.
-scripts/vision/evaluate_policy.sh models/newton_vision/newton_ckpt.pt \
+scripts/vision/evaluate_policy.sh /absolute/path/to/newton_ckpt.pt \
   --output output/vision_ppo/newton_eval --no-viewer
 ```
 
@@ -63,8 +66,9 @@ mounts. Use `--help` for options.
 ## State-policy viewer shortcuts
 
 `view_recorded_tabletop.sh`, `view_recorded_tabletop_rtx.sh`, and
-`view_frozen_scene.sh` now launch the included state checkpoint through
-`./so101 replay`. They accept its options, including `--output`, `--no-viewer`,
+`view_frozen_scene.sh` launch the ISAAC LAB 3.0 state checkpoint through
+`./so101 replay` when `models/isaac_lab_state/isaac_lab_ckpt.pt` is present
+locally. That file is not in this revision. They accept its options, including `--output`, `--no-viewer`,
 `--video`, and `--viewer-seconds`. Their former stationary-scene arguments no
 longer apply. Use `SO101_VIEW_GPU=1` or `--gpu 1` for a second GPU.
 

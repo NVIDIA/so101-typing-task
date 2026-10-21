@@ -47,7 +47,7 @@ if [[ -z "${SO101_EVAL_IMAGE:-}" ]]; then
 else
   docker image inspect "$policy_image" >/dev/null
 fi
-docker run --rm --init --gpus "device=${SO101_VIEW_GPU:-0}" --ipc=private --shm-size=16g \
+docker run --cap-drop=ALL --security-opt=no-new-privileges --rm --init --gpus "device=${SO101_VIEW_GPU:-0}" --ipc=private --shm-size=16g \
   --user "$(id -u):$(id -g)" -e HOME=/tmp -e USER=so101 -e LOGNAME=so101 \
   -e OMNICLIENT_HUB_MODE=disabled \
   --tmpfs /opt/vision/lib/python3.12/site-packages/ovrtx/bin/cache/nv_shadercache:rw,mode=1777 \
@@ -62,7 +62,7 @@ echo "Evaluation and replay: $policy_output"
 if (( ! policy_view )); then exit 0; fi
 policy_home="$policy_root/output/.kit-policy-viewer"
 for name in home cache data logs; do mkdir -p "$policy_home/$name"; done
-exec docker run --rm --init --gpus "device=${SO101_VIEW_GPU:-0}" --ipc=private --shm-size=16g \
+exec docker run --cap-drop=ALL --security-opt=no-new-privileges --rm --init --gpus "device=${SO101_VIEW_GPU:-0}" --ipc=private --shm-size=16g \
   --user "$(id -u):$(id -g)" --no-healthcheck \
   -e DISPLAY -e NVIDIA_DRIVER_CAPABILITIES=all -e OMNICLIENT_HUB_MODE=disabled \
   -e HOME=/tmp/so101-home -e USER=so101 -e LOGNAME=so101 -e XAUTHORITY=/tmp/typing.xauthority \
