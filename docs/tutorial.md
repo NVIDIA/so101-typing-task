@@ -186,7 +186,9 @@ Each run saves:
 The implementation is [train_simple.py](../scripts/vision/train_simple.py);
 [train_simple.sh](../scripts/vision/train_simple.sh) only builds and runs Docker.
 Generated checkpoints, recordings, telemetry logs and reports remain under
-ignored `output/`. The two selected checkpoints under `models/` are explicit release exceptions.
+ignored `output/`. This revision does not track model weights. Provenance for
+the withheld NEWTON and ISAAC LAB 3.0 checkpoints is in
+[models/README.md](../models/README.md).
 
 The original state-policy setup is covered in [training documentation](release/TRAINING.md) and
 [hardware preparation](release/HARDWARE_PREPARATION.md).

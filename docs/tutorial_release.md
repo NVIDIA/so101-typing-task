@@ -1,9 +1,10 @@
 # Distributing the tutorial and selected checkpoints
 
 The repository contains source, configurations, documentation and manifests.
-The two selected NEWTON vision and ISAAC LAB 3.0 state checkpoints under
-`models/`, with their JSON metadata, are tracked.
-All other generated weights, recordings, reports and local profiles stay ignored.
+JSON metadata for the NEWTON vision and ISAAC LAB 3.0 state checkpoints stays
+under `models/`. The weight files are not tracked. Product Legal request 2132
+is still in review; see [models/README.md](../models/README.md).
+Generated weights, recordings, reports and local profiles stay ignored.
 The setup and bundle tools never upload files. Existing downloaded artifacts are
 not copied into image build contexts (`.dockerignore`).
 
@@ -80,7 +81,7 @@ is not included in a portable model bundle.
    that machine's calibrated mapping and rest pose.
 6. Record tested OS, GPU, driver, peak memory, image sizes and first/warm startup
    timings. Do not infer minimum requirements from a large workstation GPU.
-7. Check `git diff --cached --name-only`: only the two selected release checkpoints are allowed; no other weights, archives, local profiles,
+7. Check `git diff --cached --name-only`: no weights, archives, local profiles,
    output logs, videos, PDFs, or PowerPoint files belong in the source commit.
 
 The existing source checks remain in place; this change adds no publishing job

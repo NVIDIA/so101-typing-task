@@ -15,12 +15,10 @@ __pycache__/
 build/
 dist/
 
-# Ignore generated weights; the two selected release checkpoints are explicitly included.
+# Generated and release weights stay out of Git until Product Legal approves
+# checkpoint terms. See models/README.md.
 *.pt
 *.pth
 *.onnx
 *.safetensors
 *.ckpt
-
-!models/newton_vision/newton_ckpt.pt
-!models/isaac_lab_state/isaac_lab_ckpt.pt

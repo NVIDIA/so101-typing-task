@@ -72,34 +72,12 @@ def run_download(mirror, destination, *flags):
 
 
 @pytest.mark.parametrize('flag', [None, '--calibrated', '--historical', '--all'])
-def test_selects_complete_bundle_and_checksums(mirror, tmp_path, flag):
+def test_refuses_unlicensed_benchmark_downloads(mirror, tmp_path, flag):
     destination = tmp_path / 'download'
     result = run_download(mirror, destination, *([flag] if flag else []))
-    assert result.returncode == 0, result.stderr
-    all_paths = mirror[2]
-    expected = (all_paths if flag == '--all' else HISTORICAL if flag == '--historical'
-                else {path for path in all_paths if path.startswith(RELEASE)})
-    downloaded = {str(path.relative_to(destination)) for path in destination.rglob('*') if path.is_file()}
-    assert downloaded == expected | {'DOWNLOAD_SHA256SUMS'}
-    checksums = (destination / 'DOWNLOAD_SHA256SUMS').read_text().splitlines()
-    assert {line.split('  ', 1)[1] for line in checksums} == expected
-    for path in downloaded:
-        assert (destination / path).stat().st_mode & 0o777 == 0o644
-    verified = subprocess.run(['sha256sum', '-c', 'DOWNLOAD_SHA256SUMS'], cwd=destination,
-                              text=True, capture_output=True)
-    assert verified.returncode == 0, verified.stderr
-
-
-def test_rejects_corrupt_release_payload(mirror, tmp_path):
-    relative = next(path for path in mirror[2] if path.startswith(RELEASE))
-    (mirror[1] / relative).write_bytes(b'corrupt')
-    destination = tmp_path / 'download'
-    result = run_download(mirror, destination)
-    assert result.returncode != 0
-    assert 'checksum mismatch' in result.stderr
-    assert not (destination / relative).exists()
-    assert not (destination / 'DOWNLOAD_SHA256SUMS').exists()
-    assert not list(destination.rglob('*.partial.*'))
+    assert result.returncode == 1, result.stderr
+    assert 'does not declare a license' in result.stderr
+    assert not destination.exists()
 
 
 @pytest.mark.parametrize('flags', list(itertools.combinations(['--all', '--calibrated', '--historical'], 2)))

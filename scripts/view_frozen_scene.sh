@@ -6,5 +6,10 @@
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
-exec ./so101 replay --model models/isaac_lab_state/isaac_lab_ckpt.pt \
+model=models/isaac_lab_state/isaac_lab_ckpt.pt
+if [[ ! -f "$model" ]]; then
+  echo "ERROR: $model is not in this revision. Product Legal has not approved checkpoint release terms. See models/README.md." >&2
+  exit 1
+fi
+exec ./so101 replay --model "$model" \
   --gpu "${SO101_VIEW_GPU:-0}" "$@"

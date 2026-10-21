@@ -24,10 +24,11 @@ see the [reference comparison](docs/fixtures/physical_reference_20260915.md#phys
 
 The September **`model_2498.pt`** uses AnchorBench actuators and Newton MJWarp.
 It completed one supervised physical **NEWTON** trial with this setup.
-After `./so101 build`, download the complete bundle and view it in simulation:
+`./so101 download` does not retrieve that bundle. The pinned dataset card does
+not declare a license for it. Once a local copy is available under a declared
+license, view it in simulation:
 
 ```bash
-./so101 download
 bundle=.artifacts/so101-keyboard-typing-benchmark/releases/calibrated-20260917
 ./so101 video --actuator anchorbench --stage transit15 \
   --checkpoint "$bundle/model_2498.pt" \

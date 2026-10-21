@@ -63,9 +63,16 @@ def test_runner_rejects_executable_pickle(malicious_checkpoint, monkeypatch):
 
 
 @pytest.mark.parametrize('model', ('newton_vision/newton_ckpt.pt', 'isaac_lab_state/isaac_lab_ckpt.pt'))
+def test_unapproved_release_checkpoints_are_withheld(model):
+    assert not (ROOT / 'models' / model).is_file()
+
+
+@pytest.mark.parametrize('model', ('newton_vision/newton_ckpt.pt', 'isaac_lab_state/isaac_lab_ckpt.pt'))
 def test_bundled_checkpoint_safe_load_preserves_tensor_state(model, monkeypatch):
-    monkeypatch.setenv('TORCH_FORCE_WEIGHTS_ONLY_LOAD', '0')
     path = ROOT / 'models' / model
+    if not path.is_file():
+        pytest.skip('checkpoint withheld until Product Legal approves release terms')
+    monkeypatch.setenv('TORCH_FORCE_WEIGHTS_ONLY_LOAD', '0')
     expected = torch.load(path, map_location='cpu', weights_only=True)
     actual, kwargs = load_runner_checkpoint(
         _UnsafeThirdPartyRunner(), path, load_cfg={'actor': True, 'optimizer': False})

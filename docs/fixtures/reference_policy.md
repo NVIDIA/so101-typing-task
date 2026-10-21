@@ -1,14 +1,14 @@
 # Historical July checkpoint
 
-The original AnchorBench `model_19000.pt` remains available for simulation and
+The original AnchorBench `model_19000.pt` is the historical simulation and
 benchmark reference. Its **89/100 physical six-letter trials** apply to the
 original robot and mat-supported fixture. New users should follow the
 [September setup and calibration workflow](../../README.md#workflow-1-train-for-your-setup).
 
-Download the historical checkpoint, matching environment and evaluation report:
+`./so101 download --historical` does not retrieve this checkpoint. The pinned
+dataset card does not declare a license for it. With a local copy:
 
 ```bash
-./so101 download --historical
 ARTIFACTS="$PWD/.artifacts/so101-keyboard-typing-benchmark"
 ./so101 video --actuator anchorbench --stage transit15 \
   --checkpoint "$ARTIFACTS/checkpoints/mjwarp-anchorbench-19k/model_19000.pt" \

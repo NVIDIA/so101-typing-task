@@ -1,12 +1,24 @@
-# Included policy checkpoints
+# Policy checkpoints
+
+The NEWTON vision checkpoint and the ISAAC LAB 3.0 state checkpoint are not in
+this revision. Product Legal request 2132 (nSpect program NSPECT-EMGS-BIEV,
+version `gtc_berlin`) is still in review. The proposed terms are the
+NVIDIA Open Model License. The BSD-3-Clause terms in this repository cover
+the source and do not license these weights.
+
+Elena Shrestha trained both policies. Neither checkpoint starts from a
+third-party pretrained weight file or a third-party teacher model. Each
+directory below keeps the agent, environment, run, and evaluation records.
+The weight files themselves stay out of Git until those release terms are
+approved. Replay a checkpoint from a local training run with
+`./so101 replay --model /absolute/path/to/checkpoint.pt`.
 
 | Directory | Policy input | Target | Recorded simulation result |
 | --- | --- | --- | --- |
 | [newton_vision](newton_vision/) | Wrist RGB and proprioception | NEWTON | 1,016/1,024 |
 | [isaac_lab_state](isaac_lab_state/) | Simulator state | ISAAC LAB 3.0 | 256/256 |
 
-Each directory keeps its weights, agent/environment/run settings, evaluation
-evidence and replay camera together. The evaluation protocols differ.
+The evaluation protocols differ.
 
 ## NEWTON vision-based PPO
 
@@ -20,22 +32,15 @@ This is the highest recorded NEWTON student success rate in the available
 supervisor histories; checkpoints were evaluated with different seed batches.
 The evaluation does not establish the same success rate on physical hardware.
 
-```bash
-./so101 setup
-./so101 replay --model models/newton_vision/newton_ckpt.pt
-```
-
 Keep `environment.json`, `agent.json`, `run.json`, and the camera preset beside
-the weights. `evaluation.json` records the original evaluation and SHA256.
-`run.json` provides portable replay settings and source provenance; original
-machine-specific teacher/output paths are not runtime dependencies.
-The checkpoint retains actor, critic and optimizer state. Replay loads the
-actor/critic without restoring the optimizer and does not require the teacher.
+the weights when replaying a local copy. `evaluation.json` records the original
+evaluation and SHA256. `run.json` provides portable replay settings and source
+provenance; original machine-specific teacher/output paths are not runtime
+dependencies. The checkpoint retains actor, critic and optimizer state. Replay
+loads the actor/critic without restoring the optimizer and does not require the
+teacher.
 
 SHA256: `d6d78ca17dcb943d37bdc0dfdb19f4abfdd751e612831abde54c44f39d725d21`
-
-This checkpoint is stored directly in Git, not through Git LFS. Generated models
-remain ignored; only the two selected checkpoints are weight-file exceptions.
 
 ## ISAAC LAB 3.0 state-based PPO
 
@@ -46,11 +51,7 @@ This is a different evaluation protocol from the NEWTON vision result.
 The actor consumes 22 simulator-state values and produces five joint actions;
 it does not consume wrist images. The RTX viewer renders the recorded motion.
 
-```bash
-./so101 replay --model models/isaac_lab_state/isaac_lab_ckpt.pt
-```
-
-Each model subfolder contains the checkpoint, JSON versions of its original YAML
+Each model subfolder contains JSON versions of its original YAML
 agent/environment settings, replay target, camera preset, and evaluation report.
 The evaluator restores these state-policy settings without adding vision-domain
 randomization. The vision hardware deployment command rejects state checkpoints.

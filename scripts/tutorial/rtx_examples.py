@@ -29,7 +29,11 @@ def main():
     authority = Path(os.environ.get('XAUTHORITY', f'/run/user/{os.getuid()}/gdm/Xauthority'))
     if not args.no_viewer and not args.plan and (not os.environ.get('DISPLAY') or not authority.is_file()):
         p.error('An X11 display is required; use --no-viewer to export only')
-    command = [ROOT / 'so101', 'replay', '--model', 'models/isaac_lab_state/isaac_lab_ckpt.pt',
+    model = ROOT / 'models/isaac_lab_state/isaac_lab_ckpt.pt'
+    if not args.plan and not model.is_file():
+        p.error('models/isaac_lab_state/isaac_lab_ckpt.pt is not in this revision. '
+                'Product Legal has not approved checkpoint release terms. See models/README.md.')
+    command = [ROOT / 'so101', 'replay', '--model', model,
                '--no-viewer', '--output', output, '--gpu', str(args.gpu)]
     execute(command, args.plan)
     scene = output / 'grid.usdc'

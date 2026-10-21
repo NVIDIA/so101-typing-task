@@ -1,8 +1,15 @@
 diff --git a/source/isaaclab/isaaclab/app/app_launcher.py b/source/isaaclab/isaaclab/app/app_launcher.py
-index fdb3f3219..b0563f0a3 100644
+index fdb3f32..fd80d5d 100644
 --- a/source/isaaclab/isaaclab/app/app_launcher.py
 +++ b/source/isaaclab/isaaclab/app/app_launcher.py
-@@ -43,6 +43,32 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -43,6 +44,32 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
  logging.getLogger("h5py").setLevel(logging.WARNING)
  
  
@@ -36,10 +43,17 @@ index fdb3f3219..b0563f0a3 100644
      """Custom action to track if an argument was explicitly passed by the user."""
  
 diff --git a/source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py b/source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py
-index 20e6dccf7..2342bff9b 100644
+index 20e6dcc..f6abbfe 100644
 --- a/source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py
 +++ b/source/isaaclab/isaaclab/devices/keyboard/se3_keyboard.py
-@@ -78,7 +78,7 @@ class Se3Keyboard(DeviceBase):
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -78,7 +79,7 @@ class Se3Keyboard(DeviceBase):
          # bindings for keyboard to command
          self._create_key_bindings()
          # command buffers
@@ -48,7 +62,7 @@ index 20e6dccf7..2342bff9b 100644
          self._delta_pos = np.zeros(3)  # (x, y, z)
          self._delta_rot = np.zeros(3)  # (roll, pitch, yaw)
          # dictionary for additional callbacks
-@@ -109,7 +109,7 @@ class Se3Keyboard(DeviceBase):
+@@ -109,7 +110,7 @@ class Se3Keyboard(DeviceBase):
  
      def reset(self):
          # default flags
@@ -58,10 +72,17 @@ index 20e6dccf7..2342bff9b 100644
          self._delta_rot = np.zeros(3)  # (roll, pitch, yaw)
  
 diff --git a/source/isaaclab/isaaclab/envs/manager_based_rl_env.py b/source/isaaclab/isaaclab/envs/manager_based_rl_env.py
-index d06c77a00..01b66e097 100644
+index d06c77a..d296765 100644
 --- a/source/isaaclab/isaaclab/envs/manager_based_rl_env.py
 +++ b/source/isaaclab/isaaclab/envs/manager_based_rl_env.py
-@@ -90,6 +90,18 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -90,6 +91,18 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
          # store the render mode
          self.render_mode = render_mode
  
@@ -80,22 +101,18 @@ index d06c77a00..01b66e097 100644
          # initialize data and constants
          # -- set the framerate of the gym video recorder wrapper so that the playback speed of the
          #    produced video matches the simulation
-diff --git a/source/isaaclab_newton/changelog.d/anchored_model.rst b/source/isaaclab_newton/changelog.d/anchored_model.rst
-new file mode 100644
-index 000000000..342a6cb40
---- /dev/null
-+++ b/source/isaaclab_newton/changelog.d/anchored_model.rst
-@@ -0,0 +1,5 @@
-+Changed
-+^^^^^^^
-+
-+* Changed Newton articulations to write configured actuator viscous friction
-+  values into MuJoCo passive damping when the solver exposes that field.
 diff --git a/source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py b/source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py
-index 8d7d9e5ef..6340b8c73 100644
+index 8d7d9e5..9d1ee96 100644
 --- a/source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py
 +++ b/source/isaaclab_newton/isaaclab_newton/assets/articulation/articulation.py
-@@ -12,6 +12,7 @@ import importlib.util
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -12,6 +13,7 @@ import importlib.util
  import logging
  import warnings
  from collections.abc import Sequence
@@ -103,7 +120,7 @@ index 8d7d9e5ef..6340b8c73 100644
  from typing import TYPE_CHECKING
  
  import numpy as np
-@@ -52,6 +53,93 @@ if TYPE_CHECKING:
+@@ -52,6 +54,93 @@ if TYPE_CHECKING:
  logger = logging.getLogger(__name__)
  
  
@@ -197,7 +214,7 @@ index 8d7d9e5ef..6340b8c73 100644
  class Articulation(BaseArticulation):
      """An articulation asset class.
  
-@@ -3869,6 +3957,14 @@ class Articulation(BaseArticulation):
+@@ -3869,6 +3958,14 @@ class Articulation(BaseArticulation):
              joint_friction_coeff=actuator.friction,
              joint_ids=actuator.joint_indices,
          )
@@ -213,10 +230,17 @@ index 8d7d9e5ef..6340b8c73 100644
          if properties_only:
              return
 diff --git a/source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi b/source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi
-index 46cc26e93..f83e0ccb1 100644
+index 46cc26e..c2155ae 100644
 --- a/source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi
 +++ b/source/isaaclab_newton/isaaclab_newton/physics/__init__.pyi
-@@ -13,6 +13,7 @@ __all__ = [
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -13,6 +14,7 @@ __all__ = [
      "MPMSolverCfg",
      "NewtonMJWarpManager",
      "MJWarpSolverCfg",
@@ -224,7 +248,7 @@ index 46cc26e93..f83e0ccb1 100644
      "NewtonCfg",
      "NewtonCollisionPipelineCfg",
      "NewtonManager",
-@@ -33,6 +34,7 @@ from .mpm_manager_cfg import MPMSolverCfg
+@@ -33,6 +35,7 @@ from .mpm_manager_cfg import MPMSolverCfg
  from .newton_collision_cfg import HydroelasticSDFCfg, NewtonCollisionPipelineCfg
  from .newton_manager import NewtonManager
  from .newton_manager_cfg import (
@@ -234,12 +258,13 @@ index 46cc26e93..f83e0ccb1 100644
      NewtonSolverCfg,
 diff --git a/source/isaaclab_newton/isaaclab_newton/physics/debug_state_buffer.py b/source/isaaclab_newton/isaaclab_newton/physics/debug_state_buffer.py
 new file mode 100644
-index 000000000..84de878dc
+index 0000000..55cafba
 --- /dev/null
 +++ b/source/isaaclab_newton/isaaclab_newton/physics/debug_state_buffer.py
-@@ -0,0 +1,728 @@
+@@ -0,0 +1,729 @@
 +# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 +# All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +
@@ -967,10 +992,17 @@ index 000000000..84de878dc
 +        self._write_idx = 0
 +        self._size = 0
 diff --git a/source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py b/source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py
-index a321c67aa..157023b8f 100644
+index a321c67..98f1c2a 100644
 --- a/source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py
 +++ b/source/isaaclab_newton/isaaclab_newton/physics/newton_manager.py
-@@ -50,6 +50,7 @@ from isaaclab.utils.timer import Timer
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -50,6 +51,7 @@ from isaaclab.utils.timer import Timer
  from isaaclab_newton.cloner.newton_clone_utils import replicate_builder_mapping
  from isaaclab_newton.physics.visualization_builder import build_visualization_builder_from_stage_envs
  
@@ -978,7 +1010,7 @@ index a321c67aa..157023b8f 100644
  from .newton_manager_cfg import NewtonCfg, NewtonShapeCfg
  
  if TYPE_CHECKING:
-@@ -268,6 +269,11 @@ class NewtonManager(PhysicsManager):
+@@ -268,6 +270,11 @@ class NewtonManager(PhysicsManager):
      _pending_extended_contact_attributes: set[str] = set()
      _report_contacts: bool = False
  
@@ -990,7 +1022,7 @@ index a321c67aa..157023b8f 100644
      # Per-world reset masks (allocated in start_simulation, consumed in step/forward).
      _world_reset_mask: wp.array | None = None  # (num_envs,) wp.bool — for SolverKamino.reset(world_mask=...)
      _fk_reset_mask: wp.array | None = None  # (articulation_count,) wp.bool — for eval_fk(mask=...)
-@@ -719,6 +725,12 @@ class NewtonManager(PhysicsManager):
+@@ -719,6 +726,12 @@ class NewtonManager(PhysicsManager):
          # Reconcile authored state after any mutating graph warmup and before the requested physics step.
          cls.forward()
  
@@ -1003,7 +1035,7 @@ index a321c67aa..157023b8f 100644
          physics_dt = cls._solver_dt * cls._num_substeps
          use_graph = cfg is not None and cfg.use_cuda_graph and cls._graph is not None and "cuda" in device  # type: ignore[union-attr]
  
-@@ -744,6 +756,26 @@ class NewtonManager(PhysicsManager):
+@@ -744,6 +757,26 @@ class NewtonManager(PhysicsManager):
                      cls._simulate_physics_only()
              PhysicsManager._sim_time += physics_dt
  
@@ -1030,7 +1062,7 @@ index a321c67aa..157023b8f 100644
          if cls._usdrt_stage is not None:
              cls._mark_state_dirty()
          elif cls._particle_visual_prims:
-@@ -852,13 +884,92 @@ class NewtonManager(PhysicsManager):
+@@ -852,13 +885,92 @@ class NewtonManager(PhysicsManager):
          NewtonManager._pending_extended_state_attributes = set()
          NewtonManager._pending_extended_contact_attributes = set()
          NewtonManager._views = []
@@ -1123,7 +1155,7 @@ index a321c67aa..157023b8f 100644
      @classmethod
      def create_builder(cls, up_axis: str | None = None, **kwargs) -> ModelBuilder:
          """Create a :class:`ModelBuilder` configured with default settings.
-@@ -1200,6 +1311,25 @@ class NewtonManager(PhysicsManager):
+@@ -1200,6 +1312,25 @@ class NewtonManager(PhysicsManager):
          NewtonManager._world_reset_mask = wp.zeros(cls._model.world_count, dtype=wp.bool, device=device)
          NewtonManager._fk_reset_mask = wp.zeros(cls._model.articulation_count, dtype=wp.bool, device=device)
  
@@ -1149,7 +1181,7 @@ index a321c67aa..157023b8f 100644
          logger.info("Dispatching PHYSICS_READY callbacks")
          cls.dispatch_event(PhysicsEvent.PHYSICS_READY)
  
-@@ -1726,22 +1856,72 @@ class NewtonManager(PhysicsManager):
+@@ -1726,22 +1857,72 @@ class NewtonManager(PhysicsManager):
          # top-of-loop collide(), not this one.
          collide_mid_loop = collide_every > 0 and cls._needs_collision_pipeline and contacts is not None
  
@@ -1223,10 +1255,17 @@ index a321c67aa..157023b8f 100644
                      cls._collision_pipeline.collide(cls._state_0, contacts)
  
 diff --git a/source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py b/source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py
-index 019b1b0bd..1e904070d 100644
+index 019b1b0..0a07511 100644
 --- a/source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py
 +++ b/source/isaaclab_newton/isaaclab_newton/physics/newton_manager_cfg.py
-@@ -75,6 +75,96 @@ class NewtonShapeCfg:
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -75,6 +76,96 @@ class NewtonShapeCfg:
      gap: float = 0.01
      """Default per-shape contact gap [m]. Newton's upstream default is ``None``."""
  
@@ -1323,7 +1362,7 @@ index 019b1b0bd..1e904070d 100644
  
  @configclass
  class NewtonCfg(PhysicsCfg):
-@@ -186,6 +276,14 @@ class NewtonCfg(PhysicsCfg):
+@@ -186,6 +277,14 @@ class NewtonCfg(PhysicsCfg):
      ``"lbvh"`` / ``"sah"`` / ``"cubql"`` trade-off.
      """
  
@@ -1340,12 +1379,13 @@ index 019b1b0bd..1e904070d 100644
          # Refuse a user-set value: setting both is ambiguous and was
 diff --git a/source/isaaclab_newton/test/assets/test_articulation_viscous_friction.py b/source/isaaclab_newton/test/assets/test_articulation_viscous_friction.py
 new file mode 100644
-index 000000000..7cf25a6d5
+index 0000000..505085a
 --- /dev/null
 +++ b/source/isaaclab_newton/test/assets/test_articulation_viscous_friction.py
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,53 @@
 +# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 +# All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +
@@ -1398,12 +1438,13 @@ index 000000000..7cf25a6d5
 +    np.testing.assert_allclose(damping.assigned, [0.2, 0.0, 0.4, 0.0, 0.0, 0.6, 0.0, 0.8, 0.0, 0.0])
 diff --git a/source/isaaclab_newton/test/physics/test_debug_state_buffer.py b/source/isaaclab_newton/test/physics/test_debug_state_buffer.py
 new file mode 100644
-index 000000000..6e79b6a17
+index 0000000..aaa0f5b
 --- /dev/null
 +++ b/source/isaaclab_newton/test/physics/test_debug_state_buffer.py
-@@ -0,0 +1,410 @@
+@@ -0,0 +1,411 @@
 +# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
 +# All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 +#
 +# SPDX-License-Identifier: BSD-3-Clause
 +
@@ -1813,10 +1854,17 @@ index 000000000..6e79b6a17
 +if __name__ == "__main__":
 +    pytest.main([__file__, "-v", "--maxfail=1"])
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py
-index 9f7c074a7..c4a71880f 100644
+index 9f7c074..c1b4efa 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/adr_curriculum.py
-@@ -108,6 +108,15 @@ class CurriculumCfg:
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -108,6 +109,15 @@ class CurriculumCfg:
          },
      )
  
@@ -1833,10 +1881,17 @@ index 9f7c074a7..c4a71880f 100644
          func=mdp.modify_term_cfg,
          params={
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py
-index dc9fee906..e5ac8b3b8 100644
+index dc9fee9..dd923d8 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/dexsuite_env_cfg.py
-@@ -7,6 +7,8 @@ from dataclasses import MISSING
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -7,6 +8,8 @@ from dataclasses import MISSING
  
  from isaaclab_newton.physics import MJWarpSolverCfg, NewtonCfg, NewtonCollisionPipelineCfg, NewtonShapeCfg
  from isaaclab_physx.physics import PhysxCfg
@@ -1845,7 +1900,7 @@ index dc9fee906..e5ac8b3b8 100644
  
  import isaaclab.sim as sim_utils
  from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
-@@ -24,7 +26,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+@@ -24,7 +27,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
  from isaaclab.utils.configclass import configclass
  from isaaclab.utils.noise import UniformNoiseCfg as Unoise
  
@@ -1854,7 +1909,7 @@ index dc9fee906..e5ac8b3b8 100644
  
  from . import mdp
  from .adr_curriculum import CurriculumCfg
-@@ -46,7 +48,7 @@ OBJECT_PHYSICS = {
+@@ -46,7 +49,7 @@ OBJECT_PHYSICS = {
  
  @configclass
  class ObjectCfg(PresetCfg):
@@ -1863,7 +1918,7 @@ index dc9fee906..e5ac8b3b8 100644
          assets_cfg=[
              MeshCuboidCfg(size=(0.05, 0.1, 0.1), **OBJECT_PHYSICS),
              MeshCuboidCfg(size=(0.05, 0.05, 0.1), **OBJECT_PHYSICS),
-@@ -73,8 +75,9 @@ class ObjectCfg(PresetCfg):
+@@ -73,8 +76,9 @@ class ObjectCfg(PresetCfg):
          collision_props=sim_utils.CollisionPropertiesCfg(),
          mass_props=sim_utils.MassPropertiesCfg(mass=0.2),
      )
@@ -1874,7 +1929,7 @@ index dc9fee906..e5ac8b3b8 100644
          physics_material=RigidBodyMaterialCfg(static_friction=0.5),
          rigid_props=sim_utils.RigidBodyPropertiesCfg(
              solver_position_iteration_count=16,
-@@ -84,7 +87,6 @@ class ObjectCfg(PresetCfg):
+@@ -84,7 +88,6 @@ class ObjectCfg(PresetCfg):
          collision_props=sim_utils.CollisionPropertiesCfg(),
          mass_props=sim_utils.MassPropertiesCfg(mass=0.2),
      )
@@ -1882,7 +1937,7 @@ index dc9fee906..e5ac8b3b8 100644
  
  
  @configclass
-@@ -173,7 +175,7 @@ class ObservationsCfg:
+@@ -173,7 +176,7 @@ class ObservationsCfg:
          def __post_init__(self):
              self.enable_corruption = True
              self.concatenate_terms = True
@@ -1891,7 +1946,7 @@ index dc9fee906..e5ac8b3b8 100644
  
      @configclass
      class ProprioObsCfg(ObsGroup):
-@@ -197,7 +199,7 @@ class ObservationsCfg:
+@@ -197,7 +200,7 @@ class ObservationsCfg:
          def __post_init__(self):
              self.enable_corruption = True
              self.concatenate_terms = True
@@ -1900,7 +1955,7 @@ index dc9fee906..e5ac8b3b8 100644
  
      @configclass
      class PerceptionObsCfg(ObsGroup):
-@@ -215,7 +217,7 @@ class ObservationsCfg:
+@@ -215,7 +218,7 @@ class ObservationsCfg:
              self.concatenate_dim = 0
              self.concatenate_terms = True
              self.flatten_history_dim = True
@@ -1909,7 +1964,7 @@ index dc9fee906..e5ac8b3b8 100644
  
      # observation groups
      policy: PolicyCfg = PolicyCfg()
-@@ -345,7 +347,7 @@ class EventCfg:
+@@ -345,7 +348,7 @@ class EventCfg:
          func=mdp.reset_joints_by_offset,
          mode="reset",
          params={
@@ -1918,7 +1973,7 @@ index dc9fee906..e5ac8b3b8 100644
              "position_range": [-3, 3],
              "velocity_range": [0.0, 0.0],
          },
-@@ -365,14 +367,14 @@ class RewardsCfg:
+@@ -365,14 +368,14 @@ class RewardsCfg:
  
      action_rate_l2 = RewTerm(func=mdp.action_rate_l2_clamped, weight=-0.005)
  
@@ -1935,7 +1990,7 @@ index dc9fee906..e5ac8b3b8 100644
              "command_name": "object_pose",
              "align_asset_cfg": SceneEntityCfg("object"),
          },
-@@ -383,7 +385,7 @@ class RewardsCfg:
+@@ -383,7 +386,7 @@ class RewardsCfg:
          weight=4.0,
          params={
              "asset_cfg": SceneEntityCfg("robot"),
@@ -1944,7 +1999,7 @@ index dc9fee906..e5ac8b3b8 100644
              "command_name": "object_pose",
              "align_asset_cfg": SceneEntityCfg("object"),
          },
-@@ -394,14 +396,14 @@ class RewardsCfg:
+@@ -394,14 +397,14 @@ class RewardsCfg:
          weight=10,
          params={
              "asset_cfg": SceneEntityCfg("robot"),
@@ -1962,7 +2017,7 @@ index dc9fee906..e5ac8b3b8 100644
  
  
  @configclass
-@@ -413,12 +415,12 @@ class TerminationsCfg:
+@@ -413,12 +416,12 @@ class TerminationsCfg:
      object_out_of_bound = DoneTerm(
          func=mdp.out_of_bound,
          params={
@@ -1977,7 +2032,7 @@ index dc9fee906..e5ac8b3b8 100644
  
  
  @configclass
-@@ -435,7 +437,7 @@ class PhysicsCfg(PresetCfg):
+@@ -435,7 +438,7 @@ class PhysicsCfg(PresetCfg):
              njmax=300,
              nconmax=200,
              impratio=10.0,
@@ -1986,7 +2041,7 @@ index dc9fee906..e5ac8b3b8 100644
              update_data_interval=2,
              iterations=100,
              ls_iterations=15,
-@@ -444,7 +446,7 @@ class PhysicsCfg(PresetCfg):
+@@ -444,7 +447,7 @@ class PhysicsCfg(PresetCfg):
          ),
          collision_cfg=NewtonCollisionPipelineCfg(),
          default_shape_cfg=NewtonShapeCfg(),
@@ -1995,7 +2050,7 @@ index dc9fee906..e5ac8b3b8 100644
          debug_mode=False,
      )
      physx = default
-@@ -455,8 +457,8 @@ class DexsuiteReorientEnvCfg(ManagerBasedRLEnvCfg):
+@@ -455,8 +458,8 @@ class DexsuiteReorientEnvCfg(ManagerBasedRLEnvCfg):
      """Dexsuite reorientation task definition, also the base definition for derivative Lift task and evaluation task"""
  
      # Scene settings
@@ -2006,7 +2061,7 @@ index dc9fee906..e5ac8b3b8 100644
      # Basic settings
      observations: ObservationsCfg = ObservationsCfg()
      actions: ActionsCfg = ActionsCfg()
-@@ -495,6 +497,26 @@ class DexsuiteReorientEnvCfg(ManagerBasedRLEnvCfg):
+@@ -495,6 +498,26 @@ class DexsuiteReorientEnvCfg(ManagerBasedRLEnvCfg):
          self.commands.object_pose.position_only = False
          self.episode_length_s = 6.0
          self.is_finite_horizon = False
@@ -2034,10 +2089,17 @@ index dc9fee906..e5ac8b3b8 100644
          # simulation settings
          self.sim.dt = 1 / 120
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi
-index 7d81d6ca6..f1d2d13bb 100644
+index 7d81d6c..1fd4d2e 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/__init__.pyi
-@@ -20,6 +20,7 @@ __all__ = [
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -20,6 +21,7 @@ __all__ = [
      "orientation_command_error_tanh",
      "position_command_error_tanh",
      "success_reward",
@@ -2045,7 +2107,7 @@ index 7d81d6ca6..f1d2d13bb 100644
      "abnormal_robot_state",
      "out_of_bound",
  ]
-@@ -42,6 +43,7 @@ from .rewards import (
+@@ -42,6 +44,7 @@ from .rewards import (
      orientation_command_error_tanh,
      position_command_error_tanh,
      success_reward,
@@ -2054,10 +2116,17 @@ index 7d81d6ca6..f1d2d13bb 100644
  from .terminations import abnormal_robot_state, out_of_bound
  from isaaclab.envs.mdp import *
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py
-index 499b886ae..b0165e452 100644
+index 499b886..7338628 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/commands/pose_commands.py
-@@ -77,7 +77,8 @@ class ObjectUniformPoseCommand(CommandTerm):
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -77,7 +78,8 @@ class ObjectUniformPoseCommand(CommandTerm):
          self.pose_command_w = torch.zeros_like(self.pose_command_b)
          # -- metrics
          self.metrics["position_error"] = torch.zeros(self.num_envs, device=self.device)
@@ -2067,7 +2136,7 @@ index 499b886ae..b0165e452 100644
          from isaaclab.markers import VisualizationMarkers
  
          self.success_visualizer = VisualizationMarkers(self.cfg.success_visualizer_cfg)
-@@ -127,10 +128,10 @@ class ObjectUniformPoseCommand(CommandTerm):
+@@ -127,10 +129,10 @@ class ObjectUniformPoseCommand(CommandTerm):
              object_root_pose_w[:, 3:7],
          )
          self.metrics["position_error"] = torch.linalg.norm(pos_error, dim=-1)
@@ -2080,10 +2149,17 @@ index 499b886ae..b0165e452 100644
          if self.success_vis_asset is not None:
              self.success_visualizer.visualize(
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py
-index 9e8b084af..5b884a00f 100644
+index 9e8b084..1972a82 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/rewards.py
-@@ -8,6 +8,7 @@ from __future__ import annotations
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -8,6 +9,7 @@ from __future__ import annotations
  from collections.abc import Sequence
  from typing import TYPE_CHECKING
  
@@ -2091,7 +2167,7 @@ index 9e8b084af..5b884a00f 100644
  import torch
  
  from isaaclab.managers import ManagerTermBase, SceneEntityCfg
-@@ -30,6 +31,17 @@ def action_l2_clamped(env: ManagerBasedRLEnv) -> torch.Tensor:
+@@ -30,6 +32,17 @@ def action_l2_clamped(env: ManagerBasedRLEnv) -> torch.Tensor:
      return torch.sum(torch.square(env.action_manager.action), dim=1).clamp(-1000, 1000)
  
  
@@ -2110,10 +2186,17 @@ index 9e8b084af..5b884a00f 100644
      env: ManagerBasedRLEnv,
      std: float,
 diff --git a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py
-index 13fd1d9d3..d2e35fe73 100644
+index 13fd1d9..67fe8f4 100644
 --- a/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py
 +++ b/source/isaaclab_tasks/isaaclab_tasks/core/dexsuite/mdp/terminations.py
-@@ -25,8 +25,9 @@ if TYPE_CHECKING:
+@@ -1,5 +1,6 @@
+ # Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+ # All rights reserved.
++# Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ 
+@@ -25,8 +26,9 @@ if TYPE_CHECKING:
  class out_of_bound(ManagerTermBase):
      """Termination condition for when the object falls out of bound.
  
@@ -2125,7 +2208,7 @@ index 13fd1d9d3..d2e35fe73 100644
      """
  
      def __init__(self, cfg: TerminationTermCfg, env: ManagerBasedRLEnv):
-@@ -35,14 +36,11 @@ class out_of_bound(ManagerTermBase):
+@@ -35,14 +37,11 @@ class out_of_bound(ManagerTermBase):
          asset_cfg: SceneEntityCfg = cfg.params.get("asset_cfg", SceneEntityCfg("object"))
          self._object: RigidObject = env.scene[asset_cfg.name]
  
@@ -2144,7 +2227,7 @@ index 13fd1d9d3..d2e35fe73 100644
  
      def __call__(
          self,
-@@ -50,14 +48,23 @@ class out_of_bound(ManagerTermBase):
+@@ -50,14 +49,23 @@ class out_of_bound(ManagerTermBase):
          asset_cfg: SceneEntityCfg = SceneEntityCfg("object"),
          in_bound_range: dict[str, tuple[float, float]] = {},
      ) -> torch.Tensor:
@@ -2170,3 +2253,14 @@ index 13fd1d9d3..d2e35fe73 100644
      joint_vel_limits = robot.data.joint_vel_limits.torch
 -    return (joint_vel.abs() > (joint_vel_limits * 2)).any(dim=1)
 +    return (joint_vel.abs() > (joint_vel_limits * abnormal_threshold)).any(dim=1)
+diff --git a/source/isaaclab_newton/changelog.d/anchored_model.rst b/source/isaaclab_newton/changelog.d/anchored_model.rst
+new file mode 100644
+index 0000000..342a6cb
+--- /dev/null
++++ b/source/isaaclab_newton/changelog.d/anchored_model.rst
+@@ -0,0 +1,5 @@
++Changed
++^^^^^^^
++
++* Changed Newton articulations to write configured actuator viscous friction
++  values into MuJoCo passive damping when the solver exposes that field.
