@@ -1,6 +1,6 @@
 # SO-101 tutorial: from simulation to a recorded hardware trial
 
-Use the `gtc_berlin` branch. Commands execute simulation in Docker and hardware
+Use the default branch, `main`. Commands execute simulation in Docker and hardware
 access in the pinned `.venv-hardware` environment. Legacy `./so101 train --stage`
 and deployment-bundle commands remain available; the tutorial routes use
 `train teacher`, `train vision`, `evaluate teacher`, and `evaluate vision`.

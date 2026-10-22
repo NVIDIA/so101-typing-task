@@ -25,9 +25,8 @@ before the first update. Do not interpret a smoke test as convergence evidence.
 ## Install
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd so101-keyboard-typing-internal
-git checkout gtc_berlin
+git clone https://github.com/NVIDIA/so101-typing-task.git
+cd so101-typing-task
 ./so101 setup
 ./so101 debug --viewer
 ```
