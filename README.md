@@ -23,7 +23,7 @@ for hardware requirements, installation details, and headless operation.
 ## Install
 
 ```bash
-git clone --branch gtc_berlin https://github.com/NVIDIA/so101-typing-task.git
+git clone https://github.com/NVIDIA/so101-typing-task.git
 cd so101-typing-task
 ./so101 setup
 ```
